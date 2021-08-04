@@ -1,0 +1,49 @@
+---
+title: "Single-cell RNAseq analysis of the human melanoma cells | IBDM | Marie-Claire Delfini"
+subtitle: "Seurat | QC, DE analyses and Clustering"
+author:
+- Thomas Vannier | CENTURI Multi-Engineering Platform
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document: 
+    theme: cerulean
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error=TRUE)
+```
+
+```{r loadLibraries, echo=TRUE, warning=TRUE, message=TRUE}
+library(rmarkdown)
+library(tidyverse)
+library(stringr)
+library(tinytex)
+library(knitr)
+library(readr)
+library(dplyr)
+library(Seurat)
+library(patchwork)
+```
+
+[//]: # "Load the various chunks in the various files"
+```{r readChunks, echo=FALSE, warning=FALSE, message=FALSE}
+read_chunk( path=file.path( SCRIPTDIR, "seurat.R"))
+```
+This report reproduced the analyses from the [Guided Clustering Tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) of Seurat.
+
+# QC and selecting cells for further analysis
+
+## Visualize QC metrics as a violin plot
+
+We visualize QC metrics, and use these to filter cells.
+
+- We filter cells that have unique feature counts over 2,500 or less than 200
+
+- We filter cells that have >5% mitochondrial counts.
+
+```{r qcmetrics, echo=FALSE, results = "asis", message=FALSE}
+<<qcmetrics>>
+```

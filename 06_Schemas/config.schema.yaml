@@ -1,0 +1,58 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: snakemake configuration file
+
+type: object
+
+properties:
+  sample:
+    type: object
+    properties:
+      sname:
+        type: string
+    required:
+      - sname
+
+  reference:
+    type: object
+    properties:
+      link_ref_fasta:
+        type: string
+      link_ref_gff:
+        type: string
+      ref_cellranger:
+        type: string
+      ref_version:
+        type: string
+
+    required:
+      - link_ref_fasta
+      - link_ref_gff
+      - ref_cellranger
+      - ref_version
+  
+  cellranger:
+    type: object
+    properties:
+      fastqs:
+        type: string
+      cells:
+        type: integer
+      localcores:
+        type: integer
+      localmem:
+        type: integer
+    required:
+      - fastqs
+      - cells
+      - localcores
+      - localmem
+
+  # seurat:
+  #   type: object
+  #   properties:
+  #     make_seurat:
+  #       type: integer
+  #     make_seurat_obj_args:
+  #       type: integer
+

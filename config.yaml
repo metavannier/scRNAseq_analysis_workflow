@@ -1,0 +1,30 @@
+sample:
+    # Sample name
+    sname: "Mix_MM_lines"
+
+# Genome and gff link to create the pre-built Cell Ranger reference
+reference:
+    link_ref_fasta: "ftp://ftp.ensembl.org/pub/grch37/release-87/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.dna.primary_assembly.fa.gz"
+    link_ref_gff: "ftp://ftp.ensembl.org/pub/grch37/release-87/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.gtf.gz"
+    # Name for the file of the cellranger reference
+    ref_cellranger: "refdata-cellranger-hg19-3.0.0"
+    ref_version: "3.0.0"
+
+    # parameter for cellranger count
+cellranger:
+    # Path of the fastq_path folder. Can take multiple comma-separated paths, which is helpful if the same library was sequenced on multiple flowcells. 
+    fastqs: "00_RawData/Mix_MM_lines"
+    # Expected number of recovered cells. Default: 3,000 cells.
+    cells: 5000
+    # Restricts cellranger to use specified number of cores to execute pipeline stages
+    localcores: 6
+    # Restricts cellranger to use specified amount of memory (in GB) to execute pipeline stages.
+    localmem: 50
+
+# Seurat parameters
+# seurat:
+    # whether or not make a seurat object
+    # make_seurat: False
+    ## Seurat parameters. one can set pc.use = 20 to force only use first 20 PCs for calculation.
+    ## otherwise, it will use JackStraw to identify the significant PCs to use.
+    # make_seurat_obj_args: "x.low.cutoff = 0.05, x.high.cutoff = 10, y.cutoff = 0.5, num.pc = 100, do.par =TRUE, num.cores = 8, score.thresh = 1e-5, n.start = 100, nn.eps = 0, k.param = 30, resolution = 1"

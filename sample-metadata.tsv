@@ -1,0 +1,5 @@
+run-id	sample-name	fastq-id
+SRR9699431	Mix_MM_lines	Mix_MM_lines_S1_L001_R1_001.fastq
+SRR9699432	Mix_MM_lines	Mix_MM_lines_S1_L001_R2_001.fastq
+SRR9699433	Mix_MM_lines	Mix_MM_lines_S2_R1_001.fastq
+SRR9699434	Mix_MM_lines	Mix_MM_lines_S2_R2_001.fastq

@@ -4,9 +4,12 @@ channels :
     - conda-forge
     - defaults
 dependencies :
+    - r-ggplot2
+    - r-data.table
     - r-seurat =4.0.3
     - r-dplyr =1.0.7
     - r-patchwork =1.1.1
+    - bioconductor-glmgampoi
     # Report snakemake
     - conda-forge::jinja2=2.11.2
     - conda-forge::networkx=2.5

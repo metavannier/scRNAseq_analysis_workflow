@@ -1,10 +1,15 @@
 sample:
+    # Bioproject
+    biop: "PRJNA555083"
+    # Sequence Read Archive (SRA)
+    sra: "SRP215051"
     # Sample name
     sname: "Mix_MM_lines"
 
 # Genome and gff link to create the pre-built Cell Ranger reference
 reference:
     link_ref_fasta: "ftp://ftp.ensembl.org/pub/grch37/release-87/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.dna.primary_assembly.fa.gz"
+    ref_fasta: "Homo_sapiens.GRCh37.dna.primary_assembly.fa"
     link_ref_gff: "ftp://ftp.ensembl.org/pub/grch37/release-87/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.gtf.gz"
     # Name for the file of the cellranger reference
     ref_cellranger: "refdata-cellranger-hg19-3.0.0"
@@ -20,11 +25,36 @@ cellranger:
     localcores: 6
     # Restricts cellranger to use specified amount of memory (in GB) to execute pipeline stages.
     localmem: 50
-
+demuxlet:
+    # Tell if multiple samples are pooled by barcoded single cell sequencing and need deconvolute sample identity and identify multiplets.
+    spooled: "TRUE"
 # Seurat parameters
-# seurat:
-    # whether or not make a seurat object
-    # make_seurat: False
-    ## Seurat parameters. one can set pc.use = 20 to force only use first 20 PCs for calculation.
-    ## otherwise, it will use JackStraw to identify the significant PCs to use.
-    # make_seurat_obj_args: "x.low.cutoff = 0.05, x.high.cutoff = 10, y.cutoff = 0.5, num.pc = 100, do.par =TRUE, num.cores = 8, score.thresh = 1e-5, n.start = 100, nn.eps = 0, k.param = 30, resolution = 1"
+seurat:
+    # Include features detected in at least this many cells. Will subset the counts matrix as well. To reintroduce excluded features, create a new object with a lower cutoff.
+    min_cells: 3
+    # Include cells where at least this many features are detected.
+    min_features: 200
+    ## To be fixed after the visualization of the QC metrics as a violin plot and FeatureScatter
+    # Filter cells that have unique feature counts less n.
+    minFeature_RNA: 200
+    # Filter cells that have unique feature counts over n. Value have to be selected via the plot nCount_RNA/nfeature_RNA
+    maxFeature_RNA: 7000
+    # Filter cells that have >20% mitochondrial counts
+    percent_mt: 20
+    # Normalization workflow used by seurat. Can be "SCTransform" (calculates a model of technical noise in scRNA-seq data using ‘regularized negative binomial regression’) or "basictransform" (run NormalizeData, FindVariableFeatures, ScaleData steps).
+    normwf: "SCTransform"
+    # Use this many features as variable features after ranking by residual variance
+    # If basictransform is used :Method for normalization (LogNormalize, CLR (centered log ratio transformation) or RC (Relative counts))
+    normalization_method: "LogNormalize"
+    # Sets the scale factor for cell-level normalization
+    scale_factor: 10000
+    # How to choose top variable features (vst, mean.var.plot or dispersion)
+    selection_method: "vst" 
+    # Number of features to select as top variable features
+    nfeatures: 3000
+    # Number of highly variable genes label
+    nHVG: 20
+    # Dimension for the clustering
+    dims: 1:10
+    # Resolution parameter for the clustering
+    resolution: 0.5

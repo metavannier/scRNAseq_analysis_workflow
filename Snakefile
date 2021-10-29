@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from snakemake.utils import validate, min_version
 
 ##### set minimum snakemake version #####
@@ -25,6 +26,8 @@ SAMPLE_LIST,NUMS = glob_wildcards(RAWDATA + "/{sample}_L001_{num}_001.fastq")
 SAMPLE_SET = set(SAMPLE_LIST)
 SET_NUMS = set(NUMS)
 
+SAMPLE = config["sample"]["sname"]
+
 rule all:
   input:
     # # fastqc
@@ -35,12 +38,17 @@ rule all:
     # out_ref = REF + config["reference"]["ref_cellranger"] + "/fasta/genome.fa",
     # # Cellranger count
     # out_cellranger = OUTPUTDIR + "00_cellranger/" + config["sample"]["sname"] + "/outs/web_summary.html",
-    seurat_report = OUTPUTDIR + "01_seurat/seurat.html",
-
+    # bcf = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf",
+    # demuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
+    # tabdemuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
+    seurat_report = OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_report.html",
+    # seurat_object = OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_object.rds",
+    
 # ----------------------------------------------
 # Load rules 
 # ----------------------------------------------
 
 include: ENVDIR + "fastqc.smk"
 include: ENVDIR + "cellranger.smk"
+include: ENVDIR + "demuxlet.smk"
 include: ENVDIR + "seurat.smk"

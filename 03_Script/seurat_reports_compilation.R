@@ -9,14 +9,12 @@ STEP = "01_seurat"
 
 SCRIPTDIR = file.path( WORKING_DIR, "03_Script")
 OUTPUTDIR = file.path( WORKING_DIR, "05_Output")
-
-REPORT = snakemake@output[["seurat_report"]]
-
 SAMPLE = snakemake@params[["sample"]]
-
+REPORT = snakemake@output[["seurat_report"]]
 SC_DATA_PATH = snakemake@input[["sc_data"]]
+OUTPUTFILE = paste(SAMPLE, "seurat_report.html", sep = "_")
 
 rmarkdown::render( input = file.path(SCRIPTDIR, "seurat.Rmd"),
                    output_dir = file.path(OUTPUTDIR, STEP),
-                   output_file  = REPORT,
+                   output_file  = OUTPUTFILE,
                    quiet = FALSE)

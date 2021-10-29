@@ -10,7 +10,7 @@ Thomas Vannier (@metavannier), https://centuri-livingsystems.org/t-vannier/
 
 ## About
 
-This workflow performs a Snakemake pipeline for cellranger to process 10x single-cell RNAseq data from fastq files to the production of a report with result of the marker-gene analysis. The analysis are mainly been achieved using plugins from [QIIME 2](https://qiime2.org/), [Bolyen et al., 2019](https://doi.org/10.1038/s41587-019-0209-9).
+This workflow performs a Snakemake pipeline for cellranger to process 10x single-cell RNAseq data from fastq files to the production of a report with result of the marker-gene analysis.
 
 You need to install [Singularity](https://github.com/hpcng/singularity/blob/master/INSTALL.md#install-golang) on your computer. This workflow also work in a slurm environment.
 
@@ -28,10 +28,14 @@ We would be pleased if you use this workflow and participate in its improvement.
 
 Configure the workflow according to your needs via editing the files and repositories:
 - 00_RawData need the fastq file of each run to analyse
-- 01_Reference the [Marker gene reference databases](https://docs.qiime2.org/2021.4/data-resources/) and the [SEPP reference databases](https://github.com/smirarab/sepp-refs/) if you build the phylogenetic tree with SEPP.
-- [manifest.tsv](/manifest.tsv), [sample-metadata.tsv](/sample-metadata.tsv) and [conditions.tsv](/conditions.tsv) to indicate the samples, run, metadata and conditions for the analyse.
+- 01_Reference need the reference genome in fasta and the corresponding gff for the cellranger mapping step.
 - [config.yaml](/config.yaml) indicating the parameters to use.
-- Comment the [Snakefile](/Snakefile) on the input line not expected for the pipeline. This depend of the denoising, phylogenetic methods used and if longitudinal analysis are possible (to be improved).
+- Comment the [Snakefile](/Snakefile) on the input line not expected for the pipeline.
+- Build the singularity image of cellranger v6.0.0 (file to large for a github repository):
+
+`singularity build cellranger.sif docker://litd/docker-cellranger`
+
+`mv cellranger.sif 02_Container/`
 
 ### Step 3: Execute workflow
 

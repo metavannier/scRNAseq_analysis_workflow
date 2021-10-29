@@ -16,7 +16,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, error=TRUE)
 ```
 
-```{r loadLibraries, echo=TRUE, warning=TRUE, message=TRUE}
+```{r loadLibraries, echo=FALSE, warning=FALSE, message=FALSE}
 library(rmarkdown)
 library(tidyverse)
 library(stringr)
@@ -26,24 +26,91 @@ library(readr)
 library(dplyr)
 library(Seurat)
 library(patchwork)
+library(sctransform)
+library(glmGamPoi)
+library(ggplot2)
+library(data.table)
 ```
 
 [//]: # "Load the various chunks in the various files"
 ```{r readChunks, echo=FALSE, warning=FALSE, message=FALSE}
+read_chunk( path=file.path( SCRIPTDIR, "assignment.R"))
 read_chunk( path=file.path( SCRIPTDIR, "seurat.R"))
 ```
 This report reproduced the analyses from the [Guided Clustering Tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) of Seurat.
 
-# QC and selecting cells for further analysis
+# QC and selecting cells for further analysis of the BioProject `r snakemake@params[["biop"]]`
 
-## Visualize QC metrics as a violin plot
+## Deconvolute sample identity and identify multiplets when multiple samples are pooled by barcoded single cell sequencing.
+
+```{r assignment, echo=FALSE,fig.height=10,fig.width=10,out.height=600,out.width=600, results = "asis", message=FALSE}
+<<assignment>>
+```
+
+## Visualize QC metrics as a violin plot and FeatureScatter
 
 We visualize QC metrics, and use these to filter cells.
 
-- We filter cells that have unique feature counts over 2,500 or less than 200
+- We filter cells that have unique feature counts over `r snakemake@params[["maxFeature_RNA"]]`  or less than `r snakemake@params[["minFeature_RNA"]]`
 
-- We filter cells that have >5% mitochondrial counts.
+- We filter cells that have >`r snakemake@params[["percent_mt"]]`% mitochondrial counts.
 
-```{r qcmetrics, echo=FALSE, results = "asis", message=FALSE}
+```{r qcmetrics, echo=FALSE,fig.height=10,fig.width=10,out.height=600,out.width=600, results = "asis", message=FALSE}
 <<qcmetrics>>
 ```
+
+## Normalizing the data
+
+After removing unwanted cells from the dataset we normalizes the feature expression measurements for each cell using the `r snakemake@params[["normwf"]]` normalization workflow.
+
+## Identification of highly variable features
+
+Subset of features that exhibit high cell-to-cell variation in the dataset
+
+```{r hvf, echo=FALSE,fig.height=10,fig.width=8,out.height=600,out.width=450, results = "asis", message=FALSE, warning=FALSE}
+<<hvf>>
+```
+
+## Scaling the data
+
+We apply a linear transformation (‘scaling’) that is a standard pre-processing step prior to dimensional reduction techniques like PCA.
+
+## Perform linear dimensional reduction
+
+Visualizing both cells and features that define the PCA
+
+```{r ldr, echo=FALSE,fig.height=10,fig.width=10,out.height=600,out.width=600, results = "asis", message=FALSE}
+<<ldr>>
+```
+
+## Determine the ‘dimensionality’ of the dataset
+
+How many components have to be include?
+
+### Elbow Plot
+
+A ranking of principle components based on the percentage of variance explained by each one.
+
+```{r elbowplot, echo=FALSE, message=FALSE}
+<<info>>
+```
+
+## Cluster the cells
+
+We use a graph-based clustering approach :
+1. Construct a KNN graph based on the euclidean distance in PCA space, and refine the edge weights between any two cells based on the shared overlap in their local neighborhoods (Jaccard similarity).
+2. Modularity optimization techniques such as the Louvain algorithm or SLM, to iteratively group cells together, with the goal of optimizing the standard modularity function. 
+
+```{r cluster, echo=FALSE, message=FALSE}
+<<info>>
+```
+
+## Run non-linear dimensional reduction
+
+UMAP to visualize and explore these datasets.
+
+```{r umap, echo=FALSE, message=FALSE}
+<<info>>
+```
+
+

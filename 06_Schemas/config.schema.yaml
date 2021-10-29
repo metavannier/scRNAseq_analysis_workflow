@@ -10,9 +10,13 @@ properties:
     properties:
       sname:
         type: string
+      biop:
+        type: string
+      sra:
+        type: string
     required:
       - sname
-
+      - biop
   reference:
     type: object
     properties:
@@ -48,11 +52,49 @@ properties:
       - localcores
       - localmem
 
-  # seurat:
-  #   type: object
-  #   properties:
-  #     make_seurat:
-  #       type: integer
-  #     make_seurat_obj_args:
-  #       type: integer
+  demuxlet:
+    type: object
+    properties:
+      spooled:
+        type: string
+    required:
+      - spooled
+
+  seurat:
+    type: object
+    properties:
+      min_cells:
+        type: integer
+      min_features:
+        type: integer
+      minFeature_RNA:
+        type: integer
+      maxFeature_RNA:
+        type: integer
+      percent_mt:
+        type: integer
+      normwf:
+        type: string
+      normalization_method:
+        type: string
+      scale_factor:
+        type: integer
+      selection_method:
+        type: string
+      nfeatures:
+        type: integer
+      nHVG:
+        type: integer
+    required:
+      - min_cells
+      - min_features
+      - minFeature_RNA
+      - maxFeature_RNA
+      - percent_mt
+      - normwf
+      - normalization_method
+      - scale_factor
+      - selection_method
+      - nfeatures
+      - nHVG
 

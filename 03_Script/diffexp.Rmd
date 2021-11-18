@@ -1,0 +1,69 @@
+---
+title: "Single-cell RNAseq analysis of the human melanoma cells | IBDM | Marie-Claire Delfini"
+subtitle: "Seurat | DE analyses"
+author:
+- Thomas Vannier | CENTURI Multi-Engineering Platform
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document: 
+    theme: cerulean
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error=TRUE)
+```
+
+```{r loadLibraries, echo=FALSE, warning=FALSE, message=FALSE}
+library(rmarkdown)
+library(tidyverse)
+library(stringr)
+library(tinytex)
+library(knitr)
+library(readr)
+library(dplyr)
+library(Seurat)
+library(patchwork)
+library(sctransform)
+library(glmGamPoi)
+library(ggplot2)
+library(data.table)
+```
+[//]: # "Load the various chunks in the various files"
+```{r readChunks, echo=FALSE, warning=FALSE, message=FALSE}
+read_chunk( path=file.path( SCRIPTDIR, "diffexp.R"))
+```
+
+## Expression of the marker genes
+
+### Expression probability distributions across clusters
+
+```{r violin, echo=FALSE, fig.width=8, fig.height=9, results = "asis", message=FALSE}
+<<violin>>
+```
+
+### Feature expression on a UMAP reduction plot
+
+```{r umapfeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE}
+<<umapfeature>>
+```
+
+### Feature expression on a tsne reduction plot
+
+```{r tsnefeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE}
+<<tsnefeature>>
+```
+
+### Feature expression on a ridge plot
+
+```{r ridgefeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE}
+<<ridgefeature>>
+```
+
+### Heatmap expression
+
+```{r heatmapfeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE}
+<<heatmapfeature>>
+```

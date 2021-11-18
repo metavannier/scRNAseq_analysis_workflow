@@ -85,6 +85,12 @@ properties:
         type: integer
       nHVG:
         type: integer
+      dims:
+        type: integer
+      expclust:
+        type: integer
+      cluster_ids:
+        type: string
     required:
       - min_cells
       - min_features
@@ -97,4 +103,12 @@ properties:
       - selection_method
       - nfeatures
       - nHVG
-
+      - dims
+      - expclust
+  diffexp:
+    type: object
+    properties:
+      features:
+        type: string
+    required:
+      - features

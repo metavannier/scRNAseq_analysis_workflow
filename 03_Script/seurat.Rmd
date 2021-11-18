@@ -1,6 +1,6 @@
 ---
 title: "Single-cell RNAseq analysis of the human melanoma cells | IBDM | Marie-Claire Delfini"
-subtitle: "Seurat | QC, DE analyses and Clustering"
+subtitle: "Seurat | QC and Clustering"
 author:
 - Thomas Vannier | CENTURI Multi-Engineering Platform
 date: "`r format(Sys.time(), '%d %B %Y')`"
@@ -30,6 +30,8 @@ library(sctransform)
 library(glmGamPoi)
 library(ggplot2)
 library(data.table)
+library(devtools)
+library(sessioninfo)
 ```
 
 [//]: # "Load the various chunks in the various files"
@@ -40,12 +42,6 @@ read_chunk( path=file.path( SCRIPTDIR, "seurat.R"))
 This report reproduced the analyses from the [Guided Clustering Tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) of Seurat.
 
 # QC and selecting cells for further analysis of the BioProject `r snakemake@params[["biop"]]`
-
-## Deconvolute sample identity and identify multiplets when multiple samples are pooled by barcoded single cell sequencing.
-
-```{r assignment, echo=FALSE,fig.height=10,fig.width=10,out.height=600,out.width=600, results = "asis", message=FALSE}
-<<assignment>>
-```
 
 ## Visualize QC metrics as a violin plot and FeatureScatter
 
@@ -92,7 +88,7 @@ How many components have to be include?
 A ranking of principle components based on the percentage of variance explained by each one.
 
 ```{r elbowplot, echo=FALSE, message=FALSE}
-<<info>>
+<<elbowplot>>
 ```
 
 ## Cluster the cells
@@ -101,16 +97,28 @@ We use a graph-based clustering approach :
 1. Construct a KNN graph based on the euclidean distance in PCA space, and refine the edge weights between any two cells based on the shared overlap in their local neighborhoods (Jaccard similarity).
 2. Modularity optimization techniques such as the Louvain algorithm or SLM, to iteratively group cells together, with the goal of optimizing the standard modularity function. 
 
-```{r cluster, echo=FALSE, message=FALSE}
-<<info>>
+```{r cluster, echo=FALSE, fig.height=10, fig.width=10, out.height=600, out.width=600, results = "asis", message=FALSE}
+<<cluster>>
 ```
 
 ## Run non-linear dimensional reduction
 
 UMAP to visualize and explore these datasets.
 
-```{r umap, echo=FALSE, message=FALSE}
-<<info>>
+```{r umap, echo=FALSE, fig.height=10, fig.width=10, out.height=600, out.width=600, results = "asis", message=FALSE}
+<<umap>>
 ```
 
+## Retrieve data in matrix
 
+Count, expression and normalized matrice can be found in the snakemake report
+
+```{r datasave, echo=FALSE, message=FALSE}
+<<datasave>>
+```
+
+## Session Info
+
+```{r info, echo=FALSE, message=FALSE}
+<<info>>
+```

@@ -3,12 +3,15 @@ SAMPLE = config["sample"]["sname"]
 rule seurat:
     input:
         sc_data = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/filtered_feature_bc_matrix/",
-        tsne = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/analysis/tsne/2_components/projection.csv",
-        demuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best"
+        # tsne = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/analysis/tsne/2_components/projection.csv",
+        # demuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best"
     output:
-        tabdemuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
+        #tabdemuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
         seurat_report = report(OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_report.html", caption = ROOTDIR + REPORT + "seurat.rst", category="01 seurat"),
-        #seurat_object = OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_object.rds",
+        seurat_object = OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_object.rds",
+        count_matrix = report(OUTPUTDIR + "01_seurat/" + SAMPLE + "_count_matrix.csv", caption = ROOTDIR + REPORT + "data_matrix.rst", category="01 seurat"),
+        data_matrix = report(OUTPUTDIR + "01_seurat/" + SAMPLE + "_data_matrix.csv", caption = ROOTDIR + REPORT + "data_matrix.rst", category="01 seurat"),
+        scale_data_matrix = report(OUTPUTDIR + "01_seurat/" + SAMPLE + "_scale_data_matrix.csv", caption = ROOTDIR + REPORT + "data_matrix.rst", category="01 seurat"),
     conda:
         CONTAINER + "seurat.yaml"
     params:
@@ -27,6 +30,8 @@ rule seurat:
         nHVG = config["seurat"]["nHVG"],
         dims =  config["seurat"]["dims"],
         resolution = config["seurat"]["resolution"],
+        expclust = config["seurat"]["expclust"],
+        cluster_ids = config["seurat"]["cluster_ids"],
     message: 
         "Run Seurat for the clustering"
     script:

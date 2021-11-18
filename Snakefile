@@ -38,17 +38,35 @@ rule all:
     # out_ref = REF + config["reference"]["ref_cellranger"] + "/fasta/genome.fa",
     # # Cellranger count
     # out_cellranger = OUTPUTDIR + "00_cellranger/" + config["sample"]["sname"] + "/outs/web_summary.html",
+    ## If demuxiplexing is used
     # bcf = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf",
     # demuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
     # tabdemuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
+    count_matrix = OUTPUTDIR + "01_seurat/" + SAMPLE + "_count_matrix.csv",
+    data_matrix = OUTPUTDIR + "01_seurat/" + SAMPLE + "_data_matrix.csv",
+    scale_data_matrix = OUTPUTDIR + "01_seurat/" + SAMPLE + "_scale_data_matrix.csv",
     seurat_report = OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_report.html",
-    # seurat_object = OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_object.rds",
-    
+    seurat_object = OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_object.rds",
+    violinplot = OUTPUTDIR + "02_diffexp/violin_plot.pdf",
+    umapfeature = OUTPUTDIR + "02_diffexp/umapfeature_plot.pdf",
+    tsnefeature = OUTPUTDIR + "02_diffexp/tsnefeature_plot.pdf",
+    ridgefeature = OUTPUTDIR + "02_diffexp/ridgefeature_plot.pdf",
+    heatmapfeature = OUTPUTDIR + "02_diffexp/heatmapfeature.pdf",
+    diffexp_report = OUTPUTDIR + "02_diffexp/" + SAMPLE + "_diffexp_report.html",
+
+# ----------------------------------------------
+# Impose rule order for the execution of the workflow 
+# ----------------------------------------------
+
+ruleorder: seurat > diffexp
+
 # ----------------------------------------------
 # Load rules 
 # ----------------------------------------------
 
 include: ENVDIR + "fastqc.smk"
 include: ENVDIR + "cellranger.smk"
-include: ENVDIR + "demuxlet.smk"
+#include: ENVDIR + "demuxlet.smk"
 include: ENVDIR + "seurat.smk"
+include: ENVDIR + "diffexp.smk"
+

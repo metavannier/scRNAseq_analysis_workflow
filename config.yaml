@@ -54,7 +54,16 @@ seurat:
     nfeatures: 3000
     # Number of highly variable genes label
     nHVG: 20
-    # Dimension for the clustering
-    dims: 1:10
-    # Resolution parameter for the clustering
-    resolution: 0.5
+    # Dimension for the clustering (look the elbow plot to fix it)
+    dims: 12
+    # Resolution parameter for the clustering (Higher resolution means higher number of clusters)
+    resolution: 0.04
+    # Number of expected cluster
+    expclust: 10
+    # Assigning cell type identity to clusters
+    cluster_ids: "MM029,A375,MM031,MM057,MM099,MM087,MM001,MM074,MM011,MM047"
+# Differentially expressed features analyses
+diffexp:
+    # Features of interest
+    features: "SOX10,FAM65B,MITF,DCT,MYC,FLT1,PAX5,TNFRSF11B,XIRP2"
+

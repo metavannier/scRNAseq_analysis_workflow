@@ -5,14 +5,14 @@
 
 WORKING_DIR = getwd()
 
-STEP = "01_seurat"
+STEP = "02_seurat"
 
 SCRIPTDIR = file.path( WORKING_DIR, "03_Script")
 OUTPUTDIR = file.path( WORKING_DIR, "05_Output")
-SAMPLE = snakemake@params[["sample"]]
+NPROJ = snakemake@params[["nproj"]]
 REPORT = snakemake@output[["seurat_report"]]
 SC_DATA_PATH = snakemake@input[["sc_data"]]
-OUTPUTFILE = paste(SAMPLE, "seurat_report.html", sep = "_")
+OUTPUTFILE = paste(NPROJ, "seurat_report.html", sep = "_")
 
 rmarkdown::render( input = file.path(SCRIPTDIR, "seurat.Rmd"),
                    output_dir = file.path(OUTPUTDIR, STEP),

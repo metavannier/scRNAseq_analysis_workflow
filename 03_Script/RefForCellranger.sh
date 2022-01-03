@@ -41,6 +41,8 @@ cellranger mkgtf ${gff_name} ${gff_name_filtered} \
                  --attribute=gene_biotype:lincRNA \
                  --attribute=gene_biotype:antisense
 
+rm -r ${ref_name}
+
 cellranger mkref --genome=$5 \
                  --fasta=${fasta_name} \
                  --genes=${gff_name_filtered} \

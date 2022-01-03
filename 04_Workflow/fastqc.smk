@@ -4,10 +4,10 @@
 
 rule fastqc:
   input:
-    RAWDATA + "{sample}_L001_{num}_001.fastq"
+    RAWDATA + "{fastq}.fastq"
   output:
-    html = OUTPUTDIR + "00_fastqc/{sample}_L001_{num}_001_fastqc.html",
-    zip = OUTPUTDIR + "00_fastqc/{sample}_L001_{num}_001_fastqc.zip"
+    html = OUTPUTDIR + "00_fastqc/{fastq}_fastqc.html",
+    zip = OUTPUTDIR + "00_fastqc/{fastq}_fastqc.zip"
   message: 
     "Quality with fastqc"
   wrapper:
@@ -19,7 +19,7 @@ rule fastqc:
 
 rule multiqc:
   input:
-    raw_qc = expand("{outputdir}00_fastqc/{sample}_L001_{num}_001_fastqc.zip", outputdir = OUTPUTDIR, sample=SAMPLE_SET, num=SET_NUMS),
+    raw_qc = expand("{outputdir}00_fastqc/{fastq}_fastqc.zip", outputdir=OUTPUTDIR, fastq=FASTQ),
   output:
     raw_multi_html = report(OUTPUTDIR + "00_fastqc/raw_multiqc.html", caption = ROOTDIR + REPORT + "multiqc.rst", category="00 quality report"), 
   params:
@@ -27,7 +27,7 @@ rule multiqc:
   conda:
     CONTAINER + "multiqc.yaml"
   message: 
-    "Synthetize quality with with multiqc"
+    "Synthetize quality with multiqc"
   shell: 
     """
     multiqc -n {output.raw_multi_html} {input.raw_qc} #run multiqc

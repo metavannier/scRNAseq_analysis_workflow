@@ -38,6 +38,10 @@ read_chunk( path=file.path( SCRIPTDIR, "diffexp.R"))
 
 ## Expression of the marker genes
 
+We remove NFAT2C and PAX5 from the analyse because they are not in the count matrix. Maybe they have an other name or they don't pass the filter (present in x cells etc...).
+
+You can find all these figures (Each marker gene is represented separately from the others) in pdf format on the global report. 
+
 ### Expression probability distributions across clusters
 
 ```{r violin, echo=FALSE, fig.width=8, fig.height=9, results = "asis", message=FALSE}

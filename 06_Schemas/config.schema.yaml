@@ -63,10 +63,6 @@ properties:
   seurat:
     type: object
     properties:
-      merge:
-        type: string
-      smerge:
-        type: string
       min_cells:
         type: integer
       min_features:
@@ -91,12 +87,10 @@ properties:
         type: integer
       dims:
         type: integer
-      expclust:
-        type: integer
+
       cluster_ids:
         type: string
     required:
-      - merge
       - min_cells
       - min_features
       - minFeature_RNA
@@ -109,7 +103,6 @@ properties:
       - nfeatures
       - nHVG
       - dims
-      - expclust
   diffexp:
     type: object
     properties:

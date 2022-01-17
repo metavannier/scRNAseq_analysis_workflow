@@ -10,7 +10,8 @@ Thomas Vannier (@metavannier), https://centuri-livingsystems.org/t-vannier/
 
 ## About
 
-This workflow performs a Snakemake pipeline for cellranger to process 10x single-cell RNAseq data from fastq files to the production of a report with result of the marker-gene analysis.
+This workflow performs a Snakemake pipeline to process 10x single-cell RNAseq data from fastq files to the production of a report with result of the marker-gene analysis.
+Correction for technical differences between datasets is included (i.e. batch effect correction) to perform comparative scRNA-seq analysis across experimental conditions.
 
 You need to install [Singularity](https://github.com/hpcng/singularity/blob/master/INSTALL.md#install-golang) on your computer. This workflow also work in a slurm environment.
 

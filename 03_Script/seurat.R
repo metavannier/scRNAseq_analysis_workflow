@@ -7,10 +7,8 @@ COUNT = snakemake@output[["count_matrix"]]
 DATA = snakemake@output[["data_matrix"]]
 SCALE = snakemake@output[["scale_data_matrix"]]
 # Load parameters
-MERGE = snakemake@params[["merge"]]
 SAMPLES = snakemake@params[["samples"]]
 WT = snakemake@params[["wt"]]
-SMERGE = snakemake@params[["smerge"]]
 MINCELLS = snakemake@params[["min_cells"]]
 MINFEATURES = snakemake@params[["min_features"]]
 MINFEATURERNA = snakemake@params[["minFeature_RNA"]]
@@ -24,7 +22,6 @@ SELECTMETHOD = snakemake@params[["selection_method"]]
 NHVG = snakemake@params[["nHVG"]]
 DIMS = snakemake@params[["dims"]]
 RESOLUTION = snakemake@params[["resolution"]]
-EXPCLUST = snakemake@params[["expclust"]]
 CLUSTERIDS = snakemake@params[["cluster_ids"]]
 
 # Load the single cell dataset
@@ -62,18 +59,16 @@ obj_seurat <- AddMetaData(
   metadata = categorieid,
   col.name = "categorie")
 
-# table(obj_seurat@meta.data$orig.ident)
-# table(obj_seurat@meta.data$categorie)
-# head(obj_seurat[[]])
+levels(obj_seurat)
 
 # The [[ operator can add columns to object metadata. This is a great place to stash QC stats
 obj_seurat[["percent.mt"]] <- PercentageFeatureSet(obj_seurat, pattern = "^MT-")
 
 # Visualize QC metrics as a violin plot
-VlnPlot(obj_seurat, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(obj_seurat, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, group.by = "orig.ident")
 # FeatureScatter to visualize mt-RNA and feature-RNA relationships
-plot1 <- FeatureScatter(obj_seurat, feature1 = "nCount_RNA", feature2 = "percent.mt")
-plot2 <- FeatureScatter(obj_seurat, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 <- FeatureScatter(obj_seurat, feature1 = "nCount_RNA", feature2 = "percent.mt", group.by = "orig.ident")
+plot2 <- FeatureScatter(obj_seurat, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", group.by = "orig.ident")
 plot1 + plot2
 
 ## Cell filtration
@@ -81,12 +76,10 @@ plot1 + plot2
 # The gene should be expressed at least 1% of samples
 obj_seurat <- subset(obj_seurat, subset = nFeature_RNA > MINFEATURERNA & nFeature_RNA < MAXFEATURERNA & percent.mt < PERCENTMT)
 
-## Add subpopulation identity as metadata
-
-
 ## @knitr hvf
 
 ### Workflow for data transformation
+### Need to include the integration procedure if cell ranger aggregate is used
 if (NORMWF == "basictransform"){
     ## Normalize the data
     obj_seurat <- NormalizeData(obj_seurat, normalization.method = NORMMETHOD, scale.factor = SCALEFACTOR)
@@ -94,64 +87,103 @@ if (NORMWF == "basictransform"){
     ## Identification of highly variable features
     obj_seurat <- FindVariableFeatures(obj_seurat, selection.method = SELECTMETHOD, nfeatures = NFEATURES)
 
-    # Identify the 10 most highly variable genes
+    # Identify the most highly variable genes
     top <- head(VariableFeatures(obj_seurat), NHVG)
 
-        # plot variable features with and without labels
+    # Plot variable features with and without labels
     plot1 <- VariableFeaturePlot(obj_seurat)
     plot2 <- LabelPoints(plot = plot1, points = top, repel = TRUE)
     plot2
 
-        # Scaling the data and remove unwanted sources of variation (mitochondrial)
+    # Scaling the data and remove unwanted sources of variation (mitochondrial)
     all.genes <- rownames(obj_seurat)
     obj_seurat <- ScaleData(obj_seurat, features = all.genes, vars.to.regress = "percent.mt")
     # USE ONLY FOR THE TEST (select the nb of variable genes for the scale) BUT NOT USE FOR THE HEATMAP
     #obj_seurat <- ScaleData(obj_seurat)
-    ## Correct the batch effect using the Seurat integration procedure
-} else if (NORMWF == "SCTransform"){        
-        # run sctransform
-        obj_seurat <- SCTransform(obj_seurat, new.assay.name = "SCT", method = "glmGamPoi", variable.features.n = NFEATURES, vars.to.regress = "percent.mt", verbose = FALSE)
-        # Identify the 10 most highly variable genes
-        top <- head(VariableFeatures(obj_seurat), NHVG)
-        plot1 <- VariableFeaturePlot(obj_seurat)
-        plot2 <- LabelPoints(plot = plot1, points = top, repel = TRUE)
-        plot2
-# } else if (NORMWF == "integration"){ 
+    ## Normalize and correct the batch effect using the Seurat integration procedure
+} else if (NORMWF == "SCTransform"){
+    obj_seurat <- SCTransform(obj_seurat, new.assay.name = "SCT", method = "glmGamPoi", variable.features.n = NFEATURES, vars.to.regress = "percent.mt", verbose = FALSE)
 
+    ### If you want to do the integration to correct the batch effect :
+    # Normalize datasets individually by SCTransform()
+    # obj_seurat.list <- SplitObject(obj_seurat, split.by = "orig.ident")
+    # obj_seurat.list <- lapply(X = obj_seurat.list, FUN = function(x) {
+    #   x <- SCTransform(object = x, new.assay.name = "SCT", method = "glmGamPoi", variable.features.n = NFEATURES, vars.to.regress = "percent.mt", verbose = FALSE)
+    # })
+    # features <- SelectIntegrationFeatures(object.list = obj_seurat.list, nfeatures = NFEATURES)
+    # # Run the PrepSCTIntegration() function prior to identifying anchors
+    # obj_seurat.list <- PrepSCTIntegration(object.list = obj_seurat.list, anchor.features = NFEATURES)
+    # # Find a set of anchors between a list of Seurat objects
+    # obj_seurat.anchors <- FindIntegrationAnchors(object.list = obj_seurat.list, normalization.method = "SCT", anchor.features = features)
+    # # Perform dataset integration using a pre-computed AnchorSet
+    # obj_seurat <- IntegrateData(anchorset = obj_seurat.anchors, normalization.method = "SCT")
+    # DefaultAssay(obj_seurat) <- "integrated"
+
+    # Identify the 10 most highly variable genes
+    ## Don't work after integration
+    top <- head(VariableFeatures(obj_seurat), NHVG)
+    plot1 <- VariableFeaturePlot(obj_seurat)
+    plot2 <- LabelPoints(plot = plot1, points = top, repel = TRUE)
+    plot2
 } else {
-        print("You have to enter the normalization workflow to use in the config.yaml file. Could be SCTransform or basictransform")
+    print("You have to enter the normalization workflow to use in the config.yaml file. Could be SCTransform or basictransform")
 }
+
+### Add subpopulation identity as metadata for the Delfini project ###
+    ## For the project of Delphini we have to find the different melanoma cell line from the paper Wouters et al., 2019 
+    # List of different object corresponding to the dataset :
+    obj_seurat_list <- SplitObject(obj_seurat, split.by = "orig.ident")
+    # Perform linear dimensional reduction
+    obj_seurat_list$Mix_MM_lines <- RunPCA(obj_seurat_list$Mix_MM_lines, features = VariableFeatures(object = obj_seurat_list$Mix_MM_lines))
+    obj_seurat_list$Mix_MM_lines <- FindNeighbors(obj_seurat_list$Mix_MM_lines, dims = 1:DIMS, verbose = FALSE)
+    obj_seurat_list$Mix_MM_lines <- FindClusters(obj_seurat_list$Mix_MM_lines, resolution = RESOLUTION, verbose = FALSE)
+
+    # Look at cluster IDs and rename it according to your marker genes
+    obj_seurat_list$Mix_MM_lines <- RenameIdents(obj_seurat_list$Mix_MM_lines, `0` = "MM087", `1` = "A375",`2` = "MM029",`3` = "MM099",`4` = "MM031",`5` = "MM057",`6` = "MM001",`7` = "MM074",`8` = "MM047",`9` = "MM011")
+    # colnames(x = obj_seurat_list$Mix_MM_lines)
+    obj_seurat_list$Mix_MM_lines[["cluster"]] <- Idents(object = obj_seurat_list$Mix_MM_lines)
+    obj_seurat_list$M12 <- RenameIdents(obj_seurat_list$M12, `1` = "M12")
+    obj_seurat_list$M12[["cluster"]] <- Idents(object = obj_seurat_list$M12)
+    obj_seurat_list$M15 <- RenameIdents(obj_seurat_list$M15, `2` = "M15")
+    obj_seurat_list$M15[["cluster"]] <- Idents(object = obj_seurat_list$M15)
+    obj_seurat_list$M27 <- RenameIdents(obj_seurat_list$M27, `3` = "M27")
+    obj_seurat_list$M27[["cluster"]] <- Idents(object = obj_seurat_list$M27)
+    obj_seurat_list$Normal_Melanocytes <- RenameIdents(obj_seurat_list$Normal_Melanocytes, `4` = "Normal_Melanocytes")
+    obj_seurat_list$Normal_Melanocytes[["cluster"]] <- Idents(object = obj_seurat_list$Normal_Melanocytes)
+
+    obj_seurat <- merge(obj_seurat_list$M12,y = c(obj_seurat_list$M15,obj_seurat_list$M27,obj_seurat_list$Normal_Melanocytes,obj_seurat_list$Mix_MM_lines))
+    obj_seurat <- SCTransform(obj_seurat, new.assay.name = "SCT", method = "glmGamPoi", variable.features.n = NFEATURES, vars.to.regress = "percent.mt", verbose = FALSE)
+    ### End of the code for Delfini project
 
 ## @knitr ldr
 # Perform linear dimensional reduction
 obj_seurat <- RunPCA(obj_seurat, features = VariableFeatures(object = obj_seurat))
-#obj_seurat <- RunPCA(obj_seurat, verbose = FALSE)
 VizDimLoadings(obj_seurat, dims = 1:10, reduction = "pca")
-
-DimPlot(obj_seurat, reduction = "pca")
-
+DimPlot(obj_seurat, reduction = "pca", group.by = "orig.ident")
+DimPlot(obj_seurat, reduction = "pca", group.by = "categorie")
 DimHeatmap(obj_seurat, dims = 1:DIMS, cells = 500, balanced = TRUE)
 
 ## @knitr elbowplot
 ElbowPlot(obj_seurat)
 
 ## @knitr cluster
-obj_seurat <- FindNeighbors(obj_seurat, dims = 1:DIMS, verbose = FALSE)
-obj_seurat <- FindClusters(obj_seurat, resolution = RESOLUTION, verbose = FALSE)
+### We already have the cluster for this analyse
+obj_seurat <- RunPCA(obj_seurat, features = VariableFeatures(object = obj_seurat))
+# obj_seurat <- FindNeighbors(obj_seurat, dims = 1:DIMS, verbose = FALSE)
+# obj_seurat <- FindClusters(obj_seurat, resolution = RESOLUTION, verbose = FALSE)
 
-# Look at cluster IDs and rename it according to your marker genes
-# LA POUR RENOMAGE DES CATEGORIE (LE CLUSTERING FUSIONNE CERTAIN SAMPLES)
-#WhichCells(obj_seurat, idents = "0")
-cluster.ids = as.list(strsplit(CLUSTERIDS, ",")[[1]])
-names(cluster.ids) <- levels(obj_seurat)
-obj_seurat <- RenameIdents(obj_seurat, cluster.ids)
+# # Look at cluster IDs and rename it according to your marker genes
+# cluster.ids = as.list(strsplit(CLUSTERIDS, ",")[[1]])
+# names(cluster.ids) <- levels(obj_seurat)
+# obj_seurat <- RenameIdents(obj_seurat, cluster.ids)
 
 ## @knitr umap
 obj_seurat <- RunUMAP(obj_seurat, dims = 1:DIMS)
-DimPlot(obj_seurat, reduction = "umap")
-
+dittoDimPlot(obj_seurat, reduction = "umap", var = "cluster", do.label = TRUE)
+DimPlot(obj_seurat, reduction = "umap", group.by = "categorie")
 obj_seurat <- RunTSNE(obj_seurat, dims = 1:DIMS)
-DimPlot(obj_seurat, reduction = "tsne")
+dittoDimPlot(obj_seurat, reduction = "tsne", var = "cluster", do.label = TRUE)
+DimPlot(obj_seurat, reduction = "tsne", group.by = "categorie")
 
 ## @knitr datasave
 # Saving the seurat object

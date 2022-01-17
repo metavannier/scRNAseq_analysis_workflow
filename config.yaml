@@ -6,7 +6,7 @@ sample:
     # Expension of fastq file
     expansion: "fastq"
     # Bioproject
-    biop: "PRJNA555083"
+    biop: "SRP215051_SRP287614"
     # Sequence Read Archive (SRA)
     sra: "SRP287614"
     # Sample name ; Multiple names may be supplied as a comma-separated list, in which case they will be treated as one sample.
@@ -46,9 +46,6 @@ cellranger:
     spooled: "TRUE"
 # Seurat parameters
 seurat:
-    merge: "FALSE"
-    # Sample to be aggregated by seurat before normalization
-    smerge: "M12,M15,M27,Normal_Melanocytes,Mix_MM_lines"
     # Name of the "Normal" or Wild Type sample to group samples for the comparison
     wt: "Normal_Melanocytes"
     # Include features detected in at least this many cells. Will subset the counts matrix as well. To reintroduce excluded features, create a new object with a lower cutoff.
@@ -78,13 +75,12 @@ seurat:
     # Dimension for the clustering (look the elbow plot to fix it)
     dims: 12
     # Resolution parameter for the clustering (Higher resolution means higher number of clusters)
-    resolution: 0.04
-    # Number of expected cluster
-    expclust: 12
+    resolution: 0.08
     # Assigning cell type identity to clusters
-    cluster_ids: "M12,M15,M27,Normal_Melanocytes,MM029,A375,MM031,MM057,MM099,MM087,MM001,MM074,MM011,MM047"
+    cluster_ids: "MM029,A375,MM031,MM057,MM099,MM087,MM001,MM074,MM011,MM047"
 # Differentially expressed features analyses
 diffexp:
     # Features of interest
-    features: "SOX10,RIPOR2,MITF,DCT,MYC,FLT1,PAX5,TNFRSF11B,XIRP2"
+    features: "SOX10,SOX9,RIPOR2,MITF,DCT,MYC,FLT1,TNFRSF11B,XIRP2,ST3GAL1"
+    # features: "SOX10,SOX9,NFAT2C,RIPOR2,MITF,DCT,MYC,FLT1,PAX5,TNFRSF11B,XIRP2,ST3GAL1"
 

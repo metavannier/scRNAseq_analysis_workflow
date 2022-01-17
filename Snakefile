@@ -35,6 +35,7 @@ FASTQ = expand("{fastq.fastq}", fastq=fastq.itertuples())
 SAMPLE = config["sample"]["sname"].split(',')
 NPROJ = config["sample"]["nproject"]
 EXPANSION = config["sample"]["expansion"]
+FEATURES = config["diffexp"]["features"].split(',')
 
 rule all:
   input:
@@ -53,16 +54,16 @@ rule all:
     # demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
     # tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
     ## Seurat
-    count_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_count_matrix.csv",
-    data_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_data_matrix.csv",
-    scale_data_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_scale_data_matrix.csv",
-    seurat_report = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_report.html",
-    seurat_object = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_object.rds",
-    violinplot = OUTPUTDIR + "03_diffexp/violin_plot.pdf",
-    umapfeature = OUTPUTDIR + "03_diffexp/umapfeature_plot.pdf",
-    tsnefeature = OUTPUTDIR + "03_diffexp/tsnefeature_plot.pdf",
-    ridgefeature = OUTPUTDIR + "03_diffexp/ridgefeature_plot.pdf",
-    heatmapfeature = OUTPUTDIR + "03_diffexp/heatmapfeature.pdf",
+    # count_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_count_matrix.csv",
+    # data_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_data_matrix.csv",
+    # scale_data_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_scale_data_matrix.csv",
+    # seurat_report = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_report.html",
+    # seurat_object = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_object.rds",
+    violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
+    umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
+    tsnefeature = expand(OUTPUTDIR + "03_diffexp/tsne_plot/{features}_tsnefeature_plot.pdf", features=FEATURES),
+    ridgefeature = expand(OUTPUTDIR + "03_diffexp/ridge_plot/{features}_ridgefeature_plot.pdf", features=FEATURES),
+    heatmapfeature = OUTPUTDIR + "03_diffexp/heatmap/heatmapfeature.pdf",
     diffexp_report = OUTPUTDIR + "03_diffexp/" + NPROJ + "_diffexp_report.html",
 
 # ----------------------------------------------

@@ -19,8 +19,6 @@ rule seurat:
         nproj = config["sample"]["nproject"],
         samples = config["cellranger"]["sagrr"],
         wt = config["seurat"]["wt"],
-        merge = config["seurat"]["merge"],
-        smerge = config["seurat"]["smerge"],
         biop = config["sample"]["biop"],
         min_cells = config["seurat"]["min_cells"],
         min_features = config["seurat"]["min_features"],
@@ -35,7 +33,6 @@ rule seurat:
         nHVG = config["seurat"]["nHVG"],
         dims =  config["seurat"]["dims"],
         resolution = config["seurat"]["resolution"],
-        expclust = config["seurat"]["expclust"],
         cluster_ids = config["seurat"]["cluster_ids"],
     message: 
         "Run Seurat for the clustering"

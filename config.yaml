@@ -82,5 +82,14 @@ seurat:
 diffexp:
     # Features of interest
     features: "SOX10,SOX9,RIPOR2,MITF,DCT,MYC,FLT1,TNFRSF11B,XIRP2,ST3GAL1"
-    # features: "SOX10,SOX9,NFAT2C,RIPOR2,MITF,DCT,MYC,FLT1,PAX5,TNFRSF11B,XIRP2,ST3GAL1"
-
+    # Cells of interest to find differentially expressed features against "Normal" or Wild Type cells
+    cell_marker: "M12,M15,M27,MM029,A375,MM031,MM057,MM099,MM087,MM001,MM074,MM011,MM047"
+    # Test to find differentially expressed genes. Can be wilcox, bimod, roc, t, negbinom, poisson, LR, MAST, DESeq2.
+    test: "wilcox"
+    # Threshold to detect the ander or ober expressed genes
+    threshold: 0.0
+    # qvalue threshold
+    pCutoff: 0.01
+    # Foldchange threshold (not in log base 2)
+    FCcutoff: 2
+    

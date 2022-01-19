@@ -59,8 +59,6 @@ obj_seurat <- AddMetaData(
   metadata = categorieid,
   col.name = "categorie")
 
-levels(obj_seurat)
-
 # The [[ operator can add columns to object metadata. This is a great place to stash QC stats
 obj_seurat[["percent.mt"]] <- PercentageFeatureSet(obj_seurat, pattern = "^MT-")
 

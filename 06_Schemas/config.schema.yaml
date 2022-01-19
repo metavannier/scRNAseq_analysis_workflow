@@ -87,7 +87,6 @@ properties:
         type: integer
       dims:
         type: integer
-
       cluster_ids:
         type: string
     required:
@@ -108,5 +107,14 @@ properties:
     properties:
       features:
         type: string
+      cell_marker:
+        type: string
+      test:
+        type: string
+      threshold:
+        type: integer
     required:
       - features
+      - cell_marker
+      - test
+      - threshold

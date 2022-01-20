@@ -54,4 +54,4 @@ Configure the workflow according to your needs via editing the files and reposit
 
 After successful execution, you can create a self-contained interactive HTML report with all results via:
 
-`snakemake --report report.html`
+`snakemake --report global_report.html`

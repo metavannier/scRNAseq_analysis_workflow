@@ -27,7 +27,7 @@ rule cellranger:
         ref_cellranger = REF + config["reference"]["ref_cellranger"] + "/",
         fastqs = config["cellranger"]["fastqs"]
     output:
-        out_cellranger = report(expand(OUTPUTDIR + "01_cellranger/{samples}/outs/web_summary.html", samples=SAMPLES), caption = ROOTDIR + REPORT + "cellranger_summary.rst", category="01 cell ranger"),
+        out_cellranger = report(expand(OUTPUTDIR + "01_cellranger/{samples}/outs/{samples}_web_summary.html", samples=SAMPLES), caption = REPORT + "cellranger_summary.rst", category="01 cell ranger"),
     params:
         samples = config["sample"]["sname"].split(','),
     singularity:
@@ -50,12 +50,13 @@ rule cellranger:
         --localmem={config[cellranger][localmem]}
         mv ${{sample[$i]}}/* 05_Output/01_cellranger/${{sample[$i]}}/
         rm -r ${{sample[$i]}}/
+        mv 05_Output/01_cellranger/${{sample[$i]}}/outs/web_summary.html 05_Output/01_cellranger/${{sample[$i]}}/outs/${{sample[$i]}}_web_summary.html/
         done
         """
 
 rule cellrangeraggr:
     input:
-        out_cellranger = expand(OUTPUTDIR + "01_cellranger/{agrr}/outs/web_summary.html", agrr=AGRR),
+        out_cellranger = expand(OUTPUTDIR + "01_cellranger/{agrr}/outs/{samples}_web_summary.html", agrr=AGRR, samples=SAMPLES),
     output:
         aggrcsv = ROOTDIR + "/aggregation.csv",
     params:

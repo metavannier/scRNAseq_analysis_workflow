@@ -23,30 +23,6 @@ PCCUTOFF  = snakemake@params[["pCutoff"]]
 obj_seurat <- readRDS(SEURAT_OBJECT)
 
 featureslist = c(strsplit(FEATURES, ",")[[1]])
-# Load input
-SEURAT_OBJECT = snakemake@input[["seurat_object"]]
-#Load path
-PATH <- getwd()
-PATH <- gsub("/03_Script","", PATH)
-# Load output
-VIOLINPLOT = snakemake@output[["violinplot"]]
-UMAPFEATURE = snakemake@output[["umapfeature"]]
-TSNEFEATURE = snakemake@output[["tsnefeature"]]
-RIDGEFEATURE = snakemake@output[["ridgefeature"]]
-HEATMAPFEATURE = snakemake@output[["heatmapfeature"]]
-# Load parameters
-FEATURES = snakemake@params[["features"]]
-CELLMARKER = snakemake@params[["cellmarker"]]
-WT = snakemake@params[["wt"]]
-TEST = snakemake@params[["test"]]
-THRESHOLD = snakemake@params[["threshold"]]
-FCCUTOFF  = snakemake@params[["FCcutoff"]]
-PCCUTOFF  = snakemake@params[["pCutoff"]]
-
-# Load seurat object generated after clustering
-obj_seurat <- readRDS(SEURAT_OBJECT)
-
-featureslist = c(strsplit(FEATURES, ",")[[1]])
 
 ViolinPlot <- VlnPlot(obj_seurat, features = featureslist)
 plot(ViolinPlot)
@@ -111,7 +87,6 @@ dev.off()
 # Find differentially expressed features between WT and all the cellular type of interest together
 de.markers <- FindMarkers(obj_seurat, ident.1 = WT, ident.2 = NULL, logfc.threshold = THRESHOLD, test.use = TEST)
 de.file = paste(PATH,"/05_Output/03_diffexp/differential_expression_features/",WT,"_vs_AllCellMarker_DE.csv",sep = "")
-head(de.markers)
 write.csv(x = de.markers, file = de.file, quote = FALSE)
 
 # Find differentially expressed features between WT and cellular type of interest

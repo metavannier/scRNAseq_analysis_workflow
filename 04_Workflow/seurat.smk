@@ -8,11 +8,11 @@ rule seurat:
         # demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best"
     output:
         #tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
-        seurat_report = report(OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_report.html", caption = ROOTDIR + REPORT + "seurat.rst", category="02 seurat"),
+        seurat_report = report(OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_report.html", caption = REPORT + "seurat.rst", category="02 seurat"),
         seurat_object = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_object.rds",
-        count_matrix = report(OUTPUTDIR + "02_seurat/" + NPROJ + "_count_matrix.csv", caption = ROOTDIR + REPORT + "data_matrix.rst", category="02 seurat"),
-        data_matrix = report(OUTPUTDIR + "02_seurat/" + NPROJ + "_data_matrix.csv", caption = ROOTDIR + REPORT + "data_matrix.rst", category="02 seurat"),
-        scale_data_matrix = report(OUTPUTDIR + "02_seurat/" + NPROJ + "_scale_data_matrix.csv", caption = ROOTDIR + REPORT + "data_matrix.rst", category="02 seurat"),
+        count_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_count_matrix.csv",
+        data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_data_matrix.csv",
+        scale_data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_scale_data_matrix.csv",
     conda:
         CONTAINER + "seurat.yaml"
     params:

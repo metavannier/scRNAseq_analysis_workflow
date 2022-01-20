@@ -48,7 +48,7 @@ rule all:
     # # reference for cellranger
     # out_ref = REF + config["reference"]["ref_cellranger"] + "/fasta/genome.fa",
     # ## Cellranger count
-    # out_cellranger = expand(OUTPUTDIR + "01_cellranger/{sample}/outs/web_summary.html", sample=SAMPLE),
+    # out_cellranger = expand(OUTPUTDIR + "01_cellranger/{sample}/outs/{sample}_web_summary.html", sample=SAMPLE),
     ## If you need to aggregate your data
     # aggrcsv = ROOTDIR + "/aggregation.csv",
     ## If demuxiplexing is used
@@ -56,9 +56,9 @@ rule all:
     # demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
     # tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
     ## Seurat
-    # count_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_count_matrix.csv",
-    # data_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_data_matrix.csv",
-    # scale_data_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_scale_data_matrix.csv",
+    # count_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_count_matrix.csv",
+    # data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_data_matrix.csv",
+    # scale_data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_scale_data_matrix.csv",
     # seurat_report = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_report.html",
     # seurat_object = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_object.rds",
     violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
@@ -75,6 +75,16 @@ rule all:
     sign_up = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_{cellmarker}_signif-up-regulated.txt", wt=WT, cellmarker=CELLMARKER),
     sign_down_allcell = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_AllCellMarker_signif-down-regulated.txt", wt=WT),
     sign_down = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_{cellmarker}_signif-down-regulated.txt", wt=WT, cellmarker=CELLMARKER),
+    data_matrix_tar = OUTPUTDIR + "02_seurat/data_matrix.tar.gz",
+    violinplot_tar = OUTPUTDIR + "03_diffexp/violin_plot.tar.gz",
+    umapfeature_tar = OUTPUTDIR + "03_diffexp/umapfeature_plot.tar.gz",
+    tsnefeature_tar = OUTPUTDIR + "03_diffexp/tsnefeature_plot.tar.gz",
+    ridgefeature_tar = OUTPUTDIR + "03_diffexp/ridgefeature_plot.tar.gz",
+    heatmapfeature_tar = OUTPUTDIR + "03_diffexp/heatmapfeature.tar.gz",
+    defile_tar = OUTPUTDIR + "03_diffexp/differencial_expression_tests.tar.gz",
+    volcano_tar = OUTPUTDIR + "03_diffexp/volcano_plot.tar.gz",
+    sign_up_tar = OUTPUTDIR + "03_diffexp/up_regulated_genes_list.tar.gz",
+    sign_down_tar = OUTPUTDIR + "03_diffexp/down_regulated_genes_list.tar.gz",
 
 # ----------------------------------------------
 # Impose rule order for the execution of the workflow 
@@ -91,4 +101,4 @@ include: ENVDIR + "cellranger.smk"
 #include: ENVDIR + "demuxlet.smk"
 include: ENVDIR + "seurat.smk"
 include: ENVDIR + "diffexp.smk"
-
+include: ENVDIR + "report.smk"

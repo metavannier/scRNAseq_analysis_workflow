@@ -21,7 +21,7 @@ rule multiqc:
   input:
     raw_qc = expand("{outputdir}00_fastqc/{fastq}_fastqc.zip", outputdir=OUTPUTDIR, fastq=FASTQ),
   output:
-    raw_multi_html = report(OUTPUTDIR + "00_fastqc/raw_multiqc.html", caption = ROOTDIR + REPORT + "multiqc.rst", category="00 quality report"), 
+    raw_multi_html = report(OUTPUTDIR + "00_fastqc/raw_multiqc.html", caption = REPORT + "multiqc.rst", category="00 quality report"), 
   params:
     multiqc_output_raw = OUTPUTDIR + "00_fastqc/raw_multiqc_data"
   conda:

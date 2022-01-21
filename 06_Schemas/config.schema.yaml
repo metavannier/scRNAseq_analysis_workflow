@@ -87,8 +87,6 @@ properties:
         type: integer
       dims:
         type: integer
-      expclust:
-        type: integer
       cluster_ids:
         type: string
     required:
@@ -104,11 +102,19 @@ properties:
       - nfeatures
       - nHVG
       - dims
-      - expclust
   diffexp:
     type: object
     properties:
       features:
         type: string
+      cell_marker:
+        type: string
+      test:
+        type: string
+      threshold:
+        type: integer
     required:
       - features
+      - cell_marker
+      - test
+      - threshold

@@ -18,41 +18,81 @@ SCRIPTDIR = srcdir("03_Script/")
 ENVDIR = srcdir("04_Workflow/")
 OUTPUTDIR = srcdir("05_Output/")
 REPORT = srcdir("07_Report/")
+BENCHMARK = srcdir("08_benchmark/")
+LOG = srcdir("09_log/")
+
+NUM = config["sample"]["pair"].split(',')
+
+## Get the column name of the metadata file
+fastq = pd.read_table(config["metadata"]).set_index(["fastq"], drop=False)
+FASTQ = expand("{fastq.fastq}_{num}_001", fastq=fastq.itertuples(), num=NUM)
 
 # Use glob statement to find all samples in 'raw_data' directory
 ## Wildcard '{num}' must be equivalent to 'R1' or '1', meaning the read pair designation.
-SAMPLE_LIST,NUMS = glob_wildcards(RAWDATA + "/{sample}_L001_{num}_001.fastq")
-# # Unique the output variables from glob_wildcards
-SAMPLE_SET = set(SAMPLE_LIST)
-SET_NUMS = set(NUMS)
+#SAMPLE_LIST,NUMS = glob_wildcards(RAWDATA + "/{sample}_L001_{num}_001.fastq")
+#RUN = glob_wildcards(RAWDATA + "/{run}")
 
-SAMPLE = config["sample"]["sname"]
+# # Unique the output variables from glob_wildcards
+# SAMPLE_SET = set(SAMPLE_LIST)
+# SET_NUMS = set(NUMS)
+#SET_RUN = set(RUN)
+SAMPLE = config["sample"]["sname"].split(',')
+NPROJ = config["sample"]["nproject"]
+EXPANSION = config["sample"]["expansion"]
+FEATURES = config["diffexp"]["features"].split(',')
+CELLMARKER = config["diffexp"]["cell_marker"].split(',')
+WT = config["seurat"]["wt"]
+AGRR = config["sample"]["nproject"]
 
 rule all:
   input:
-    # # fastqc
-    # raw_html = expand("{outputdir}00_fastqc/{sample}_L001_{num}_001_fastqc.html", outputdir=OUTPUTDIR, sample=SAMPLE_SET, num=SET_NUMS),
-    # raw_zip = expand("{outputdir}00_fastqc/{sample}_L001_{num}_001_fastqc.zip", outputdir=OUTPUTDIR, sample=SAMPLE_SET, num=SET_NUMS),
+    ### fastqc ###
+    # raw_html = expand("{outputdir}00_fastqc/{fastq}_fastqc.html", outputdir=OUTPUTDIR, fastq=FASTQ),
+    # raw_zip = expand("{outputdir}00_fastqc/{fastq}_fastqc.zip", outputdir=OUTPUTDIR, fastq=FASTQ),
     # raw_multi_html = OUTPUTDIR + "00_fastqc/raw_multiqc.html",    
     # # reference for cellranger
     # out_ref = REF + config["reference"]["ref_cellranger"] + "/fasta/genome.fa",
-    # # Cellranger count
-    # out_cellranger = OUTPUTDIR + "00_cellranger/" + config["sample"]["sname"] + "/outs/web_summary.html",
+    # ## Cellranger count
+    # out_cellranger = expand(OUTPUTDIR + "01_cellranger/{sample}/outs/{sample}_web_summary.html", sample=SAMPLE),
+    ## If you need to aggregate your data
+    # aggrcsv = ROOTDIR + "/aggregation.csv",
+    # out_aggregate = expand(OUTPUTDIR + "01_cellranger/{agrr}/outs/aggregate_web_summary.html", agrr=AGRR),
     ## If demuxiplexing is used
-    # bcf = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf",
-    # demuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
-    # tabdemuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
-    count_matrix = OUTPUTDIR + "01_seurat/" + SAMPLE + "_count_matrix.csv",
-    data_matrix = OUTPUTDIR + "01_seurat/" + SAMPLE + "_data_matrix.csv",
-    scale_data_matrix = OUTPUTDIR + "01_seurat/" + SAMPLE + "_scale_data_matrix.csv",
-    seurat_report = OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_report.html",
-    seurat_object = OUTPUTDIR + "01_seurat/" + SAMPLE + "_seurat_object.rds",
-    violinplot = OUTPUTDIR + "02_diffexp/violin_plot.pdf",
-    umapfeature = OUTPUTDIR + "02_diffexp/umapfeature_plot.pdf",
-    tsnefeature = OUTPUTDIR + "02_diffexp/tsnefeature_plot.pdf",
-    ridgefeature = OUTPUTDIR + "02_diffexp/ridgefeature_plot.pdf",
-    heatmapfeature = OUTPUTDIR + "02_diffexp/heatmapfeature.pdf",
-    diffexp_report = OUTPUTDIR + "02_diffexp/" + SAMPLE + "_diffexp_report.html",
+    # bcf = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf",
+    # demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
+    # tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
+    ## Seurat
+    # count_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_count_matrix.csv",
+    # data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_data_matrix.csv",
+    # scale_data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_scale_data_matrix.csv",
+    # seurat_report = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_report.html",
+    # seurat_object = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_object.rds",
+    ### Differential expression analyses
+    violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
+    umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
+    tsnefeature = expand(OUTPUTDIR + "03_diffexp/tsne_plot/{features}_tsnefeature_plot.pdf", features=FEATURES),
+    ridgefeature = expand(OUTPUTDIR + "03_diffexp/ridge_plot/{features}_ridgefeature_plot.pdf", features=FEATURES),
+    heatmapfeature = OUTPUTDIR + "03_diffexp/heatmap/heatmapfeature.pdf",
+    diffexp_report = OUTPUTDIR + "03_diffexp/" + NPROJ + "_diffexp_report.html",
+    defile_allcells = expand(OUTPUTDIR + "03_diffexp/differential_expression_features/{wt}_vs_AllCellMarker_DE.csv", wt=WT),
+    defile = expand(OUTPUTDIR + "03_diffexp/differential_expression_features/{wt}_vs_{cellmarker}_DE.csv", wt=WT, cellmarker=CELLMARKER),
+    volcano_allcluster = expand(OUTPUTDIR + "03_diffexp/volcanoplot/volcano_{wt}_vs_AllCellMarker.pdf", wt=WT),
+    volcano = expand(OUTPUTDIR + "03_diffexp/volcanoplot/volcano_{wt}_vs_{cellmarker}.pdf", wt=WT, cellmarker=CELLMARKER),
+    sign_up_allcell = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_AllCellMarker_signif-up-regulated.txt", wt=WT),
+    sign_up = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_{cellmarker}_signif-up-regulated.txt", wt=WT, cellmarker=CELLMARKER),
+    sign_down_allcell = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_AllCellMarker_signif-down-regulated.txt", wt=WT),
+    sign_down = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_{cellmarker}_signif-down-regulated.txt", wt=WT, cellmarker=CELLMARKER),
+    ### Compress result files and figures ###
+    # data_matrix_tar = OUTPUTDIR + "02_seurat/data_matrix.tar.gz",
+    # violinplot_tar = OUTPUTDIR + "03_diffexp/violin_plot.tar.gz",
+    # umapfeature_tar = OUTPUTDIR + "03_diffexp/umapfeature_plot.tar.gz",
+    # tsnefeature_tar = OUTPUTDIR + "03_diffexp/tsnefeature_plot.tar.gz",
+    # ridgefeature_tar = OUTPUTDIR + "03_diffexp/ridgefeature_plot.tar.gz",
+    # heatmapfeature_tar = OUTPUTDIR + "03_diffexp/heatmapfeature.tar.gz",
+    # defile_tar = OUTPUTDIR + "03_diffexp/differencial_expression_tests.tar.gz",
+    # volcano_tar = OUTPUTDIR + "03_diffexp/volcano_plot.tar.gz",
+    # sign_up_tar = OUTPUTDIR + "03_diffexp/up_regulated_genes_list.tar.gz",
+    # sign_down_tar = OUTPUTDIR + "03_diffexp/down_regulated_genes_list.tar.gz",
 
 # ----------------------------------------------
 # Impose rule order for the execution of the workflow 
@@ -69,4 +109,4 @@ include: ENVDIR + "cellranger.smk"
 #include: ENVDIR + "demuxlet.smk"
 include: ENVDIR + "seurat.smk"
 include: ENVDIR + "diffexp.smk"
-
+include: ENVDIR + "report.smk"

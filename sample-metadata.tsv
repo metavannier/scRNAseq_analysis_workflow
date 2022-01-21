@@ -1,5 +1,7 @@
-run-id	sample-name	fastq-id
-SRR9699431	Mix_MM_lines	Mix_MM_lines_S1_L001_R1_001.fastq
-SRR9699432	Mix_MM_lines	Mix_MM_lines_S1_L001_R2_001.fastq
-SRR9699433	Mix_MM_lines	Mix_MM_lines_S2_R1_001.fastq
-SRR9699434	Mix_MM_lines	Mix_MM_lines_S2_R2_001.fastq
+run-id	sample-name	fastq
+SRR12837065	PDX_M12	M12_S2_L004
+SRR12837066	PDX_M15	M15_S4_L004
+SRR12837067	PDX_M27	M27_S3_L004
+SRR12837068	Normal_human_melanocytes	Normal_Melanocytes_S1_L004
+SRP215051	Mix_MM_lines	Mix_MM_lines_S1_L001
+SRP215051	Mix_MM_lines	Mix_MM_lines_S2_L001

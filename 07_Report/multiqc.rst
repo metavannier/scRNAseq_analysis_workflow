@@ -1,1 +1,1 @@
-Quality report generated from the result of fastqc on the the raw data .
+Quality report generated from the result of fastqc on the the raw data.

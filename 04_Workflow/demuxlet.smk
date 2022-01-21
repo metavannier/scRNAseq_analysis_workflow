@@ -1,9 +1,9 @@
 rule bcf:
     input:
         ref = REF + config["reference"]["ref_cellranger"] + "/fasta/genome.fa",
-        bam = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/possorted_genome_bam.bam"
+        bam = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/possorted_genome_bam.bam"
     output:
-        bcf = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf"
+        bcf = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf"
     conda:
         CONTAINER + "demuxlet.yaml"
     message: 
@@ -15,10 +15,10 @@ rule bcf:
 
 rule demuxlet:
     input:
-        bam = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/possorted_genome_bam.bam",
-        demuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf"
+        bam = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/possorted_genome_bam.bam",
+        demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf"
     output:
-        demuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines"
+        demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines"
     conda:
         CONTAINER + "demuxlet.yaml"
     params:
@@ -37,10 +37,10 @@ rule demuxlet:
 
 # rule assignement:
 #     input:
-#         tsne = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/analysis/tsne/2_components/projection.csv",
-#         demuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best"
+#         tsne = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/analysis/tsne/2_components/projection.csv",
+#         demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best"
 #     output:
-#         tabdemuxlet = OUTPUTDIR + "00_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv"
+#         tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv"
 #     conda:
 #         CONTAINER + "demuxlet.yaml"
 #     message: 

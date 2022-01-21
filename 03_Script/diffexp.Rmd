@@ -30,6 +30,7 @@ library(sctransform)
 library(glmGamPoi)
 library(ggplot2)
 library(data.table)
+library(EnhancedVolcano)
 ```
 [//]: # "Load the various chunks in the various files"
 ```{r readChunks, echo=FALSE, warning=FALSE, message=FALSE}
@@ -38,32 +39,57 @@ read_chunk( path=file.path( SCRIPTDIR, "diffexp.R"))
 
 ## Expression of the marker genes
 
+We remove NFAT2C and PAX5 from the analyse because they are not in the count matrix. Maybe they have an other name or they don't pass the filter (present in x cells etc...).
+
+You can find all these figures (Each marker gene is represented separately from the others) in pdf format on the global report. 
+
 ### Expression probability distributions across clusters
 
-```{r violin, echo=FALSE, fig.width=8, fig.height=9, results = "asis", message=FALSE}
+```{r violin, echo=FALSE, fig.width=8, fig.height=9, results = "asis", message=FALSE, eval = TRUE}
 <<violin>>
 ```
 
 ### Feature expression on a UMAP reduction plot
 
-```{r umapfeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE}
+```{r umapfeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE, eval = TRUE}
 <<umapfeature>>
 ```
 
 ### Feature expression on a tsne reduction plot
 
-```{r tsnefeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE}
+```{r tsnefeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE, eval = TRUE}
 <<tsnefeature>>
 ```
 
 ### Feature expression on a ridge plot
 
-```{r ridgefeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE}
+```{r ridgefeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE, eval = TRUE}
 <<ridgefeature>>
 ```
 
 ### Heatmap expression
 
-```{r heatmapfeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE}
+```{r heatmapfeature, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE, eval = TRUE}
 <<heatmapfeature>>
+```
+
+### Perform differential expression tests
+
+Differential expression based on the non-parametric Wilcoxon rank sum test.
+DE testing is not performed on corrected data but on measured data (as recommended)
+
+```{r testdiffexp, echo=FALSE, results = "asis", message=FALSE, eval = TRUE}
+<<testdiffexp>>
+```
+
+### Volcano plot
+
+```{r volcano, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE, eval = TRUE}
+<<volcano>>
+```
+
+## Session Info
+
+```{r info, echo=FALSE, message=FALSE, eval = TRUE}
+<<info>>
 ```

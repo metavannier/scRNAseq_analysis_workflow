@@ -1,0 +1,1 @@
+The bulk of Seurat’s differential expression features results. As a default, Seurat performs differential expression based on the non-parametric Wilcoxon rank sum test but it can be performed also by bimod, roc, t, negbinom, poisson, LR, MAST or DESeq2

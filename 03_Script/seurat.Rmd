@@ -32,6 +32,7 @@ library(ggplot2)
 library(data.table)
 library(devtools)
 library(sessioninfo)
+library(dittoSeq)
 ```
 
 [//]: # "Load the various chunks in the various files"
@@ -39,15 +40,27 @@ library(sessioninfo)
 read_chunk( path=file.path( SCRIPTDIR, "assignment.R"))
 read_chunk( path=file.path( SCRIPTDIR, "seurat.R"))
 ```
-This report reproduced the analyses from the [Guided Clustering Tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) of Seurat.
+This report present the analyse of two dataset generated with 10x Genomics Single Cell Protocol:
 
-# QC and selecting cells for further analysis of the BioProject `r snakemake@params[["biop"]]`
+- Wouters et al., 2019:  scRNA-seq on nine patient-derived 2D melanoma cultures (MM lines), as well as the A375 melanoma cell line. 
+
+  3 Melanocyte-like (MM001, MM011, MM031 -> SOX10-high melanocyte-like state)
+
+  3 Intermediate (MM074, MM087, MM057 -> NFAT2C)
+
+  3 mesenchymal-like (MM029, MM047, MM099 -> SOX9-high mesenchymal-like state)
+
+  A375 melanoma cell line.
+
+- Pietrobono et al., 2019: Four cell types were used for single-cell RNA sequencing. Normal human neonatal epidermal melanocytes. Melanoma patient-derived xenograft lines M12, M15, and M27.
+
+# QC and selecting cells for further analysis of the Projects `r snakemake@params[["biop"]]`
 
 ## Visualize QC metrics as a violin plot and FeatureScatter
 
 We visualize QC metrics, and use these to filter cells.
 
-- We filter cells that have unique feature counts over `r snakemake@params[["maxFeature_RNA"]]`  or less than `r snakemake@params[["minFeature_RNA"]]`
+- We filter cells that have unique feature counts over `r snakemake@params[["maxFeature_RNA"]]` or less than `r snakemake@params[["minFeature_RNA"]]`
 
 - We filter cells that have >`r snakemake@params[["percent_mt"]]`% mitochondrial counts.
 
@@ -57,7 +70,8 @@ We visualize QC metrics, and use these to filter cells.
 
 ## Normalizing the data
 
-After removing unwanted cells from the dataset we normalizes the feature expression measurements for each cell using the `r snakemake@params[["normwf"]]` normalization workflow.
+After removing unwanted cells from the dataset we normalize the feature expression measurements for each cell (and correct the batch effect using the Seurat integration procedure if necessary) with `r snakemake@params[["normwf"]]`
+We apply a linear transformation (‘scaling’) that is a standard pre-processing step prior to dimensional reduction techniques like PCA. If SCTransform is performed, it's not necessary to scale the data after it.
 
 ## Identification of highly variable features
 
@@ -66,10 +80,6 @@ Subset of features that exhibit high cell-to-cell variation in the dataset
 ```{r hvf, echo=FALSE,fig.height=10,fig.width=8,out.height=600,out.width=450, results = "asis", message=FALSE, warning=FALSE}
 <<hvf>>
 ```
-
-## Scaling the data
-
-We apply a linear transformation (‘scaling’) that is a standard pre-processing step prior to dimensional reduction techniques like PCA.
 
 ## Perform linear dimensional reduction
 
@@ -94,10 +104,10 @@ A ranking of principle components based on the percentage of variance explained 
 ## Cluster the cells
 
 We use a graph-based clustering approach :
-1. Construct a KNN graph based on the euclidean distance in PCA space, and refine the edge weights between any two cells based on the shared overlap in their local neighborhoods (Jaccard similarity).
+1. Construct a KNN graph based on the euclidian distance in PCA space, and refine the edge weights between any two cells based on the shared overlap in their local neighborhoods (Jaccard similarity).
 2. Modularity optimization techniques such as the Louvain algorithm or SLM, to iteratively group cells together, with the goal of optimizing the standard modularity function. 
 
-```{r cluster, echo=FALSE, fig.height=10, fig.width=10, out.height=600, out.width=600, results = "asis", message=FALSE}
+```{r cluster, echo=FALSE, fig.height=10, fig.width=10, out.height=600, out.width=600, results = "asis", message=FALSE, eval = TRUE}
 <<cluster>>
 ```
 
@@ -105,7 +115,7 @@ We use a graph-based clustering approach :
 
 UMAP to visualize and explore these datasets.
 
-```{r umap, echo=FALSE, fig.height=10, fig.width=10, out.height=600, out.width=600, results = "asis", message=FALSE}
+```{r umap, echo=FALSE, fig.height=10, fig.width=10, out.height=600, out.width=600, results = "asis", message=FALSE, warning=FALSE, eval = TRUE}
 <<umap>>
 ```
 
@@ -113,12 +123,12 @@ UMAP to visualize and explore these datasets.
 
 Count, expression and normalized matrice can be found in the snakemake report
 
-```{r datasave, echo=FALSE, message=FALSE}
+```{r datasave, echo=FALSE, message=FALSE, eval = TRUE}
 <<datasave>>
 ```
 
 ## Session Info
 
-```{r info, echo=FALSE, message=FALSE}
+```{r info, echo=FALSE, message=FALSE, eval = TRUE}
 <<info>>
 ```

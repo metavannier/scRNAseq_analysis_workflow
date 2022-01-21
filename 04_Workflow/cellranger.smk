@@ -1,3 +1,7 @@
+SAMPLES = config["sample"]["sname"].split(',')
+AGRR = config["cellranger"]["sagrr"].split(',')
+NPROJECT = config["sample"]["nproject"]
+
 ##########################
 # Count with cellranger  #
 ##########################
@@ -24,21 +28,69 @@ rule cellranger:
         ref_cellranger = REF + config["reference"]["ref_cellranger"] + "/",
         fastqs = config["cellranger"]["fastqs"]
     output:
-        out_cellranger = report(OUTPUTDIR + "00_cellranger/" + config["sample"]["sname"] + "/outs/web_summary.html", caption = ROOTDIR + REPORT + "cellranger_summary.rst", category="01 cell ranger"),
+        out_cellranger = report(expand(OUTPUTDIR + "01_cellranger/{samples}/outs/{samples}_web_summary.html", samples=SAMPLES), caption = REPORT + "cellranger_summary.rst", category="01 cell ranger"),
+    params:
+        samples = config["sample"]["sname"].split(','),
     singularity:
         CONTAINER + "cellranger.sif"
     message: 
         "Counting with cellranger"
     shell:
         """
-        cellranger count \
-        --id={config[sample][sname]} \
+        sample=({params.samples})
+        len=${{#sample[@]}}
+        for (( i=0; i<$len; i=i+1 ))
+        do cellranger count \
+        --id=${{sample[$i]}} \
         --expect-cells={config[cellranger][cells]} \
         --fastqs={input.fastqs} \
-        --sample={config[sample][sname]} \
+        --sample=${{sample[$i]}} \
         --transcriptome={input.ref_cellranger} \
         --jobmode=local \
         --localcores={config[cellranger][localcores]} \
         --localmem={config[cellranger][localmem]}
-        mv {config[sample][sname]}/* 05_Output/00_cellranger/{config[sample][sname]}/
+        mv ${{sample[$i]}}/* 05_Output/01_cellranger/${{sample[$i]}}/
+        rm -r ${{sample[$i]}}/
+        mv 05_Output/01_cellranger/${{sample[$i]}}/outs/web_summary.html 05_Output/01_cellranger/${{sample[$i]}}/outs/${{sample[$i]}}_web_summary.html/
+        done
+        """
+
+rule cellrangeraggr:
+    input:
+        out_cellranger = expand(OUTPUTDIR + "01_cellranger/{samples}/outs/{samples}_web_summary.html", samples=SAMPLES),
+    output:
+        aggrcsv = ROOTDIR + "/aggregation.csv",
+        out_aggregate = report(expand(OUTPUTDIR + "01_cellranger/" + NPROJECT + "/outs/aggregate_web_summary.html"), caption = REPORT + "cellranger_summary.rst", category="01 cell ranger"),
+    params:
+        samples = config["cellranger"]["sagrr"].split(','),
+        batch = config["cellranger"]["batch"].split(','),
+        categorie = config["cellranger"]["categorie"].split(','),
+        outfolder = config["sample"]["nproject"],
+        normagrr = config["cellranger"]["normagrr"],
+        outaggr = OUTPUTDIR + "01_cellranger/"
+    singularity:
+        CONTAINER + "cellranger.sif"
+    message: 
+        "Aggregate with cellranger"
+    shell:
+        """
+        sample=({params.samples})
+        batch=({params.batch})
+        categorie=({params.categorie})
+        aggrcsv=({output.aggrcsv})
+        outfolder=({params.outfolder})
+        normagrr=({params.normagrr})
+        outaggr=({params.outaggr})
+        echo "sample_id,molecule_h5,batch,statut" >> ${{aggrcsv}}
+        len=${{#sample[@]}}
+        for (( i=0; i<$len; i=i+1 ))
+        do echo "${{sample[$i]}},05_Output/01_cellranger/${{sample[$i]}}/outs/molecule_info.h5,${{batch[$i]}},${{categorie[$i]}}" >> ${{aggrcsv}}
+        done
+        cellranger aggr \
+        --id=${{outfolder}} \
+        --csv=${{aggrcsv}} \
+        --normalize=${{normagrr}}
+        mv ${{outfolder}}/outs/count/* ${{outaggr}}${{outfolder}}/outs/
+        mv ${{outfolder}}/outs/web_summary.html ${{outaggr}}/${{outfolder}}/outs/aggregate_web_summary.html
+        rm -r ${{outfolder}}
         """

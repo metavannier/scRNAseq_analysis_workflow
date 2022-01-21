@@ -1,8 +1,8 @@
 rule archive_report:
     input:
-        count_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_count_matrix.csv",
-        data_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_data_matrix.csv",
-        scale_data_matrix = OUTPUTDIR + "02_seurat/" + NPROJ + "_scale_data_matrix.csv",
+        count_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_count_matrix.csv",
+        data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_data_matrix.csv",
+        scale_data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_scale_data_matrix.csv",
         violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
         umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
         tsnefeature = expand(OUTPUTDIR + "03_diffexp/tsne_plot/{features}_tsnefeature_plot.pdf", features=FEATURES),
@@ -35,24 +35,22 @@ rule archive_report:
         """
         outputdir=({params.outputdir})
         cd ${{outputdir}}02_seurat/
-        tar -czvf data_matrix.tar.gz -C ${{outputdir}}02_seurat/data_matrix
+        tar -czvf data_matrix.tar.gz -C ${{outputdir}}02_seurat/ data_matrix
         cd ${{outputdir}}03_diffexp/
         tar -czvf violin_plot.tar.gz -C ${{outputdir}}03_diffexp/ violin_plot
-        rm -r ${{outputdir}}03_diffexp/violin_plot
         tar -czvf umapfeature_plot.tar.gz -C ${{outputdir}}03_diffexp/ umap_plot
-        rm -r ${{outputdir}}03_diffexp/umap_plot
         tar -czvf tsnefeature_plot.tar.gz -C ${{outputdir}}03_diffexp/ tsne_plot
-        rm -r ${{outputdir}}03_diffexp/tsne_plot
         tar -czvf ridgefeature_plot.tar.gz -C ${{outputdir}}03_diffexp/ ridge_plot
-        rm -r ${{outputdir}}03_diffexp/ridge_plot
         tar -czvf heatmapfeature.tar.gz -C ${{outputdir}}03_diffexp/ heatmap
-        rm -r ${{outputdir}}03_diffexp/heatmap
         tar -czvf differencial_expression_tests.tar.gz -C ${{outputdir}}03_diffexp/ differential_expression_features
-        rm -r ${{outputdir}}03_diffexp/differential_expression_features
         tar -czvf volcano_plot.tar.gz -C ${{outputdir}}03_diffexp/ volcanoplot
+        tar -czvf up_down_regulated_genes_list.tar.gz -C ${{outputdir}}03_diffexp/ de_significant
+        rm -r ${{outputdir}}03_diffexp/violin_plot
+        rm -r ${{outputdir}}03_diffexp/umap_plot
+        rm -r ${{outputdir}}03_diffexp/tsne_plot
+        rm -r ${{outputdir}}03_diffexp/ridge_plot
+        rm -r ${{outputdir}}03_diffexp/heatmap
+        rm -r ${{outputdir}}03_diffexp/differential_expression_features
         rm -r ${{outputdir}}03_diffexp/volcanoplot
-        tar -czvf up_regulated_genes_list.tar.gz -C ${{outputdir}}03_diffexp/ de_significant
-        rm -r ${{outputdir}}03_diffexp/de_significant
-        tar -czvf down_regulated_genes_list.tar.gz -C ${{outputdir}}03_diffexp/ de_significant
         rm -r ${{outputdir}}03_diffexp/de_significant
         """

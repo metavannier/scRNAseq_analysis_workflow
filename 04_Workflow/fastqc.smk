@@ -26,6 +26,10 @@ rule multiqc:
     multiqc_output_raw = OUTPUTDIR + "00_fastqc/raw_multiqc_data"
   conda:
     CONTAINER + "multiqc.yaml"
+  benchmark:
+    BENCHMARK + "multiqc.benchmark.txt"
+  log:
+    LOG + "multiqc.log"
   message: 
     "Synthetize quality with multiqc"
   shell: 

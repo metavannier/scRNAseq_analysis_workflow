@@ -18,10 +18,14 @@ SCRIPTDIR = srcdir("03_Script/")
 ENVDIR = srcdir("04_Workflow/")
 OUTPUTDIR = srcdir("05_Output/")
 REPORT = srcdir("07_Report/")
+BENCHMARK = srcdir("08_benchmark/")
+LOG = srcdir("09_log/")
+
+NUM = config["sample"]["pair"].split(',')
 
 ## Get the column name of the metadata file
 fastq = pd.read_table(config["metadata"]).set_index(["fastq"], drop=False)
-FASTQ = expand("{fastq.fastq}", fastq=fastq.itertuples())
+FASTQ = expand("{fastq.fastq}_{num}_001", fastq=fastq.itertuples(), num=NUM)
 
 # Use glob statement to find all samples in 'raw_data' directory
 ## Wildcard '{num}' must be equivalent to 'R1' or '1', meaning the read pair designation.
@@ -38,10 +42,11 @@ EXPANSION = config["sample"]["expansion"]
 FEATURES = config["diffexp"]["features"].split(',')
 CELLMARKER = config["diffexp"]["cell_marker"].split(',')
 WT = config["seurat"]["wt"]
+AGRR = config["sample"]["nproject"]
 
 rule all:
   input:
-    # # fastqc
+    ### fastqc ###
     # raw_html = expand("{outputdir}00_fastqc/{fastq}_fastqc.html", outputdir=OUTPUTDIR, fastq=FASTQ),
     # raw_zip = expand("{outputdir}00_fastqc/{fastq}_fastqc.zip", outputdir=OUTPUTDIR, fastq=FASTQ),
     # raw_multi_html = OUTPUTDIR + "00_fastqc/raw_multiqc.html",    
@@ -51,6 +56,7 @@ rule all:
     # out_cellranger = expand(OUTPUTDIR + "01_cellranger/{sample}/outs/{sample}_web_summary.html", sample=SAMPLE),
     ## If you need to aggregate your data
     # aggrcsv = ROOTDIR + "/aggregation.csv",
+    # out_aggregate = expand(OUTPUTDIR + "01_cellranger/{agrr}/outs/aggregate_web_summary.html", agrr=AGRR),
     ## If demuxiplexing is used
     # bcf = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf",
     # demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
@@ -61,6 +67,7 @@ rule all:
     # scale_data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_scale_data_matrix.csv",
     # seurat_report = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_report.html",
     # seurat_object = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_object.rds",
+    ### Differential expression analyses
     violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
     umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
     tsnefeature = expand(OUTPUTDIR + "03_diffexp/tsne_plot/{features}_tsnefeature_plot.pdf", features=FEATURES),
@@ -75,16 +82,17 @@ rule all:
     sign_up = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_{cellmarker}_signif-up-regulated.txt", wt=WT, cellmarker=CELLMARKER),
     sign_down_allcell = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_AllCellMarker_signif-down-regulated.txt", wt=WT),
     sign_down = expand(OUTPUTDIR + "03_diffexp/de_significant/{wt}_vs_{cellmarker}_signif-down-regulated.txt", wt=WT, cellmarker=CELLMARKER),
-    data_matrix_tar = OUTPUTDIR + "02_seurat/data_matrix.tar.gz",
-    violinplot_tar = OUTPUTDIR + "03_diffexp/violin_plot.tar.gz",
-    umapfeature_tar = OUTPUTDIR + "03_diffexp/umapfeature_plot.tar.gz",
-    tsnefeature_tar = OUTPUTDIR + "03_diffexp/tsnefeature_plot.tar.gz",
-    ridgefeature_tar = OUTPUTDIR + "03_diffexp/ridgefeature_plot.tar.gz",
-    heatmapfeature_tar = OUTPUTDIR + "03_diffexp/heatmapfeature.tar.gz",
-    defile_tar = OUTPUTDIR + "03_diffexp/differencial_expression_tests.tar.gz",
-    volcano_tar = OUTPUTDIR + "03_diffexp/volcano_plot.tar.gz",
-    sign_up_tar = OUTPUTDIR + "03_diffexp/up_regulated_genes_list.tar.gz",
-    sign_down_tar = OUTPUTDIR + "03_diffexp/down_regulated_genes_list.tar.gz",
+    ### Compress result files and figures ###
+    # data_matrix_tar = OUTPUTDIR + "02_seurat/data_matrix.tar.gz",
+    # violinplot_tar = OUTPUTDIR + "03_diffexp/violin_plot.tar.gz",
+    # umapfeature_tar = OUTPUTDIR + "03_diffexp/umapfeature_plot.tar.gz",
+    # tsnefeature_tar = OUTPUTDIR + "03_diffexp/tsnefeature_plot.tar.gz",
+    # ridgefeature_tar = OUTPUTDIR + "03_diffexp/ridgefeature_plot.tar.gz",
+    # heatmapfeature_tar = OUTPUTDIR + "03_diffexp/heatmapfeature.tar.gz",
+    # defile_tar = OUTPUTDIR + "03_diffexp/differencial_expression_tests.tar.gz",
+    # volcano_tar = OUTPUTDIR + "03_diffexp/volcano_plot.tar.gz",
+    # sign_up_tar = OUTPUTDIR + "03_diffexp/up_regulated_genes_list.tar.gz",
+    # sign_down_tar = OUTPUTDIR + "03_diffexp/down_regulated_genes_list.tar.gz",
 
 # ----------------------------------------------
 # Impose rule order for the execution of the workflow 

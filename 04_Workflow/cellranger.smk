@@ -1,5 +1,6 @@
 SAMPLES = config["sample"]["sname"].split(',')
 AGRR = config["cellranger"]["sagrr"].split(',')
+NPROJECT = config["sample"]["nproject"]
 
 ##########################
 # Count with cellranger  #
@@ -56,9 +57,10 @@ rule cellranger:
 
 rule cellrangeraggr:
     input:
-        out_cellranger = expand(OUTPUTDIR + "01_cellranger/{agrr}/outs/{samples}_web_summary.html", agrr=AGRR, samples=SAMPLES),
+        out_cellranger = expand(OUTPUTDIR + "01_cellranger/{samples}/outs/{samples}_web_summary.html", samples=SAMPLES),
     output:
         aggrcsv = ROOTDIR + "/aggregation.csv",
+        out_aggregate = report(expand(OUTPUTDIR + "01_cellranger/" + NPROJECT + "/outs/aggregate_web_summary.html"), caption = REPORT + "cellranger_summary.rst", category="01 cell ranger"),
     params:
         samples = config["cellranger"]["sagrr"].split(','),
         batch = config["cellranger"]["batch"].split(','),
@@ -88,9 +90,7 @@ rule cellrangeraggr:
         --id=${{outfolder}} \
         --csv=${{aggrcsv}} \
         --normalize=${{normagrr}}
-        mkdir ${{outaggr}}${{outfolder}}
-        mkdir ${{outaggr}}${{outfolder}}/outs
         mv ${{outfolder}}/outs/count/* ${{outaggr}}${{outfolder}}/outs/
-        mv ${{outfolder}}/outs/web_summary.html ${{outaggr}}/${{outfolder}}/outs/web_summary.html
+        mv ${{outfolder}}/outs/web_summary.html ${{outaggr}}/${{outfolder}}/outs/aggregate_web_summary.html
         rm -r ${{outfolder}}
         """

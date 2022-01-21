@@ -165,7 +165,7 @@ DimHeatmap(obj_seurat, dims = 1:DIMS, cells = 500, balanced = TRUE)
 ElbowPlot(obj_seurat)
 
 ## @knitr cluster
-### We already have the cluster for this analyse
+### We already have the cluster for this analyse but need to be improve to find cell cluster if necessary
 obj_seurat <- RunPCA(obj_seurat, features = VariableFeatures(object = obj_seurat))
 # obj_seurat <- FindNeighbors(obj_seurat, dims = 1:DIMS, verbose = FALSE)
 # obj_seurat <- FindClusters(obj_seurat, resolution = RESOLUTION, verbose = FALSE)

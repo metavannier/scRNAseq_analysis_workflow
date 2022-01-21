@@ -5,6 +5,8 @@ metadata: sample-metadata.tsv
 sample:
     # Expension of fastq file
     expansion: "fastq"
+    # pair-end or not (R1,R2 or 1,2 etc...)
+    pair: "R1,R2"
     # Bioproject
     biop: "SRP215051_SRP287614"
     # Sequence Read Archive (SRA)

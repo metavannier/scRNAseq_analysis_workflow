@@ -60,7 +60,7 @@ This report present the analyse of two dataset generated with 10x Genomics Singl
 
 We visualize QC metrics, and use these to filter cells.
 
-- We filter cells that have unique feature counts over `r snakemake@params[["maxFeature_RNA"]]`  or less than `r snakemake@params[["minFeature_RNA"]]`
+- We filter cells that have unique feature counts over `r snakemake@params[["maxFeature_RNA"]]` or less than `r snakemake@params[["minFeature_RNA"]]`
 
 - We filter cells that have >`r snakemake@params[["percent_mt"]]`% mitochondrial counts.
 
@@ -71,7 +71,7 @@ We visualize QC metrics, and use these to filter cells.
 ## Normalizing the data
 
 After removing unwanted cells from the dataset we normalize the feature expression measurements for each cell (and correct the batch effect using the Seurat integration procedure if necessary) with `r snakemake@params[["normwf"]]`
-We apply a linear transformation (‘scaling’) that is a standard pre-processing step prior to dimensional reduction techniques like PCA.
+We apply a linear transformation (‘scaling’) that is a standard pre-processing step prior to dimensional reduction techniques like PCA. If SCTransform is performed, it's not necessary to scale the data after it.
 
 ## Identification of highly variable features
 
@@ -104,7 +104,7 @@ A ranking of principle components based on the percentage of variance explained 
 ## Cluster the cells
 
 We use a graph-based clustering approach :
-1. Construct a KNN graph based on the euclidean distance in PCA space, and refine the edge weights between any two cells based on the shared overlap in their local neighborhoods (Jaccard similarity).
+1. Construct a KNN graph based on the euclidian distance in PCA space, and refine the edge weights between any two cells based on the shared overlap in their local neighborhoods (Jaccard similarity).
 2. Modularity optimization techniques such as the Louvain algorithm or SLM, to iteratively group cells together, with the goal of optimizing the standard modularity function. 
 
 ```{r cluster, echo=FALSE, fig.height=10, fig.width=10, out.height=600, out.width=600, results = "asis", message=FALSE, eval = TRUE}

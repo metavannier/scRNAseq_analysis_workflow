@@ -8,7 +8,7 @@ Thomas Vannier (@metavannier), https://centuri-livingsystems.org/t-vannier/
 
 ## About
 
-This workflow performs a Snakemake pipeline to process 10x single-cell RNAseq data from fastq files to the differential expression marker-gene analysis.
+This workflow performs a Snakemake pipeline to process 10x single-cell RNAseq data from fastq files to the analysis of the differential expression of marker-genes.
 Correction for technical differences between datasets can be included (i.e. batch effect correction) with the integration method during the sctransform process in Seurat to perform comparative scRNA-seq analysis across experimental conditions.
 
 ## Usage

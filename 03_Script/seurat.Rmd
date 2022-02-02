@@ -60,7 +60,7 @@ This report present the analyse of two dataset generated with 10x Genomics Singl
 
 We visualize QC metrics, and use these to filter cells.
 
-- We filter cells that have unique feature counts over `r snakemake@params[["maxFeature_RNA"]]` or less than `r snakemake@params[["minFeature_RNA"]]`
+- We filter cells that have unique feature counts over `r snakemake@params[["maxFeature_RNA"]]` (different number corresponding to the different samples) or less than `r snakemake@params[["minFeature_RNA"]]`
 
 - We filter cells that have >`r snakemake@params[["percent_mt"]]`% mitochondrial counts.
 

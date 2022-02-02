@@ -32,6 +32,11 @@ obj_seurat <- CreateSeuratObject(counts = sc_data, project = NPROJ, min.cells = 
 
 # Rename the sample name of the aggregated Seurat object 
 sample_list = strsplit(SAMPLES, ",")[[1]]
+
+# Max feature selection for seurat. Can be a list corresponding of each cluster
+maxfeaturerna_list = strsplit(MAXFEATURERNA, ",")[[1]]
+maxfeaturerna_list <- as.numeric(unlist(maxfeaturerna_list))
+
 samplename = obj_seurat@meta.data$orig.ident
 
 nameid = rep(sample_list[1],length(samplename))
@@ -72,7 +77,16 @@ plot1 + plot2
 ## Cell filtration
 # Filter genes
 # The gene should be expressed at least 1% of samples
-obj_seurat <- subset(obj_seurat, subset = nFeature_RNA > MINFEATURERNA & nFeature_RNA < MAXFEATURERNA & percent.mt < PERCENTMT)
+for (i in 1:length(sample_list)) {
+    # obj_seurat <- subset(obj_seurat, subset = nFeature_RNA > MINFEATURERNA & nFeature_RNA < MAXFEATURERNA & percent.mt < PERCENTMT, idents = sample_list[i])
+    obj_seurat_subset <- subset(obj_seurat, subset = nFeature_RNA > MINFEATURERNA & nFeature_RNA < maxfeaturerna_list[i] & percent.mt < PERCENTMT & orig.ident == sample_list[i])
+    if (i > 1){
+        obj_seurat_all_cluster <- merge(x = obj_seurat_all_cluster, y = obj_seurat_subset)
+    }else{
+        obj_seurat_all_cluster <- obj_seurat_subset
+    }
+}
+obj_seurat <- obj_seurat_all_cluster
 
 ## @knitr hvf
 

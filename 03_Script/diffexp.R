@@ -156,7 +156,7 @@ for (k in 1:length(de_files)){
     unique(keyvals)
     unique(names(keyvals))
     # Title for the volcanoplot
-    title = paste("Differential expression between", de_name,sep = "")
+    title = paste("Differential expression between ", de_name,sep = "")
     ## Volcanoplot with the adjusted p-value
     volcanoplot_padj <- EnhancedVolcano(rlog_results,
     lab = rownames(rlog_results),

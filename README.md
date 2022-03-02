@@ -8,7 +8,7 @@ Thomas Vannier (@metavannier), https://centuri-livingsystems.org/t-vannier/
 
 ## About
 
-This workflow performs a Snakemake pipeline to process 10x single-cell RNAseq data from fastq files to the differential expression marker-gene analysis.
+This workflow performs a Snakemake pipeline to process 10x single-cell RNAseq data from fastq files to the analysis of the differential expression of marker-genes.
 Correction for technical differences between datasets can be included (i.e. batch effect correction) with the integration method during the sctransform process in Seurat to perform comparative scRNA-seq analysis across experimental conditions.
 
 ## Usage
@@ -38,6 +38,8 @@ Configure the workflow according to your needs via editing the files and reposit
 
 ### Step 3: Execute workflow
 
+#### On your cumputer
+
 - You need [Singularity v3.5.3](https://github.com/hpcng/singularity/blob/master/INSTALL.md#install-golang) installed on your computer or cluster.
 
 - Load snakemake from a docker container and run the workflow from the root by using these commands:
@@ -47,6 +49,14 @@ Configure the workflow according to your needs via editing the files and reposit
 - Then execute the workflow locally via
 
 `snakemake  --use-conda --use-singularity --cores 10`
+
+#### On a cluster
+
+- Write the batch script to run your snakemake
+
+` sbatch sc_rnaseq_slurm_skylake.sh`
+
+singularity exec -H /scratch/tvannier/sc-rnaseq/ docker://snakemake/snakemake:v6.3.0 snakemake --use-conda --use-singularity --cores 12
 
 ### Step 4: Investigate results
 

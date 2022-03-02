@@ -58,7 +58,8 @@ seurat:
     # Filter cells that have unique feature counts less n.
     minFeature_RNA: 200
     # Filter cells that have unique feature counts over n. Value have to be selected via the plot nCount_RNA/nfeature_RNA
-    maxFeature_RNA: 7000
+    # Can be a list of feature counts but MUST be on the same order than [cellranger][sagrr]
+    maxFeature_RNA: "3000,10200,7700,8000,7000"
     # Filter cells that have >20% mitochondrial counts
     percent_mt: 20
     # Normalization workflow used by seurat (for batch effect correction). Can be "SCTransform" (calculates a model of technical noise in scRNA-seq data using ‘regularized negative binomial regression’) or "basictransform" (run NormalizeData, FindVariableFeatures, ScaleData steps).
@@ -88,10 +89,18 @@ diffexp:
     cell_marker: "M12,M15,M27,MM029,A375,MM031,MM057,MM099,MM087,MM001,MM074,MM011,MM047"
     # Test to find differentially expressed genes. Can be wilcox, bimod, roc, t, negbinom, poisson, LR, MAST, DESeq2.
     test: "wilcox"
-    # Threshold to detect the ander or ober expressed genes
+    # Threshold to detect the under or over expressed genes
     threshold: 0.0
     # qvalue threshold
     pCutoff: 0.01
     # Foldchange threshold (not in log base 2)
     FCcutoff: 2
+# Differentially expressed features analyses inside cluster after subset (by gene expression)
+diffexpsubset:
+    # Marker of interest to select cluster of Cells with expression or not of this gene. This gene will be removed for the DE analyses due to is high DE value.
+    marker_gene: "RIPOR2"
+    # If no gene indicated this filter is not performed.
+    genetoremove: ""
+    # Cluster on the seurat object (choose cluster with high number of the marker gene of interest)
+    cluster: "Normal_Melanocytes,M15,M27,A375,MM057,MM087,MM001,MM074"
     

@@ -69,8 +69,6 @@ properties:
         type: integer
       minFeature_RNA:
         type: integer
-      maxFeature_RNA:
-        type: integer
       percent_mt:
         type: integer
       normwf:
@@ -93,7 +91,6 @@ properties:
       - min_cells
       - min_features
       - minFeature_RNA
-      - maxFeature_RNA
       - percent_mt
       - normwf
       - normalization_method

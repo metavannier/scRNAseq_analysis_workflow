@@ -1,0 +1,71 @@
+---
+title: "Single-cell RNAseq analysis of the human melanoma cells | IBDM | Marie-Claire Delfini"
+subtitle: "Seurat | DE analyses inside cluster after a subset on the marker gene expression"
+author:
+- Thomas Vannier | CENTURI Multi-Engineering Platform
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document: 
+    theme: cerulean
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error=TRUE)
+```
+
+```{r loadLibraries, echo=FALSE, warning=FALSE, message=FALSE}
+library(rmarkdown)
+library(tidyverse)
+library(stringr)
+library(tinytex)
+library(knitr)
+library(readr)
+library(dplyr)
+library(Seurat)
+library(patchwork)
+library(sctransform)
+library(glmGamPoi)
+library(ggplot2)
+library(data.table)
+library(EnhancedVolcano)
+```
+[//]: # "Load the various chunks in the various files"
+```{r readChunks, echo=FALSE, warning=FALSE, message=FALSE}
+read_chunk( path=file.path( SCRIPTDIR, "diffexp_subset.R"))
+```
+
+## Differential epression of marker genes inside cluster
+
+We remove NFAT2C and PAX5 from the analyse because they are not in the count matrix. Maybe they have an other name or they don't pass the filter (present in x cells etc...).
+We select cluster of cells with more than 5 cells with an expression of `r snakemake@params[["markergene"]]`. 
+
+### Subset of each cluster
+
+For each cluster we separate the cells in two groups : One group without the expression of `r snakemake@params[["markergene"]]` and one with expression of the `r snakemake@params[["markergene"]]`.
+
+```{r subset, echo=FALSE, results = "asis", message=FALSE, eval = TRUE}
+<<subset>>
+```
+
+### Volcano plot
+
+For each cluster we present differentially expressed genes between `r snakemake@params[["markergene"]]`+ cluster and `r snakemake@params[["markergene"]]`- cluster.
+
+```{r volcano, echo=FALSE, fig.height=16, fig.width=14, out.height=1000, out.width=1000, results = "asis", message=FALSE, eval = TRUE}
+<<volcano>>
+```
+
+### Expression probability distributions across clusters
+
+```{r violin, echo=FALSE, fig.width=8, fig.height=9, results = "asis", message=FALSE, eval = TRUE}
+<<violin>>
+```
+
+## Session Info
+
+```{r info, echo=FALSE, message=FALSE, eval = TRUE}
+<<info>>
+```

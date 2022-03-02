@@ -1,0 +1,6 @@
+sample_id,molecule_h5,batch,statut
+M12,05_Output/01_cellranger/M12/outs/molecule_info.h5,v3_lib,melanoma
+M15,05_Output/01_cellranger/M15/outs/molecule_info.h5,v3_lib,melanoma
+M27,05_Output/01_cellranger/M27/outs/molecule_info.h5,v3_lib,melanoma
+Normal_Melanocytes,05_Output/01_cellranger/Normal_Melanocytes/outs/molecule_info.h5,v3_lib,normal
+Mix_MM_lines,05_Output/01_cellranger/Mix_MM_lines/outs/molecule_info.h5,v3_lib,melanoma

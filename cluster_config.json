@@ -1,0 +1,10 @@
+__default__:
+    job-name: Job_scrna
+    project: a272
+    partition: skylake
+    time: 06:00:00 # time limit for each job
+    nodes-number: 1
+    cores: 32
+    mem-per-cpu: 5000
+    output: ./%N.%x.out
+    error: ./%N.%x.err

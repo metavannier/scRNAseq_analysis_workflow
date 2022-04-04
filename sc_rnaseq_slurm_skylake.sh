@@ -4,7 +4,7 @@
 #SBATCH -N 1
 #SBATCH -n 1
 #SBATCH -A a272
-#SBATCH -t 2:00:00
+#SBATCH -t 00:30:00
 #SBATCH -o ./%N.%x.out
 #SBATCH -e ./%N.%x.err
 
@@ -22,10 +22,15 @@ then
   bash 04_Workflow/create_snakemake_virtualenv.sh
 fi
 
-source snakemake_virtenv/.venv/bin/activate
-pip install snakemake
-pip install manager
+source /scratch/tvannier/sc-rnaseq/snakemake_virtenv/bin/activate
+
+#export PATH=/scratch/tvannier/sc-rnaseq/snakemake_virtenv/condabin:$PATH
+#export LD_LIBRARY_PATH=/scratch/tvannier/sc-rnaseq/snakemake_virtenv/condabin:$LD_LIBRARY_PATH
+
+pip install snakemake==6.3.0
+#pip install manager
 pip install pandas
+#pip install mamba
 
 # move to the working directory
 #cd /scratch/$SLURM_JOB_USER/sc-rnaseq/
@@ -39,6 +44,8 @@ pip install pandas
 snakemake --snakefile Snakefile \
 	--reason \
 	--use-singularity \
+	--use-conda \
+	--conda-frontend conda \
 	--singularity-args="-B /scratch/$SLURM_JOB_USER/sc-rnaseq/" \
 	--jobs 1 \
 	--latency-wait 20 \
@@ -56,4 +63,5 @@ snakemake --snakefile Snakefile \
 		--error {cluster.error}' \
 
 deactivate
+
 

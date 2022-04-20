@@ -1,6 +1,6 @@
-
-
 # Single-Cell RNA-seq Analysis Workflow for 10x GENOMICS data
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6473049.svg)](https://doi.org/10.5281/zenodo.6473049)
 
 ## Author
 

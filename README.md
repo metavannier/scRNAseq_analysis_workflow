@@ -48,7 +48,7 @@ Configure the workflow according to your needs via editing the files and reposit
 
 - You need [Singularity v3.5.3](https://github.com/hpcng/singularity/blob/master/INSTALL.md#install-golang) installed on your computer or cluster.
 
-- Load snakemake from a docker container and run the workflow from the root by using these commands:
+- Load snakemake from a docker container and run the workflow from the working directory by using these commands:
 
 `singularity run docker://snakemake/snakemake:v6.3.0`
 
@@ -58,11 +58,11 @@ Configure the workflow according to your needs via editing the files and reposit
 
 #### On a cluster
 
-- Write the batch script to run your snakemake
+- Write the batch script to run your snakemake from the working directory
 
-` sbatch sc_rnaseq_slurm_skylake.sh`
+It will create a snakemake virtual environment and install the packages needed with pip.
 
-singularity exec -H /scratch/tvannier/sc-rnaseq/ docker://snakemake/snakemake:v6.3.0 snakemake --use-conda --use-singularity --cores 12
+`sbatch sc_rnaseq_slurm_skylake.sh`
 
 ### Step 4: Investigate results
 

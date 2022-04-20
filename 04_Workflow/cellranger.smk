@@ -49,7 +49,7 @@ rule cellranger:
         --jobmode=local \
         --localcores={config[cellranger][localcores]} \
         --localmem={config[cellranger][localmem]}
-        mv ${{sample[$i]}}/out 05_Output/01_cellranger/${{sample[$i]}}/
+        mv ${{sample[$i]}}/outs/* 05_Output/01_cellranger/${{sample[$i]}}/outs/
         rm -r ${{sample[$i]}}/
         mv 05_Output/01_cellranger/${{sample[$i]}}/outs/web_summary.html 05_Output/01_cellranger/${{sample[$i]}}/outs/${{sample[$i]}}_web_summary.html
         done

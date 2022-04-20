@@ -51,7 +51,7 @@ rule cellranger:
         --localmem={config[cellranger][localmem]}
         mv ${{sample[$i]}}/out 05_Output/01_cellranger/${{sample[$i]}}/
         rm -r ${{sample[$i]}}/
-        mv 05_Output/01_cellranger/${{sample[$i]}}/outs/web_summary.html 05_Output/01_cellranger/${{sample[$i]}}/outs/${{sample[$i]}}_web_summary.html/
+        mv 05_Output/01_cellranger/${{sample[$i]}}/outs/web_summary.html 05_Output/01_cellranger/${{sample[$i]}}/outs/${{sample[$i]}}_web_summary.html
         done
         """
 

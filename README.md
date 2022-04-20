@@ -11,6 +11,12 @@ Thomas Vannier (@metavannier), https://centuri-livingsystems.org/t-vannier/
 This workflow performs a Snakemake pipeline to process 10x single-cell RNAseq data from fastq files to the analysis of the differential expression of marker-genes.
 Correction for technical differences between datasets can be included (i.e. batch effect correction) with the integration method during the sctransform process in Seurat to perform comparative scRNA-seq analysis across experimental conditions.
 
+Steps for the analysis:
+- cellranger.smk: Build the reference, count and aggregate with [cellranger v6.0.0](docker://litd/docker-cellranger).
+- seurat.smk: Run [seurat v4.0.3](https://www.cell.com/cell/fulltext/S0092-8674(21)00583-3?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS0092867421005833%3Fshowall%3Dtrue) for the clustering.
+- differential_exp.smk: Differential expression based on the non-parametric Wilcoxon rank sum test. DE testing is performed on measured data.
+- diffexp_subset.smk: Differential expression analyses inside cluster after a subset on the marker gene expression.
+
 ## Usage
 
 You need to install [Singularity](https://github.com/hpcng/singularity/blob/master/INSTALL.md#install-golang) on your computer. This workflow also work in a slurm environment.
@@ -48,7 +54,7 @@ Configure the workflow according to your needs via editing the files and reposit
 
 - Then execute the workflow locally via
 
-`snakemake  --use-conda --use-singularity --cores 10`
+`snakemake --use-conda --use-singularity --cores 10`
 
 #### On a cluster
 

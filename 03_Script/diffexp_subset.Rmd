@@ -37,7 +37,7 @@ library(EnhancedVolcano)
 read_chunk( path=file.path( SCRIPTDIR, "diffexp_subset.R"))
 ```
 
-## Differential epression of marker genes inside cluster
+## Differential expression of marker genes inside cluster
 
 We remove NFAT2C and PAX5 from the analyse because they are not in the count matrix. Maybe they have an other name or they don't pass the filter (present in x cells etc...).
 We select cluster of cells with more than 5 cells with an expression of `r snakemake@params[["markergene"]]`. 

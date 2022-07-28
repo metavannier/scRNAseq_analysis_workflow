@@ -58,11 +58,11 @@ Configure the workflow according to your needs via editing the files and reposit
 
 #### On a cluster
 
-- Write the batch script to run your snakemake from the working directory
+- Adapt the batch scripts run_slurm.sh and cluster_config.json file to run your snakemake from the working directory
 
-It will create a snakemake virtual environment and install the packages needed with pip.
+It will install snakemake with pip and run the workflow in the HPC:
 
-`sbatch sc_rnaseq_slurm_skylake.sh`
+`sbatch run_slurm.sh`
 
 ### Step 4: Investigate results
 

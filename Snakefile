@@ -1,3 +1,6 @@
+# Docker container based on a minimal Ubuntu installation that includes conda-forge's mambaforge installer.
+container: "docker://condaforge/mambaforge"
+
 import pandas as pd
 import numpy as np
 from snakemake.utils import validate, min_version

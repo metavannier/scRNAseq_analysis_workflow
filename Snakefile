@@ -1,6 +1,3 @@
-# Docker container based on a minimal Ubuntu installation that includes conda-forge's mambaforge installer.
-container: "docker://condaforge/mambaforge"
-
 import pandas as pd
 import numpy as np
 from snakemake.utils import validate, min_version
@@ -24,26 +21,44 @@ REPORT = srcdir("07_Report/")
 BENCHMARK = srcdir("08_benchmark/")
 LOG = srcdir("09_log/")
 
-## Configuration information
-SAMPLE = config["sample"]["sname"].split(',')
-NPROJ = config["sample"]["nproject"]
-EXPANSION = config["sample"]["expansion"]
+# # If using conda environment
+container: "docker://condaforge/mambaforge:22.11.1-4"
+
+# ----------------------------------------------
+# Load config and sample sheet
+# ----------------------------------------------
+
+rawsample = pd.read_table(config["sample"]).set_index(["rawsample"], drop=False)
+RAWSAMPLE = expand("{rawsample.rawsample}", rawsample = rawsample.itertuples())
+# sample = pd.read_table(config["sample"]).set_index(["name","sample","lane"], drop=False)
+# sample_id = pd.read_table(config["sample"]).set_index(["id"], drop=False) 
+# sample_name = pd.read_table(config["sample"]).set_index(["name"], drop=False) 
+
+# ----------------------------------------------
+# Target rules
+# ----------------------------------------------
+
+TYPES = config["run"]["types"].split(',')
+LIBRARY = config["run"]["library"].split(',')
+
+
+SAMPLE = config["fastq"]["sname"].split(',')
+NPROJ = config["fastq"]["nproject"]
+EXPANSION = config["fastq"]["expansion"]
 FEATURES = config["diffexp"]["features"].split(',')
 CELLMARKER = config["diffexp"]["cell_marker"].split(',')
 WT = config["seurat"]["wt"]
-AGRR = config["sample"]["nproject"]
-NUM = config["sample"]["pair"].split(',')
+AGRR = config["fastq"]["nproject"]
+NUM = config["fastq"]["pair"].split(',')
 CLUSTER = config["diffexpsubset"]["cluster"].split(',')
-## Get the column name of the metadata file
-fastq = pd.read_table(config["metadata"]).set_index(["fastq"], drop=False)
-FASTQ = expand("{fastq.fastq}_{num}_001", fastq=fastq.itertuples(), num=NUM)
+
 
 rule all:
   input:
     ### fastqc ###
-    raw_html = expand("{outputdir}00_fastqc/{fastq}_fastqc.html", outputdir=OUTPUTDIR, fastq=FASTQ),
-    raw_zip = expand("{outputdir}00_fastqc/{fastq}_fastqc.zip", outputdir=OUTPUTDIR, fastq=FASTQ),
-    raw_multi_html = OUTPUTDIR + "00_fastqc/raw_multiqc.html",    
+    fastqc_output = expand(OUTPUTDIR + "00_fastqc/fastqc_output.txt"),
+
+    # raw_multi_html = OUTPUTDIR + "00_fastqc/raw_multiqc.html",    
     # reference for cellranger
     # out_ref = REF + config["reference"]["ref_cellranger"] + "/fasta/genome.fa",
     # Cellranger count
@@ -104,16 +119,16 @@ rule all:
 # Impose rule order for the execution of the workflow 
 # ----------------------------------------------
 
-ruleorder: seurat > diffexp
+# ruleorder: seurat > diffexp
 
 # ----------------------------------------------
 # Load rules 
 # ----------------------------------------------
 
 include: ENVDIR + "fastqc.smk"
-include: ENVDIR + "cellranger.smk"
+# include: ENVDIR + "cellranger.smk"
 #include: ENVDIR + "demuxlet.smk"
-include: ENVDIR + "seurat.smk"
-include: ENVDIR + "diffexp.smk"
-include: ENVDIR + "diffexp_subset.smk"
-include: ENVDIR + "report.smk"
+# include: ENVDIR + "seurat.smk"
+# include: ENVDIR + "diffexp.smk"
+# include: ENVDIR + "diffexp_subset.smk"
+# include: ENVDIR + "report.smk"

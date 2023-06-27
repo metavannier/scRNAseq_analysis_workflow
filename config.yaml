@@ -1,8 +1,22 @@
+#-------------------------------------
+# Path to sample sheet
+#-------------------------------------
 
-# path or URL to condition sheet (TSV format)
-metadata: sample-metadata.tsv
+sample: sample.tsv
 
-sample:
+#-------------------------------------
+# Config
+#-------------------------------------
+
+run:
+    # FASTQ file naming convention : [Sample name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz
+    
+    # Can be a list if pair-end : "R1,R2" or "1,2" or "R1_001,R2_001"
+    types: "1,2"
+    # Library if multiplexed 
+    library: "1_A_GEX,2_A_CMO"
+
+fastq:
     # Expension of fastq file
     expansion: "fastq"
     # pair-end or not (R1,R2 or 1,2 etc...)

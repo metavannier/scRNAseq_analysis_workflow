@@ -1,17 +1,27 @@
 # ----------------------------------------------
-# FastQC to check the row reads quality
+# FastQC : Check quality of reads files
 # ----------------------------------------------
 
 rule fastqc:
-  input:
-    RAWDATA + "{fastq}.fastq"
-  output:
-    html = OUTPUTDIR + "00_fastqc/{fastq}_fastqc.html",
-    zip = OUTPUTDIR + "00_fastqc/{fastq}_fastqc.zip"
-  message: 
-    "Quality with fastqc"
-  wrapper:
-    "0.35.2/bio/fastqc"
+    input:
+        expand(RAWDATA + "{rawsample}_{library}_{types}.fastq.gz", rawsample=RAWSAMPLE, library=LIBRARY, types=TYPES),
+
+    output:
+        fastqc_output = expand(OUTPUTDIR + "00_fastqc/fastqc_output.txt"),
+
+    message:
+        "Quality with fastqc"
+
+    conda:
+        CONTAINER + "fastqc.yaml"
+
+    shell:
+        """
+        export PATH="/$PWD/.local/bin:$PATH"
+		    fastqc_output=({output.fastqc_output})
+        fastqc {input} --outdir {OUTPUTDIR}00_fastqc/
+		    echo "FastQC step is FINISH" > ${{fastqc_output}}
+        """
 
 # ----------------------------------------------
 # MultiQC to check the reads trimmed quality
@@ -19,7 +29,7 @@ rule fastqc:
 
 rule multiqc:
   input:
-    raw_qc = expand("{outputdir}00_fastqc/{fastq}_fastqc.zip", outputdir=OUTPUTDIR, fastq=FASTQ),
+    fastqc_zip = expand(OUTPUTDIR + "00_fastqc/{rawsample}_{library}_{types}_fastqc.zip", rawsample=RAWSAMPLE, library=LIBRARY, types=TYPES)
   output:
     raw_multi_html = report(OUTPUTDIR + "00_fastqc/raw_multiqc.html", caption = REPORT + "multiqc.rst", category="00 quality report"), 
   params:

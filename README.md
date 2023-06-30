@@ -42,7 +42,7 @@ Configure the workflow according to your needs via editing the files and reposit
 `singularity build mambaforge:23.1.0-1.sif docker://condaforge/mambaforge:23.1.0-1`
 `mv mambaforge:23.1.0-1.sif 02_Container/`
 
-`singularity build cellranger.sif docker://litd/docker-cellranger`
+`singularity build cellranger.sif docker://litd/docker-cellranger:v7.1.0`
 `mv cellranger.sif 02_Container/`
 
 ### Step 3: Execute workflow

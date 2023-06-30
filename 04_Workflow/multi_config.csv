@@ -1,0 +1,15 @@
+[gene-expression]
+reference,/01_Reference/refdata-cellranger-mm32/fasta/
+expect-cells,10000
+
+[libraries]
+fastq_id,fastqs,feature_types
+A_GEX,/00_RawData/S004647_to_S004650_1,gene expression
+A_CMO,/00_RawData/S004647_to_S004650_2,Multiplexing Capture
+
+[samples]
+sample_id,cmo_ids,description
+S004647,CMO1,72h
+S004648,CMO2,80h
+S004649,CMO3,86h
+S004650,CMO4,96h

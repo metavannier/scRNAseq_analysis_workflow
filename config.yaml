@@ -32,14 +32,22 @@ fastq:
 
 # Genome and gff link to create the pre-built Cell Ranger reference
 reference:
-    link_ref_fasta: "http://ftp.ensembl.org/pub/release-104/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz"
-    ref_fasta: "Homo_sapiens.GRCh38.dna.primary_assembly.fa"
-    link_ref_gff: "http://ftp.ensembl.org/pub/release-104/gtf/homo_sapiens/Homo_sapiens.GRCh38.104.gtf.gz"
+    link_ref_fasta: "https://ftp.ensembl.org/pub/release-109/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna.primary_assembly.fa.gz"
+    link_ref_gff: "https://ftp.ensembl.org/pub/release-109/gtf/mus_musculus/Mus_musculus.GRCm39.109.gtf.gz"
+    ref_fasta: "Mus_musculus.GRCm39.dna.primary_assembly.fa"
     # Name for the file of the cellranger reference
-    ref_cellranger: "refdata-cellranger-hg19-6.0.0"
-    ref_version: "6.0.0"
+    ref_cellranger: "refdata-cellranger-mm32"
+    # Optional reference version string to include with
+    ref_version: "1.0.0"
 
-    # parameter for cellranger count
+# Parameter for cellranger multi
+multi:
+    # A unique run ID string: e.g. sample345 that is also the output folder name. Cannot be more than 64 characters.
+    id: "S004647_to_S004650"
+    # Path to config CSV file with input libraries and analysis parameters.
+    config: "multi_config.csv"
+
+# parameter for cellranger count
 cellranger:
     # Path of the fastq_path folder. Can take multiple comma-separated paths, which is helpful if the same library was sequenced on multiple flowcells. 
     fastqs: "00_RawData"

@@ -21,7 +21,7 @@ REPORT = srcdir("07_Report/")
 BENCHMARK = srcdir("08_benchmark/")
 LOG = srcdir("09_log/")
 
-# # If using conda environment
+# If using conda environment
 container: "docker://condaforge/mambaforge:22.11.1-4"
 
 # ----------------------------------------------
@@ -52,15 +52,16 @@ AGRR = config["fastq"]["nproject"]
 NUM = config["fastq"]["pair"].split(',')
 CLUSTER = config["diffexpsubset"]["cluster"].split(',')
 
-
 rule all:
   input:
     ### fastqc ###
-    fastqc_output = expand(OUTPUTDIR + "00_fastqc/fastqc_output.txt"),
-
-    # raw_multi_html = OUTPUTDIR + "00_fastqc/raw_multiqc.html",    
-    # reference for cellranger
-    # out_ref = REF + config["reference"]["ref_cellranger"] + "/fasta/genome.fa",
+    fastqc_output = expand(OUTPUTDIR + "00_clean/fastqc_output.txt"),
+    ### multiqc ###
+    multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
+    ### reference for cellranger ###
+    ref_cellranger_output = expand(OUTPUTDIR + "01_cellranger/ref_cellranger_output.txt"),
+    ### Cell Multiplexing with cellranger multi ###
+    # multiplexing_output = expand(OUTPUTDIR + "01_cellranger/multiplexing_output.txt"),
     # Cellranger count
     # out_cellranger = expand(OUTPUTDIR + "01_cellranger/{sample}/outs/{sample}_web_summary.html", sample=SAMPLE),
     ## If you need to aggregate your data
@@ -114,20 +115,13 @@ rule all:
     # violinplot_subset_tar = OUTPUTDIR + "04_diffexp_subset/violin_plot.tar.gz",
     # clean = OUTPUTDIR + "03_diffexp/clean.txt",
   
-
-# ----------------------------------------------
-# Impose rule order for the execution of the workflow 
-# ----------------------------------------------
-
-# ruleorder: seurat > diffexp
-
 # ----------------------------------------------
 # Load rules 
 # ----------------------------------------------
 
-include: ENVDIR + "fastqc.smk"
-# include: ENVDIR + "cellranger.smk"
-#include: ENVDIR + "demuxlet.smk"
+include: ENVDIR + "clean.smk"
+include: ENVDIR + "cellranger.smk"
+# include: ENVDIR + "demuxlet.smk"
 # include: ENVDIR + "seurat.smk"
 # include: ENVDIR + "diffexp.smk"
 # include: ENVDIR + "diffexp_subset.smk"

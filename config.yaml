@@ -7,7 +7,14 @@ sample: sample.tsv
 #-------------------------------------
 # Config
 #-------------------------------------
-
+rules:
+    # Optimizing and assembling genome annotations for 3’ single-cell RNA-sequencing analysis
+    reference_enhancer_rule: "FALSE"
+    # Build the reference with cellranger
+    ref_cellranger_rule: "FALSE"
+    # Demultiplexing
+    multi_rule: "FALSE"
+       
 run:
     # FASTQ file naming convention : [Sample name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz
     
@@ -26,17 +33,22 @@ fastq:
     # Sequence Read Archive (SRA)
     sra: "SRP287614"
     # Sample name ; Multiple names may be supplied as a comma-separated list, in which case they will be treated as one sample.
-    sname: "M12,M15,M27,Normal_Melanocytes,Mix_MM_lines"
+    sname: "72h,80h,86h,96h"
     # Project name
     nproject: "SRP215051_SRP287614"
 
 # Genome and gff link to create the pre-built Cell Ranger reference
 reference:
-    link_ref_fasta: "https://ftp.ensembl.org/pub/release-109/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna.primary_assembly.fa.gz"
-    link_ref_gff: "https://ftp.ensembl.org/pub/release-109/gtf/mus_musculus/Mus_musculus.GRCm39.109.gtf.gz"
-    ref_fasta: "Mus_musculus.GRCm39.dna.primary_assembly.fa"
+    link_ref_fasta: "https://ftp.ensembl.org/pub/release-98/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz"
+    # link_ref_fasta: "https://ftp.ensembl.org/pub/release-109/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna.primary_assembly.fa.gz"
+    ref_gtf: "Mus_musculus.GRCm39.109.gtf"
+    link_ref_gtf: "https://storage.googleapis.com/generecovery/mouse_mm10_optimized_annotation_v2.gtf.gz"
+    # link_ref_gtf: "https://ftp.ensembl.org/pub/release-109/gtf/mus_musculus/Mus_musculus.GRCm39.109.gtf.gz"
+    ref_fasta: "Mus_musculus.GRCm38.dna.primary_assembly.fa"
+    # ref_fasta: "Mus_musculus.GRCm39.dna.primary_assembly.fa"
     # Name for the file of the cellranger reference
-    ref_cellranger: "refdata-cellranger-mm32"
+    ref_cellranger: "refdata-cellranger-mm10"
+    # ref_cellranger: "refdata-cellranger-mm32"
     # Optional reference version string to include with
     ref_version: "1.0.0"
 

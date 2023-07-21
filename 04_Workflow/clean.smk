@@ -20,7 +20,7 @@ rule fastqc:
 		export PATH="/$PWD/.local/bin:$PATH"
 		fastqc_output=({output.fastqc_output})
 		fastqc {input} --outdir {OUTPUTDIR}00_clean/
-		echo "FastQC step is FINISH" > ${{fastqc_output}}
+		touch ${{fastqc_output}}
 		"""
 
 # ----------------------------------------------
@@ -46,9 +46,8 @@ rule multiqc:
 
 	shell:
 		"""
-		multiqc_output=({output.multiqc_output})
 		multiqc -n {params.raw_multiqc_html} {params.raw_qc}
-		echo "MultiQC step is FINISH" > ${{multiqc_output}}
+		touch {output.multiqc_output}
 		"""
 
 # ----------------------------------------------

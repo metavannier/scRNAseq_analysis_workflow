@@ -5,6 +5,19 @@ description: snakemake configuration file
 type: object
 
 properties:
+  rules:
+    type: object
+    properties:
+      reference_enhancer_rule:
+        type: string
+      ref_cellranger_rule:
+        type: string
+      multi_rule:
+        type: string
+    required:
+      - reference_enhancer_rule
+      - ref_cellranger_rule
+      - multi_rule
   fastq:
     type: object
     properties:
@@ -22,7 +35,9 @@ properties:
     properties:
       link_ref_fasta:
         type: string
-      link_ref_gff:
+      ref_gtf:
+        type: string
+      link_ref_gtf:
         type: string
       ref_cellranger:
         type: string
@@ -31,7 +46,7 @@ properties:
 
     required:
       - link_ref_fasta
-      - link_ref_gff
+      - link_ref_gtf
       - ref_cellranger
       - ref_version
   

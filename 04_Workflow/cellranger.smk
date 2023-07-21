@@ -2,6 +2,34 @@
 # AGRR = config["cellranger"]["sagrr"].split(',')
 # NPROJECT = config["sample"]["nproject"]
 
+###########################################################################################
+# optimizing and assembling genome annotations for 3’ single-cell RNA-sequencing analysis #
+###########################################################################################
+###MUST BE IMPROVED (Need to do a mapping before and change the header from the fasta reference ensembl)
+rule reference_enhancer:
+    input:
+        multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
+
+    output: 
+        reference_enhancer_output = expand(OUTPUTDIR + "01_cellranger/reference_enhancer_output.txt"),
+
+    params:
+        ref_gtf = config["reference"]["ref_gtf"],
+        reference_enhancer_rule = config["rules"]["reference_enhancer_rule"],
+
+    conda:
+        CONTAINER + "ReferenceEnhancer.yaml"
+
+    shell:
+        """
+        if [ {params.reference_enhancer_rule} = "FALSE" ]
+            touch {output.reference_enhancer_output}
+        then
+            chmod +x {SCRIPTDIR}ReferenceEnhancer.R
+            {SCRIPTDIR}ReferenceEnhancer.R {params.ref_gtf}
+            touch {output.reference_enhancer_output}
+        fi
+        """        
 
 ########################################
 # Build the reference with cellranger  #
@@ -15,9 +43,10 @@ rule ref_cellranger:
         ref_cellranger_output = expand(OUTPUTDIR + "01_cellranger/ref_cellranger_output.txt"),
 
     params:
+        ref_cellranger_rule = config["rules"]["ref_cellranger_rule"],
         ref_cellranger = directory(REF + config["reference"]["ref_cellranger"]),
         link_ref_fasta = config["reference"]["link_ref_fasta"],
-        link_ref_gff = config["reference"]["link_ref_gff"],
+        link_ref_gtf = config["reference"]["link_ref_gtf"],
         path_ref = REF,
         ref_name = config["reference"]["ref_cellranger"],
         ref_version = config["reference"]["ref_version"]
@@ -30,9 +59,13 @@ rule ref_cellranger:
 
     shell:
         """
-        ref_cellranger_output=({output.ref_cellranger_output})
-        {SCRIPTDIR}RefForCellranger.sh {params.link_ref_fasta} {params.link_ref_gff} {params.ref_cellranger} {params.path_ref} {params.ref_name} {params.ref_version}
-		echo "ref_cellranger step is FINISH" > ${{ref_cellranger_output}}
+        if [ {params.ref_cellranger_rule} = "FALSE" ]
+            touch {output.ref_cellranger_output}
+        then
+            {SCRIPTDIR}RefForCellranger.sh {params.link_ref_fasta} {params.link_ref_gtf} {params.ref_cellranger} {params.path_ref} {params.ref_name} {params.ref_version}
+            cd ../
+            touch {output.ref_cellranger_output}
+        fi
         """
 
 ##########################
@@ -46,6 +79,9 @@ rule multi:
     output:
         multiplexing_output = expand(OUTPUTDIR + "01_cellranger/multiplexing_output.txt"),
 
+    params:
+        multi_rule = config["rules"]["multi_rule"],
+
     singularity:
         CONTAINER + "cellranger.sif"
 
@@ -54,11 +90,16 @@ rule multi:
 
     shell:
         """
-        multiplexing_output=({output.multiplexing_output})
-        cellranger multi  \
-        --id={config[multi][id]}  \
-        --csv={config[multi][config]} 
-	    echo "Demultiplexing step is FINISH" > ${{multiplexing_output}}
+        if [ {params.multi_rule} = "FALSE" ]
+            touch {output.multiplexing_output}
+        then
+            cellranger multi  \
+            --id={config[multi][id]}  \
+            --csv={config[multi][config]} 
+            mv {config[multi][id]}/outs/per_sample_outs/* 05_Output/01_cellranger/
+            rm -r {config[multi][id]}
+            touch {output.multiplexing_output}
+        fi
         """
 
 # rule cellranger:

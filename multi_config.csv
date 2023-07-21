@@ -1,14 +1,16 @@
 [gene-expression]
-reference,/01_Reference/refdata-cellranger-mm32/fasta/
+reference,/scratch/tvannier/ibdm_lenne_scrnaseq_gastruloids/01_Reference/mouse_mm10_optimized_reference_v2
+expect-cells,10000
+include-introns,true
 
 [libraries]
 fastq_id,fastqs,feature_types
-A_GEX,/00_RawData/S004647_to_S004650_1,Gene Expression
-A_CMO,/00_RawData/S004647_to_S004650_2,Multiplexing Capture
+S004647_to_S004650_1,/scratch/tvannier/ibdm_lenne_scrnaseq_gastruloids/00_RawData/S004647_to_S004650_1,Gene Expression
+S004647_to_S004650_2,/scratch/tvannier/ibdm_lenne_scrnaseq_gastruloids/00_RawData/S004647_to_S004650_2,Multiplexing Capture
 
 [samples]
-sample_id,cmo_ids
-S004647,CMO1
-S004648,CMO2
-S004649,CMO3
-S004650,CMO4
+sample_id,cmo_ids,description
+72h,CMO301,72h
+80h,CMO302,80h
+86h,CMO303,86h
+96h,CMO304,96h

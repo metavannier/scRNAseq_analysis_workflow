@@ -29,7 +29,11 @@ container: "docker://condaforge/mambaforge:22.11.1-4"
 # ----------------------------------------------
 
 rawsample = pd.read_table(config["sample"]).set_index(["rawsample"], drop=False)
+sample_id = pd.read_table(config["sample"]).set_index(["id"], drop=False) 
+
 RAWSAMPLE = expand("{rawsample.rawsample}", rawsample = rawsample.itertuples())
+SAMPLE_ID = expand("{sample_id.id}", sample_id = sample_id.itertuples()) #72h, 80h, 86h, 96h
+
 # sample = pd.read_table(config["sample"]).set_index(["name","sample","lane"], drop=False)
 # sample_id = pd.read_table(config["sample"]).set_index(["id"], drop=False) 
 # sample_name = pd.read_table(config["sample"]).set_index(["name"], drop=False) 
@@ -47,7 +51,6 @@ NPROJ = config["fastq"]["nproject"]
 EXPANSION = config["fastq"]["expansion"]
 FEATURES = config["diffexp"]["features"].split(',')
 CELLMARKER = config["diffexp"]["cell_marker"].split(',')
-WT = config["seurat"]["wt"]
 AGRR = config["fastq"]["nproject"]
 NUM = config["fastq"]["pair"].split(',')
 CLUSTER = config["diffexpsubset"]["cluster"].split(',')
@@ -75,11 +78,8 @@ rule all:
 		# demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
 		# tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
 		# Seurat
-		# count_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_count_matrix.csv",
-		# data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_data_matrix.csv",
-		# scale_data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_scale_data_matrix.csv",
-		# seurat_report = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_report.html",
-		# seurat_object = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_object.rds",
+		seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
+		seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
 		## Differential expression analyses
 		# violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
 		# umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
@@ -125,7 +125,7 @@ rule all:
 include: ENVDIR + "clean.smk"
 include: ENVDIR + "cellranger.smk"
 # include: ENVDIR + "demuxlet.smk"
-# include: ENVDIR + "seurat.smk"
+include: ENVDIR + "seurat.smk"
 # include: ENVDIR + "diffexp.smk"
 # include: ENVDIR + "diffexp_subset.smk"
 # include: ENVDIR + "report.smk"

@@ -23,8 +23,9 @@ rule reference_enhancer:
     shell:
         """
         if [ {params.reference_enhancer_rule} = "FALSE" ]
-            touch {output.reference_enhancer_output}
         then
+            touch {output.reference_enhancer_output}
+        else
             chmod +x {SCRIPTDIR}ReferenceEnhancer.R
             {SCRIPTDIR}ReferenceEnhancer.R {params.ref_gtf}
             touch {output.reference_enhancer_output}
@@ -60,8 +61,9 @@ rule ref_cellranger:
     shell:
         """
         if [ {params.ref_cellranger_rule} = "FALSE" ]
-            touch {output.ref_cellranger_output}
         then
+            touch {output.ref_cellranger_output}
+        else
             {SCRIPTDIR}RefForCellranger.sh {params.link_ref_fasta} {params.link_ref_gtf} {params.ref_cellranger} {params.path_ref} {params.ref_name} {params.ref_version}
             cd ../
             touch {output.ref_cellranger_output}
@@ -91,8 +93,9 @@ rule multi:
     shell:
         """
         if [ {params.multi_rule} = "FALSE" ]
-            touch {output.multiplexing_output}
         then
+            touch {output.multiplexing_output}
+        else
             cellranger multi  \
             --id={config[multi][id]}  \
             --csv={config[multi][config]} 

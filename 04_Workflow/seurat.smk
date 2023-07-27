@@ -1,40 +1,52 @@
-NPROJ = config["sample"]["nproject"]
+#----------------------------------------
+# Seurat
+#----------------------------------------
 
 rule seurat:
     input:
-        sc_data = OUTPUTDIR + "01_cellranger/" + NPROJ + "/outs/filtered_feature_bc_matrix/",
-        aggrcsv = ROOTDIR + "/aggregation.csv",
-        # tsne = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/analysis/tsne/2_components/projection.csv",
-        # demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best"
+        multiplexing_output = expand(OUTPUTDIR + "01_cellranger/multiplexing_output.txt"),
+
     output:
-        #tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
-        seurat_report = report(OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_report.html", caption = REPORT + "seurat.rst", category="02 seurat"),
-        seurat_object = OUTPUTDIR + "02_seurat/" + NPROJ + "_seurat_object.rds",
-        count_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_count_matrix.csv",
-        data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_data_matrix.csv",
-        scale_data_matrix = OUTPUTDIR + "02_seurat/data_matrix/" + NPROJ + "_scale_data_matrix.csv",
+        seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
+        seurat_report = report(expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID), caption = REPORT + "seurat.rst", category = "02 seurat"),
+
     conda:
         CONTAINER + "seurat.yaml"
+
     params:
-        nproj = config["sample"]["nproject"],
-        samples = config["cellranger"]["sagrr"],
-        wt = config["seurat"]["wt"],
-        biop = config["sample"]["biop"],
+        sc_data = expand(OUTPUTDIR + "01_cellranger/{sample_id}/count/sample_filtered_feature_bc_matrix/",sample_id = SAMPLE_ID),
+        cell_ranger_count_path = config["seurat"]["cell-ranger_count_path"],
+        sample_id = expand("{sample_id.id}", sample_id = sample_id.itertuples()),
+        plot_raster_nbcells_threshold = config["seurat"]["plot_raster_nbcells_threshold"],
+        qc_exploration_mode = config["seurat"]["qc_exploration_mode"],
         min_cells = config["seurat"]["min_cells"],
         min_features = config["seurat"]["min_features"],
-        minFeature_RNA = config["seurat"]["minFeature_RNA"],
-        maxFeature_RNA = config["seurat"]["maxFeature_RNA"],
-        percent_mt = config["seurat"]["percent_mt"],
-        normwf = config["seurat"]["normwf"],
-        normalization_method = config["seurat"]["normalization_method"],
-        scale_factor = config["seurat"]["scale_factor"],
-        nfeatures = config["seurat"]["nfeatures"],
-        selection_method = config["seurat"]["selection_method"],
-        nHVG = config["seurat"]["nHVG"],
-        dims =  config["seurat"]["dims"],
-        resolution = config["seurat"]["resolution"],
-        cluster_ids = config["seurat"]["cluster_ids"],
-    message: 
+        filter_umi_min = config["seurat"]["filter_umi_min"].split(','),
+        filter_umi_max = config["seurat"]["filter_umi_max"].split(','),
+        filter_feature_min = config["seurat"]["filter_feature_min"].split(','),
+        filter_feature_max = config["seurat"]["filter_feature_max"].split(','),
+        filter_percent_mt = config["seurat"]["filter_percent_mt"].split(','),
+        filter_percent_mt_min = config["seurat"]["filter_percent_mt_min"].split(','),
+        filter_percent_rb = config["seurat"]["filter_percent_rb"].split(','),
+        pattern_mt = config["seurat"]["pattern_mt"],
+        pattern_rb = config["seurat"]["pattern_rb"],
+        norm_method = config["seurat"]["norm_method"],
+        norm_scale_factor = config["seurat"]["norm_scale_factor"],
+        feature_select_method = config["seurat"]["feature_select_method"],
+        variable_features = config["seurat"]["variable_features"],
+        variable_features_showtop = config["seurat"]["variable_features_showtop"],
+        dims = config["seurat"]["dims"],
+        pca_npc = config["seurat"]["pca_npc"],
+        pca_plots_nbdims = config["seurat"]["pca_plots_nbdims"],
+        pca_plot_nbfeatures = config["seurat"]["pca_plot_nbfeatures"],
+        dimreduc_use_pca_nbdims = config["seurat"]["dimreduc_use_pca_nbdims"],
+        findclusters_use_pca_nbdims = config["seurat"]["findclusters_use_pca_nbdims"],
+        findneighbors_k = config["seurat"]["findneighbors_k"],
+        findclusters_resolution = config["seurat"]["findclusters_resolution"],
+        findclusters_algorithm = config["seurat"]["findclusters_algorithm"],
+
+    message:
         "Run Seurat for the clustering"
+
     script:
         SCRIPTDIR + "seurat_reports_compilation.R"

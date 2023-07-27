@@ -57,11 +57,11 @@ Configure the workflow according to your needs via editing the files and reposit
 
 - Then execute the workflow locally via
 
-`snakemake --use-conda --use-singularity --cores 10`
+`snakemake --use-conda --use-singularity --cores 12`
 
 #### On a cluster
 
-- Adapt the batch scripts run_slurm.sh and cluster_config.json file to run your snakemake from the working directory
+- Adapt the batch scripts run_slurm.sh to run your snakemake from the working directory
 
 It will install snakemake with pip and run the workflow in the HPC:
 

@@ -13,7 +13,7 @@ rules:
     # Build the reference with cellranger
     ref_cellranger_rule: "FALSE"
     # Demultiplexing
-    multi_rule: "FALSE"
+    multi_rule: "TRUE"
        
 run:
     # FASTQ file naming convention : [Sample name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz
@@ -80,41 +80,104 @@ cellranger:
     demuxlet:
     # Tell if multiple samples are pooled by barcoded single cell sequencing and need deconvolute sample identity and identify multiplets.
     spooled: "TRUE"
+
 # Seurat parameters
 seurat:
-    # Name of the "Normal" or Wild Type sample to group samples for the comparison
-    wt: "Normal_Melanocytes"
-    # Include features detected in at least this many cells. Will subset the counts matrix as well. To reintroduce excluded features, create a new object with a lower cutoff.
+    ##### General
+
+    # Number of cells above which use ggplot instead of interactive plotly
+    plot_raster_nbcells_threshold : 10000
+    # CellRanger count path for each sample for Read10X
+    cell-ranger_count_path: "/count/sample_filtered_feature_bc_matrix/"
+
+    ##### Filtering 
+
+    # Switch from QC exploration mode and QC filtering
+    # In exploration mode, the cells that would be filtered by QC threshold are not filtered but marked
+    # They are shown in the later analysis with a different color
+    # "TRUE" : Exploration mode, "FALSE" : Not in exploration mode
+    qc_exploration_mode: "FALSE"
+
+    # Include features detected in at least this many cells. Will subset the counts matrix as well.
     min_cells: 3
+
     # Include cells where at least this many features are detected.
     min_features: 200
-    ## To be fixed after the visualization of the QC metrics as a violin plot and FeatureScatter
-    # Filter cells that have unique feature counts less n.
-    minFeature_RNA: 200
-    # Filter cells that have unique feature counts over n. Value have to be selected via the plot nCount_RNA/nfeature_RNA
-    # Can be a list of feature counts but MUST be on the same order than [cellranger][sagrr]
-    maxFeature_RNA: "3000,10200,7700,8000,7000"
-    # Filter cells that have >20% mitochondrial counts
-    percent_mt: 20
-    # Normalization workflow used by seurat (for batch effect correction). Can be "SCTransform" (calculates a model of technical noise in scRNA-seq data using ‘regularized negative binomial regression’) or "basictransform" (run NormalizeData, FindVariableFeatures, ScaleData steps).
-    normwf: "SCTransform"
-    # Use this many features as variable features after ranking by residual variance
-    # If basictransform is used :Method for normalization (LogNormalize, CLR (centered log ratio transformation) or RC (Relative counts))
-    normalization_method: "LogNormalize"
-    # Sets the scale factor for cell-level normalization
-    scale_factor: 10000
-    # How to choose top variable features (vst, mean.var.plot or dispersion)
-    selection_method: "vst" 
-    # Number of features to select as top variable features
-    nfeatures: 3000
-    # Number of highly variable genes label
-    nHVG: 20
-    # Dimension for the clustering (look the elbow plot to fix it)
-    dims: 12
-    # Resolution parameter for the clustering (Higher resolution means higher number of clusters)
-    resolution: 0.08
-    # Assigning cell type identity to clusters
-    cluster_ids: "MM029,A375,MM031,MM057,MM099,MM087,MM001,MM074,MM011,MM047"
+
+    # Cells with number of UMIs outside the range will be excluded
+    # Can be a list of UMIs but MUST be on the same order than sample.tsv id.
+    filter_umi_min: "0,0,0,0"
+    filter_umi_max: "50000,40000,40000,40000"
+
+    # Filter cells that have unique feature counts over/less n
+    # Can be a list of feature counts but MUST be on the same order than sample.tsv id.
+    filter_feature_min: "1800,1800,1500,1500"
+    filter_feature_max: "7700,7500,7700,7200"
+
+    # Filter cells that have > n% mitochondrial counts
+    filter_percent_mt: "10,10,8,8"
+    # Filter cells that have < n% mitochondrial counts
+    filter_percent_mt_min: "1,1,0,0"
+
+    # Filter cells that have < n% ribosomal counts
+    filter_percent_rb: "0,0,0,0"
+
+    # Pattern to match features against => mitochondrial genes | for mouse : "^mt-" / for human : "^MT-"
+    pattern_mt: "^mt-"
+
+    # Pattern to match features against => ribosomal genes
+    pattern_rb: "^rps|^rpl"
+
+    ##### Normalization
+
+    # Normalization parameters (see Seurat::NormalizeData())
+    norm_method: "LogNormalize"
+    norm_scale_factor: 10000
+
+    ##### Find the most variable genes
+
+    # How to choose top variable features => vst, mean.var.plot or dispersion
+    feature_select_method: "vst"
+
+    # Number of features to select as top variable features; only used when select_method is set to 'dispersion' or 'vst'
+    variable_features: 2000
+
+    # For table in report
+    variable_features_showtop : 200
+    
+    ##### PCA parameters
+    # Number of dimention to show for the vizualisation
+    dims: 30
+
+    # Default number of dimensions to use for PCA (see Seurat::RunPCA())
+    pca_npc: 20
+
+    # Number of dimensions to show in PCA-related plots
+    pca_plots_nbdims : 3
+
+    #  Number of'top' features to show when plotting PCA loadings
+    pca_plot_nbfeatures : 3
+
+    ##### Dimensionality reduction parameters (TSNE/UMAP)
+
+    # Number of dimensions to use from PCA results
+    dimreduc_use_pca_nbdims : 20
+
+    ##### Cluster identification parameters
+
+    # Number of dimensions to use from PCA results
+    findclusters_use_pca_nbdims : 20
+
+    # Nearest-neighbor graph construction
+    findneighbors_k : 30
+
+    # Value of the resolution parameter, use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities.
+    findclusters_resolution : 1
+
+    # Algorithm for modularity optimization
+    # 1 = Louvain; 2 = Louvain with multilevel refinement; 3 = SLM; 4 = Leiden
+    findclusters_algorithm : 1
+
 # Differentially expressed features analyses
 diffexp:
     # Features of interest

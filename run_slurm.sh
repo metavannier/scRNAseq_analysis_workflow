@@ -4,7 +4,7 @@
 #SBATCH -N 1
 #SBATCH -n 12
 #SBATCH -A b324
-#SBATCH -t 12:00:00
+#SBATCH -t 2:00:00
 #SBATCH -o ./%N.%x.out
 #SBATCH -e ./%N.%x.err
 
@@ -22,4 +22,4 @@ pip install pandas
 # Run the workflow
 # ================================================
 
-snakemake --snakefile Snakefile --use-singularity --use-conda --conda-frontend conda --conda-not-block-search-path-envvars --singularity-args="-B /scratch/$SLURM_JOB_USER/ibdm_lenne_scrnaseq_gastruloids/ --nv" --cores 12
+snakemake --snakefile Snakefile --use-singularity --use-conda --conda-frontend conda --conda-not-block-search-path-envvars --singularity-args="-B /scratch/$SLURM_JOB_USER/ibdm_lenne_scrnaseq_gastruloids/" --cores 12

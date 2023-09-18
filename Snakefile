@@ -58,7 +58,7 @@ CLUSTER = config["diffexpsubset"]["cluster"].split(',')
 rule all:
 	input:
 		### fastqc ###
-		fastqc_output = expand(OUTPUTDIR + "00_clean/fastqc_output.txt"),
+		# fastqc_output = expand(OUTPUTDIR + "00_clean/fastqc_output.txt"),
 		### multiqc ###
 		multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
 		### ReferenceEnhancer to generate a scRNA-seq optimized transcriptomic reference ###

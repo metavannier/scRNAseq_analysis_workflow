@@ -5,6 +5,7 @@
 ## Author
 
 Thomas Vannier (@metavannier), https://centuri-livingsystems.org/t-vannier/
+Léa Chabot (@LeaChabot), https://centuri-livingsystems.org/l-chabot/
 
 ## About
 
@@ -36,10 +37,12 @@ Configure the workflow according to your needs via editing the files and reposit
 - 01_Reference need the reference genome in fasta and the corresponding gff for the cellranger mapping step.
 - [config.yaml](/config.yaml) indicating the parameters to use.
 - Comment the [Snakefile](/Snakefile) on the input line not expected for the pipeline.
-- Build the singularity image of cellranger v6.0.0 (file to large for a github repository):
+- Build the singularity image of mambaforge:23.1.0-1 and cellranger v6.0.0 (file to large for a github repository):
 
-`singularity build cellranger.sif docker://litd/docker-cellranger`
+`singularity build mambaforge:23.1.0-1.sif docker://condaforge/mambaforge:23.1.0-1`
+`mv mambaforge:23.1.0-1.sif 02_Container/`
 
+`singularity build cellranger.sif docker://litd/docker-cellranger:v7.1.0`
 `mv cellranger.sif 02_Container/`
 
 ### Step 3: Execute workflow
@@ -50,15 +53,15 @@ Configure the workflow according to your needs via editing the files and reposit
 
 - Load snakemake from a docker container and run the workflow from the working directory by using these commands:
 
-`singularity run docker://snakemake/snakemake:v6.3.0`
+`singularity run --bind ${PWD}:/ibdm_lenne_scrnaseq_gastruloids docker://snakemake/snakemake:v6.3.0`
 
 - Then execute the workflow locally via
 
-`snakemake --use-conda --use-singularity --cores 10`
+`snakemake --use-conda --use-singularity --cores 12`
 
 #### On a cluster
 
-- Adapt the batch scripts run_slurm.sh and cluster_config.json file to run your snakemake from the working directory
+- Adapt the batch scripts run_slurm.sh to run your snakemake from the working directory
 
 It will install snakemake with pip and run the workflow in the HPC:
 

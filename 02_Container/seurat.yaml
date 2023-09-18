@@ -5,15 +5,17 @@ channels :
     - defaults
 dependencies :
     - r-ggplot2 =3.3.5
+    - r-dt
     - r-data.table =1.14.2
     - r-seurat =4.0.3
-    - r-dplyr =1.0.7
+    - r-dplyr =1.0.9
     - r-patchwork =1.1.1
     - bioconductor-glmgampoi =1.2.0
     - r-devtools =2.4.2
     - r-sessioninfo =1.2.1
     - bioconductor-dittoseq
     - bioconductor-enhancedvolcano=1.8.0
+    - r-ggpubr
     # Report snakemake
     - conda-forge::jinja2=2.11.2
     - conda-forge::networkx=2.5

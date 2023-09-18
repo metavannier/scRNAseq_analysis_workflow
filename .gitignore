@@ -13,4 +13,6 @@
 .singularity/
 snakemake_virtenv/
 test
+S004647_to_S004650_unoptimized_ref/
+S004647_to_S004650/
 

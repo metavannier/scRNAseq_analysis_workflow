@@ -1,0 +1,14 @@
+channels:
+    - bioconda
+    - conda-forge
+    - defaults
+    - r
+dependencies:
+    - r-devtools=2.4.5
+    - bedops
+    - bedtools
+    - bioconda::bioconductor-rtracklayer
+    - bioconda::bioconductor-rsamtools
+    - bioconda::bioconductor-iranges
+    - bioconda::bioconductor-genomicranges
+    - bioconda::bioconductor-genomicalignments

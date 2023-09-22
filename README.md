@@ -53,7 +53,7 @@ Configure the workflow according to your needs via editing the files and reposit
 
 - Load snakemake from a docker container and run the workflow from the working directory by using these commands:
 
-`singularity run --bind ${PWD}:/ibdm_lenne_scrnaseq_gastruloids docker://snakemake/snakemake:v6.3.0`
+`singularity run --bind ${PWD}:${PWD} docker://snakemake/snakemake:v6.3.0`
 
 - Then execute the workflow locally via
 

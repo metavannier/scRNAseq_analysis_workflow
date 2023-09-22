@@ -17,7 +17,7 @@ properties:
     required:
       - reference_enhancer_rule
       - ref_cellranger_rule
-      - multi_rule
+      
   fastq:
     type: object
     properties:
@@ -30,6 +30,7 @@ properties:
     required:
       - sname
       - biop
+  
   reference:
     type: object
     properties:
@@ -43,7 +44,6 @@ properties:
         type: string
       ref_version:
         type: string
-
     required:
       - link_ref_fasta
       - link_ref_gtf
@@ -63,7 +63,7 @@ properties:
         type: integer
     required:
       - fastqs
-      - cells
+      - expect_cells
       - localcores
       - localmem
 

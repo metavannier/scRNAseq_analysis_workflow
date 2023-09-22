@@ -22,21 +22,20 @@ BENCHMARK = srcdir("08_benchmark/")
 LOG = srcdir("09_log/")
 
 # If using conda environment
-container: "docker://condaforge/mambaforge:22.11.1-4"
+# container: "docker://condaforge/mambaforge:22.11.1-4"
+# container: "docker://condaforge/mambaforge:23.1.0-1"
 
 # ----------------------------------------------
-# Load config and sample sheet
+# Load sample sheet
 # ----------------------------------------------
 
 rawsample = pd.read_table(config["sample"]).set_index(["rawsample"], drop=False)
 sample_id = pd.read_table(config["sample"]).set_index(["id"], drop=False) 
+sample_name = pd.read_table(config["sample"]).set_index(["name"], drop=False) 
 
-RAWSAMPLE = expand("{rawsample.rawsample}", rawsample = rawsample.itertuples())
-SAMPLE_ID = expand("{sample_id.id}", sample_id = sample_id.itertuples()) #72h, 80h, 86h, 96h
-
-# sample = pd.read_table(config["sample"]).set_index(["name","sample","lane"], drop=False)
-# sample_id = pd.read_table(config["sample"]).set_index(["id"], drop=False) 
-# sample_name = pd.read_table(config["sample"]).set_index(["name"], drop=False) 
+RAWSAMPLE = expand("{rawsample.rawsample}", rawsample = rawsample.itertuples()) # 2_S1_L001, 3_S1_L001 ...
+SAMPLE_ID = expand("{sample_id.id}", sample_id = sample_id.itertuples()) # P5_KO,P5_WT,P30_KO,P30_WT
+SAMPLE_NAME = expand("{sample_name.name}", sample_name = sample_name.itertuples()) # 2,3,6,7
 
 # ----------------------------------------------
 # Target rules
@@ -45,13 +44,11 @@ SAMPLE_ID = expand("{sample_id.id}", sample_id = sample_id.itertuples()) #72h, 8
 TYPES = config["run"]["types"].split(',')
 LIBRARY = config["run"]["library"].split(',')
 
-
 SAMPLE = config["fastq"]["sname"].split(',')
 NPROJ = config["fastq"]["nproject"]
-EXPANSION = config["fastq"]["expansion"]
 FEATURES = config["diffexp"]["features"].split(',')
 CELLMARKER = config["diffexp"]["cell_marker"].split(',')
-AGRR = config["fastq"]["nproject"]
+AGRR = config["fastq"]["nproject"] # => A voir car varibale identique à NPROJ
 NUM = config["fastq"]["pair"].split(',')
 CLUSTER = config["diffexpsubset"]["cluster"].split(',')
 
@@ -60,16 +57,15 @@ rule all:
 		### fastqc ###
 		# fastqc_output = expand(OUTPUTDIR + "00_clean/fastqc_output.txt"),
 		### multiqc ###
-		multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
+		# multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
 		### ReferenceEnhancer to generate a scRNA-seq optimized transcriptomic reference ###
 		### To improve with manual curration of the file overlapping_gene_list
-		reference_enhancer_output = expand(OUTPUTDIR + "01_cellranger/reference_enhancer_output.txt"),
+		# reference_enhancer_output = expand(OUTPUTDIR + "01_cellranger/reference_enhancer_output.txt"),
 		### reference for cellranger ###
 		ref_cellranger_output = expand(OUTPUTDIR + "01_cellranger/ref_cellranger_output.txt"),
 		### Cell Multiplexing with cellranger multi ###
-		multiplexing_output = expand(OUTPUTDIR + "01_cellranger/multiplexing_output.txt"),
-		# Cellranger count
-		# out_cellranger = expand(OUTPUTDIR + "01_cellranger/{sample}/outs/{sample}_web_summary.html", sample=SAMPLE),
+		cellranger_output = expand(OUTPUTDIR + "01_cellranger/cellranger_output.txt"),
+
 		## If you need to aggregate your data
 		# aggrcsv = ROOTDIR + "/aggregation.csv",
 		# out_aggregate = expand(OUTPUTDIR + "01_cellranger/{agrr}/outs/aggregate_web_summary.html", agrr=AGRR),
@@ -78,8 +74,8 @@ rule all:
 		# demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
 		# tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
 		# Seurat
-		seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
-		seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
+		# seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
+		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
 		## Differential expression analyses
 		# violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
 		# umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
@@ -122,10 +118,20 @@ rule all:
 # Load rules 
 # ----------------------------------------------
 
-include: ENVDIR + "clean.smk"
-include: ENVDIR + "cellranger.smk"
+run_demultiplex = config["run_demultiplex"]
+run_multiplex = config["run_multiplex"]
+
+if run_demultiplex:
+	include: ENVDIR + "clean_demultiplex.smk"
+	include: ENVDIR + "cellranger_demultiplex.smk"
+
+
+if run_multiplex:	
+	include: ENVDIR + "clean.smk"
+	include: ENVDIR + "cellranger.smk"
+
 # include: ENVDIR + "demuxlet.smk"
-include: ENVDIR + "seurat.smk"
+# include: ENVDIR + "seurat.smk"
 # include: ENVDIR + "diffexp.smk"
 # include: ENVDIR + "diffexp_subset.smk"
 # include: ENVDIR + "report.smk"

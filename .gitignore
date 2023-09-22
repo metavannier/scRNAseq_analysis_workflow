@@ -2,6 +2,7 @@
 00_RawData
 01_Reference
 02_Container/cellranger.sif
+02_Container/mambaforge:23.1.0-1.sif
 05_Output
 .vscode/
 .bash_history/

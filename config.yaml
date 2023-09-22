@@ -7,25 +7,27 @@ sample: sample.tsv
 #-------------------------------------
 # Config
 #-------------------------------------
+
+run_demultiplex: true
+run_multiplex: false
+
 rules:
     # Optimizing and assembling genome annotations for 3’ single-cell RNA-sequencing analysis
     reference_enhancer_rule: "FALSE"
     # Build the reference with cellranger
-    ref_cellranger_rule: "FALSE"
-    # Demultiplexing
-    multi_rule: "TRUE"
-       
+    ref_cellranger_rule: "TRUE"
+
 run:
     # FASTQ file naming convention : [Sample name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz
     
     # Can be a list if pair-end : "R1,R2" or "1,2" or "R1_001,R2_001"
-    types: "1,2"
+    types: "R1_001,R2_001"
     # Library if multiplexed 
     library: "1_A_GEX,2_A_CMO"
 
 fastq:
     # Expension of fastq file
-    expansion: "fastq"
+    # expansion: "fastq" => Pas utilisé
     # pair-end or not (R1,R2 or 1,2 etc...)
     pair: "R1,R2"
     # Bioproject
@@ -39,18 +41,20 @@ fastq:
 
 # Genome and gff link to create the pre-built Cell Ranger reference
 reference:
-    link_ref_fasta: "https://ftp.ensembl.org/pub/release-98/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz"
-    # link_ref_fasta: "https://ftp.ensembl.org/pub/release-109/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna.primary_assembly.fa.gz"
+    link_ref_fasta: "https://ftp.ensembl.org/pub/release-109/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna.primary_assembly.fa.gz"
+    ref_fasta: "Mus_musculus.GRCm39.dna.primary_assembly.fa"
+    link_ref_gtf: "https://ftp.ensembl.org/pub/release-109/gtf/mus_musculus/Mus_musculus.GRCm39.109.gtf.gz"
     ref_gtf: "Mus_musculus.GRCm39.109.gtf"
-    link_ref_gtf: "https://storage.googleapis.com/generecovery/mouse_mm10_optimized_annotation_v2.gtf.gz"
-    # link_ref_gtf: "https://ftp.ensembl.org/pub/release-109/gtf/mus_musculus/Mus_musculus.GRCm39.109.gtf.gz"
-    ref_fasta: "Mus_musculus.GRCm38.dna.primary_assembly.fa"
-    # ref_fasta: "Mus_musculus.GRCm39.dna.primary_assembly.fa"
     # Name for the file of the cellranger reference
-    ref_cellranger: "refdata-cellranger-mm10"
-    # ref_cellranger: "refdata-cellranger-mm32"
+    ref_cellranger: "refdata-cellranger-mm39"
     # Optional reference version string to include with
     ref_version: "1.0.0"
+
+    # link_ref_fasta: "https://ftp.ensembl.org/pub/release-98/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz"
+    # 
+    # link_ref_gtf: "https://storage.googleapis.com/generecovery/mouse_mm10_optimized_annotation_v2.gtf.gz"
+     # ref_cellranger: "refdata-cellranger-mm10"
+    #ref_fasta: "Mus_musculus.GRCm38.dna.primary_assembly.fa"
 
 # Parameter for cellranger multi
 multi:
@@ -64,7 +68,7 @@ cellranger:
     # Path of the fastq_path folder. Can take multiple comma-separated paths, which is helpful if the same library was sequenced on multiple flowcells. 
     fastqs: "00_RawData"
     # Expected number of recovered cells. Default: 3,000 cells.
-    cells: 5000
+    expect_cells: 5000
     # Restricts cellranger to use specified number of cores to execute pipeline stages
     localcores: 6
     # Restricts cellranger to use specified amount of memory (in GB) to execute pipeline stages.

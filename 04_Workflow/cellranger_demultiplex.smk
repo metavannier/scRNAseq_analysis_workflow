@@ -108,9 +108,10 @@ rule cellranger:
         --expect-cells={config[cellranger][expect_cells]} \
         --localcores={config[cellranger][localcores]} \
         --localmem={config[cellranger][localmem]}
-        mv ${{id[$i]}}/outs/* 05_Output/01_cellranger/${{id[$i]}}/outs/
+        mkdir -p 05_Output/01_cellranger/${{id[$i]}}/
+        mv ${{id[$i]}}/outs/* 05_Output/01_cellranger/${{id[$i]}}/
         rm -r ${{id[$i]}}/
-        mv 05_Output/01_cellranger/${{id[$i]}}/outs/web_summary.html 05_Output/01_cellranger/${{id[$i]}}/outs/${{id[$i]}}_web_summary.html
+        mv 05_Output/01_cellranger/${{id[$i]}}/web_summary.html 05_Output/01_cellranger/${{id[$i]}}/${{id[$i]}}_web_summary.html
         touch {output.cellranger_output}
         done
         """

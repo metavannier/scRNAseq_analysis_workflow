@@ -62,10 +62,9 @@ rule all:
 		### To improve with manual curration of the file overlapping_gene_list
 		# reference_enhancer_output = expand(OUTPUTDIR + "01_cellranger/reference_enhancer_output.txt"),
 		### reference for cellranger ###
-		ref_cellranger_output = expand(OUTPUTDIR + "01_cellranger/ref_cellranger_output.txt"),
+		# ref_cellranger_output = expand(OUTPUTDIR + "01_cellranger/ref_cellranger_output.txt"),
 		### Cell Multiplexing with cellranger multi ###
-		cellranger_output = expand(OUTPUTDIR + "01_cellranger/cellranger_output.txt"),
-
+		# cellranger_output = expand(OUTPUTDIR + "01_cellranger/cellranger_output.txt"),
 		## If you need to aggregate your data
 		# aggrcsv = ROOTDIR + "/aggregation.csv",
 		# out_aggregate = expand(OUTPUTDIR + "01_cellranger/{agrr}/outs/aggregate_web_summary.html", agrr=AGRR),
@@ -74,8 +73,10 @@ rule all:
 		# demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
 		# tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
 		# Seurat
-		# seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
 		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
+		# Prepare data for SIMS
+		data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt")
+
 		## Differential expression analyses
 		# violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
 		# umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
@@ -124,11 +125,15 @@ run_multiplex = config["run_multiplex"]
 if run_demultiplex:
 	include: ENVDIR + "clean_demultiplex.smk"
 	include: ENVDIR + "cellranger_demultiplex.smk"
-
+	include: ENVDIR + "seurat.smk"
+	include: ENVDIR + "prepare_data_sims.smk"
 
 if run_multiplex:	
 	include: ENVDIR + "clean.smk"
 	include: ENVDIR + "cellranger.smk"
+	include: ENVDIR + "seurat.smk"
+	include: ENVDIR + "prepare_data_sims.smk"
+
 
 # include: ENVDIR + "demuxlet.smk"
 # include: ENVDIR + "seurat.smk"

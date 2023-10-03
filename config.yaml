@@ -16,6 +16,8 @@ rules:
     reference_enhancer_rule: "FALSE"
     # Build the reference with cellranger
     ref_cellranger_rule: "TRUE"
+    # Run SIMS to anotate cells
+    sims_rule: "TRUE"
 
 run:
     # FASTQ file naming convention : [Sample name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz
@@ -51,9 +53,8 @@ reference:
     ref_version: "1.0.0"
 
     # link_ref_fasta: "https://ftp.ensembl.org/pub/release-98/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz"
-    # 
     # link_ref_gtf: "https://storage.googleapis.com/generecovery/mouse_mm10_optimized_annotation_v2.gtf.gz"
-     # ref_cellranger: "refdata-cellranger-mm10"
+    # ref_cellranger: "refdata-cellranger-mm10"
     #ref_fasta: "Mus_musculus.GRCm38.dna.primary_assembly.fa"
 
 # Parameter for cellranger multi
@@ -88,99 +89,104 @@ cellranger:
 # Seurat parameters
 seurat:
     ##### General
-
     # Number of cells above which use ggplot instead of interactive plotly
     plot_raster_nbcells_threshold : 10000
     # CellRanger count path for each sample for Read10X
-    cell-ranger_count_path: "/count/sample_filtered_feature_bc_matrix/"
+    cell_ranger_count_path: "/filtered_feature_bc_matrix/"
 
     ##### Filtering 
-
     # Switch from QC exploration mode and QC filtering
     # In exploration mode, the cells that would be filtered by QC threshold are not filtered but marked
     # They are shown in the later analysis with a different color
     # "TRUE" : Exploration mode, "FALSE" : Not in exploration mode
     qc_exploration_mode: "FALSE"
-
     # Include features detected in at least this many cells. Will subset the counts matrix as well.
     min_cells: 3
-
     # Include cells where at least this many features are detected.
     min_features: 200
-
     # Cells with number of UMIs outside the range will be excluded
     # Can be a list of UMIs but MUST be on the same order than sample.tsv id.
     filter_umi_min: "0,0,0,0"
-    filter_umi_max: "50000,40000,40000,40000"
-
+    filter_umi_max: "32000,28000,50000,60000"
     # Filter cells that have unique feature counts over/less n
     # Can be a list of feature counts but MUST be on the same order than sample.tsv id.
-    filter_feature_min: "1800,1800,1500,1500"
-    filter_feature_max: "7700,7500,7700,7200"
-
+    filter_feature_min: "200,500,300,200"
+    filter_feature_max: "7500,7500,7700,8800"
     # Filter cells that have > n% mitochondrial counts
-    filter_percent_mt: "10,10,8,8"
+    filter_percent_mt: "17,15,20,22"
     # Filter cells that have < n% mitochondrial counts
-    filter_percent_mt_min: "1,1,0,0"
-
+    filter_percent_mt_min: "0,0,0,0"
     # Filter cells that have < n% ribosomal counts
     filter_percent_rb: "0,0,0,0"
-
     # Pattern to match features against => mitochondrial genes | for mouse : "^mt-" / for human : "^MT-"
     pattern_mt: "^mt-"
-
     # Pattern to match features against => ribosomal genes
     pattern_rb: "^rps|^rpl"
 
     ##### Normalization
-
     # Normalization parameters (see Seurat::NormalizeData())
     norm_method: "LogNormalize"
     norm_scale_factor: 10000
 
     ##### Find the most variable genes
-
     # How to choose top variable features => vst, mean.var.plot or dispersion
     feature_select_method: "vst"
-
     # Number of features to select as top variable features; only used when select_method is set to 'dispersion' or 'vst'
     variable_features: 2000
-
     # For table in report
     variable_features_showtop : 200
-    
+
     ##### PCA parameters
     # Number of dimention to show for the vizualisation
     dims: 30
-
     # Default number of dimensions to use for PCA (see Seurat::RunPCA())
     pca_npc: 20
-
     # Number of dimensions to show in PCA-related plots
     pca_plots_nbdims : 3
-
     #  Number of'top' features to show when plotting PCA loadings
     pca_plot_nbfeatures : 3
 
     ##### Dimensionality reduction parameters (TSNE/UMAP)
-
     # Number of dimensions to use from PCA results
     dimreduc_use_pca_nbdims : 20
 
     ##### Cluster identification parameters
-
     # Number of dimensions to use from PCA results
     findclusters_use_pca_nbdims : 20
-
     # Nearest-neighbor graph construction
     findneighbors_k : 30
-
     # Value of the resolution parameter, use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities.
     findclusters_resolution : 1
-
     # Algorithm for modularity optimization
     # 1 = Louvain; 2 = Louvain with multilevel refinement; 3 = SLM; 4 = Leiden
     findclusters_algorithm : 1
+
+# Parameters to build correct reference(s) for sims
+reference_sims:
+    ##### General #####
+    #  Path of the script you want to execute (Corespond to the reference you want to use)
+    # For now : arlotta.R, allen_mouse_whole_cortex.R
+    r_script: "/media/lea/data/inmed_dechevigny_scrnaseq_cortex/03_Script/arlotta.R"
+
+    ##### Our Matrix to annotate #####
+    # The name of the folder of the sample you want to annotate (Folder in the Seurat folder)
+    sample_id: "P5_KO"
+
+    ##### Paola Arlotta #####
+    # Path for the arlotta metadata
+    arlotta_metadata: "arlotta/metaData_scDevSC.txt"
+    #
+    arlotta_matrix: "arlotta/gene_sorted-matrix.mtx.gz"
+    #
+    arlotta_cells: "arlotta/barcodes.tsv"
+    #
+    arlotta_features: "arlotta/genes.tsv"
+    # Pattern that correspond to the mouse age that we want to keep for the training of our data
+    # It's possible to select multiple ones if separate by a coma
+    # In this reference : E10, E11, E12, E13, E14, E15, E16, E17, E18, P1, P4
+    pattern_to_keep: "P4"
+
+    ##### Allen_mouse_whole_cortex #####
 
 # Differentially expressed features analyses
 diffexp:
@@ -196,6 +202,7 @@ diffexp:
     pCutoff: 0.01
     # Foldchange threshold (not in log base 2)
     FCcutoff: 2
+
 # Differentially expressed features analyses inside cluster after subset (by gene expression)
 diffexpsubset:
     # Marker of interest to select cluster of Cells with expression or not of this gene. This gene will be removed for the DE analyses due to is high DE value.
@@ -204,4 +211,6 @@ diffexpsubset:
     genetoremove: ""
     # Cluster on the seurat object (choose cluster with high number of the marker gene of interest)
     cluster: "Normal_Melanocytes,M15,M27,A375,MM057,MM087,MM001,MM074"
+
+
     

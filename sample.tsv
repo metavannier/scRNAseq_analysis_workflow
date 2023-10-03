@@ -1,5 +1,2 @@
 name	id	rawsample	sample	lane	fastq1	fastq2	barcode
 2	P5_KO	2_S1_L001	S1	L001	/00_RawData/2_S1_L001_R1_001.fastq.gz	/00_RawData/2_S1_L001_R2_001.fastq.gz	/00_RawData/2_S1_L001_I1_001.fastq.gz
-3	P5_WT	3_S1_L001	S1	L001	/00_RawData/3_S1_L001_R1_001.fastq.gz	/00_RawData/3_S1_L001_R2_001.fastq.gz	/00_RawData/3_S1_L001_I1_001.fastq.gz
-6	P30_KO	6_S1_L001	S1	L001	/00_RawData/6_S1_L001_R1_001.fastq.gz	/00_RawData/6_S1_L001_R2_001.fastq.gz	/00_RawData/6_S1_L001_I1_001.fastq.gz
-7	P30_WT	7_S1_L001	S1	L001	/00_RawData/7_S1_L001_R1_001.fastq.gz	/00_RawData/7_S1_L001_R2_001.fastq.gz	/00_RawData/7_S1_L001_I1_001.fastq.gz

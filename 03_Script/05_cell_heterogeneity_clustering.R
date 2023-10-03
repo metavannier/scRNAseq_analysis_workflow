@@ -302,8 +302,18 @@ write.table( seurat_obj[[]],
              col.names = NA, # Add a blank column name for row names (CSV convention)
              sep="\t");
 
-# # A TESTER
-# # save a csv file for each sample
-# write.table( seurat_obj[[]], 
-#              file= file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_filtered_seurat_object.csv")));
+# Save the count matrix as csv file 
+count_matrix <- GetAssayData(object = seurat_obj[["RNA"]], slot = "counts")
+count_matrix <- as.matrix(count_matrix)
+count_matrix <- t(count_matrix)
+count_matrix <- as.data.frame(count_matrix)
 
+fwrite(x = count_matrix, file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_count_matrix.csv")), row.names = TRUE)
+
+# Save the normalize matrix as csv file
+normalized_matrix <- GetAssayData(object = seurat_obj[["RNA"]], slot = "data")
+normalized_matrix <- as.matrix(normalized_matrix)
+normalized_matrix <- t(normalized_matrix)
+normalized_matrix <- as.data.frame(normalized_matrix)
+
+fwrite(x = normalized_matrix , file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv")), row.names = TRUE)

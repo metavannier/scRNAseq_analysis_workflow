@@ -32,7 +32,8 @@ MIN_FEATURES <- as.numeric(MIN_FEATURES)
 # Read data
 #........................................-
 seurat_data <- Read10X(paste0(in_data_dir,SAMPLE_ID,CELL_RANGER_COUNT_PATH))
-seurat_obj <- CreateSeuratObject(counts = seurat_data$`Gene Expression`, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID)
+seurat_obj <- CreateSeuratObject(counts = seurat_data, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID)
+# seurat_obj <- CreateSeuratObject(counts = seurat_data$`Gene Expression`, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID) => Thomas (for multiplex data ? )
 seurat_obj$SampleID <- SAMPLE_ID
 
 # ..........................................................................................................

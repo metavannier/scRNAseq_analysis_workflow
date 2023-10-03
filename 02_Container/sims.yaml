@@ -1,0 +1,9 @@
+channels :
+    - r
+    - bioconda
+    - conda-forge
+    - defaults
+dependencies :
+    - r-data.table =1.14.2
+    - r-matrix
+    - r-seurat =4.0.3

@@ -14,7 +14,7 @@ library(data.table)
 # Path to files / folders
 #-------------------------------------
 DIRECTORY = getwd()
-# print(DIRECTORY)
+TEXT_OUTPUT = snakemake@output[["data_for_sims_output"]]
 OUTPUTDIR = file.path((DIRECTORY), "05_Output")
 REF = file.path((DIRECTORY), "01_Reference")
 
@@ -26,6 +26,9 @@ ARLOTTA_MATRIX = snakemake@params[["arlotta_matrix"]]
 ARLOTTA_CELLS = snakemake@params[["arlotta_cells"]]
 ARLOTTA_FEATURES = snakemake@params[["arlotta_features"]]
 
+OUTPUT_NAME_REF_METADATA = snakemake@params[["output_name_ref_metadata"]]
+OUTPUT_NAME_REF_MATRIX = snakemake@params[["output_name_ref_matrix"]]
+OUTPUT_NAME_MATRIX = snakemake@params[["output_name_matrix"]]
 
 STEP2 = "02_seurat/"
 STEP3 = "03_sims/"
@@ -40,7 +43,7 @@ reference_metadata <- fread(file = file.path(REF, ARLOTTA_METADATA))
 # Low quality cells, Doublet,
 # Red blood cells, group
 #-------------------------------------
-patterns_to_delete <- c("Low quality cells", "Doublet", "Red blood cells", "group") # A mettre dans le config.yaml ?
+patterns_to_delete <- c("Low quality cells", "Doublet", "Red blood cells", "group") 
 rows_to_delete <- apply(sapply(patterns_to_delete, grepl, reference_metadata$New_cellType), 1, any)
 reference_metadata <- subset(reference_metadata, !rows_to_delete)
 
@@ -83,8 +86,6 @@ rownames(reference_matrix) = feature.names$V1
 # # as characters (for sims).
 # #-------------------------------------
 reference_matrix <- t(reference_matrix)
-print("MATRICE TRANSPOSÉE")
-
 reference_matrix <- as.matrix(reference_matrix)
 
 colnames(reference_matrix) <- as.character(colnames(reference_matrix)) # Genes
@@ -123,15 +124,29 @@ rownames(matrix) <- matrix[,"V1"]
 
 #-------------------------------------
 # Look at genes who are common in both
-# matrix and subset genes who are nots
+# matrix and subset genes who are not
 #-------------------------------------
 gene_intersection <- intersect(colnames(matrix), colnames(reference_matrix))
 reference_matrix <- reference_matrix[, gene_intersection]
 matrix <- matrix[, gene_intersection]
 
 #-------------------------------------
-# Wtrite the two new matrix 
+# Wtrite the two new matrix +
+# create directory
 #-------------------------------------
-write.csv(x = reference_matrix, file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0("arlotta_reference_matrix_", SAMPLE_ID)))
-write.csv(x = matrix,  file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0("arlotta_matrix_", SAMPLE_ID)))
-fwrite(x = reference_metadata, file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0("arlotta_reference_metadata_", SAMPLE_ID)))
+dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
+
+class(reference_matrix) <- "numeric"
+write.csv(reference_matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
+
+class(matrix) <- "numeric"
+write.csv(matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_MATRIX,".csv")))
+
+fwrite(x = reference_metadata, file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_METADATA,".csv")))
+
+#-------------------------------------
+# create the output file
+#-------------------------------------
+output_file<-file(TEXT_OUTPUT)
+writeLines(c("Files preparation for the Arlotta reference for SIMS finished (CSV format)"), output_file)
+close(output_file)

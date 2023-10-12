@@ -1,9 +1,11 @@
 channels :
-    - r
-    - bioconda
-    - conda-forge
-    - defaults
-dependencies :
-    - r-data.table =1.14.2
-    - r-matrix
-    - r-seurat =4.0.3
+  - main
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies : 
+  - python = 3.9
+  - pip
+  - pip:
+    - --upgrade pip setuptools wheel
+    - --use-pep517 git+https://github.com/braingeneers/SIMS.git

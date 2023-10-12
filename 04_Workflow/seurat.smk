@@ -4,7 +4,7 @@
 
 rule seurat:
     input:
-        multiplexing_output = expand(OUTPUTDIR + "01_cellranger/multiplexing_output.txt"),
+        cellranger_output = expand(OUTPUTDIR + "01_cellranger/cellranger_output.txt"),
 
     output:
         seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
@@ -15,7 +15,7 @@ rule seurat:
 
     params:
         sc_data = expand(OUTPUTDIR + "01_cellranger/{sample_id}/count/sample_filtered_feature_bc_matrix/",sample_id = SAMPLE_ID),
-        cell_ranger_count_path = config["seurat"]["cell-ranger_count_path"],
+        cell_ranger_count_path = config["seurat"]["cell_ranger_count_path"],
         sample_id = expand("{sample_id.id}", sample_id = sample_id.itertuples()),
         plot_raster_nbcells_threshold = config["seurat"]["plot_raster_nbcells_threshold"],
         qc_exploration_mode = config["seurat"]["qc_exploration_mode"],

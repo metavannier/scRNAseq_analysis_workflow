@@ -1,0 +1,11 @@
+channels :
+  - main
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies : 
+  - python = 3.9
+  - pip
+  - pip:
+    - --upgrade pip setuptools wheel
+    - --use-pep517 git+https://github.com/braingeneers/SIMS.git

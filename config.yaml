@@ -166,11 +166,17 @@ reference_sims:
     ##### General #####
     #  Path of the script you want to execute (Corespond to the reference you want to use)
     # For now : arlotta.R, allen_mouse_whole_cortex.R
-    r_script: "/media/lea/data/inmed_dechevigny_scrnaseq_cortex/03_Script/arlotta.R"
+    r_script: "arlotta.R"
+    #
+    output_name_ref_metadata:  "arlotta_reference_metadata"
+    #
+    output_name_ref_matrix: "arlotta_reference_matrix"
+    #
+    output_name_matrix: "arlotta_matrix"
 
     ##### Our Matrix to annotate #####
     # The name of the folder of the sample you want to annotate (Folder in the Seurat folder)
-    sample_id: "P5_KO"
+    sample_id: "P5_WT"
 
     ##### Paola Arlotta #####
     # Path for the arlotta metadata
@@ -187,6 +193,38 @@ reference_sims:
     pattern_to_keep: "P4"
 
     ##### Allen_mouse_whole_cortex #####
+    #
+    allen_metadata: "allen/"
+    #
+    allen_matrix: "allen/"
+    #
+    allen_genes: "allen/"
+    #
+    allen_cells: "allen/"
+
+sims:
+    ##### General
+    # Name of the column in your metadata on which you wish to train your model.
+    class_label: "New_cellType"
+    # 
+    # https://lightning.ai/docs/pytorch/stable/advanced/speed.html
+    num_workers: 12
+    #
+    max_epoch: 100
+
+    ##### Logger
+    # Name of the project (Will be the name of the folder where the model checkpoint will be saved)
+    project_name: "P5_WT_test"
+
+    ##### Early Stopping
+    # The validation metric you wish to monitor for early stop.
+    monitor: "val_loss"
+    # The number of epochs during which the validation metric may not improve before early shutdown is triggered.
+    # 10% of the number of epoch to beggin with
+    patience: 10
+
+    ##### Model Checkpoint
+    #
 
 # Differentially expressed features analyses
 diffexp:

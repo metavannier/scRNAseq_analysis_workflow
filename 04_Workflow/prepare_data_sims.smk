@@ -55,6 +55,7 @@ rule anndata_for_sims:
         sample_id = config["reference_sims"]["sample_id"],
         output_name_ref_matrix = config["reference_sims"]["output_name_ref_matrix"],
         output_name_matrix = config["reference_sims"]["output_name_matrix"],
+        output_name_ref_metadata = config["reference_sims"]["output_name_ref_metadata"],
 
     conda:
         CONTAINER + "preparation_sims.yaml"
@@ -64,11 +65,11 @@ rule anndata_for_sims:
     
     shell:
         """
-        if [ {params.sims.rule} = "FALSE" ]
+        if [ {params.sims_rule} = "FALSE" ]
         then
             touch {output.anndata_for_sims_output}
         else
-            python 03_Script/to_anndata_file.py {params.sample_id} {params.output_name_ref_matrix} {params.output_name_matrix}
+            python 03_Script/to_anndata_file.py {params.sample_id} {params.output_name_ref_matrix} {params.output_name_matrix} {params.output_name_ref_metadata}
             touch {output.anndata_for_sims_output}
         fi
         """

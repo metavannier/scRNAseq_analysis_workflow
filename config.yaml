@@ -8,28 +8,28 @@ sample: sample.tsv
 # Config
 #-------------------------------------
 
-run_demultiplex: true
-run_multiplex: false
+# If you data are demultiplexed = true
+run_demultiplex: false
+# If your data are not demultiplexed = true
+run_multiplex: true
 
 rules:
     # Optimizing and assembling genome annotations for 3’ single-cell RNA-sequencing analysis
     reference_enhancer_rule: "FALSE"
     # Build the reference with cellranger
-    ref_cellranger_rule: "TRUE"
+    ref_cellranger_rule: "FALSE"
     # Run SIMS to anotate cells
-    sims_rule: "TRUE"
+    sims_rule: "FALSE"
 
 run:
     # FASTQ file naming convention : [Sample name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz
     
     # Can be a list if pair-end : "R1,R2" or "1,2" or "R1_001,R2_001"
-    types: "R1_001,R2_001"
+    types: "1,2"
     # Library if multiplexed 
     library: "1_A_GEX,2_A_CMO"
 
 fastq:
-    # Expension of fastq file
-    # expansion: "fastq" => Pas utilisé
     # pair-end or not (R1,R2 or 1,2 etc...)
     pair: "R1,R2"
     # Bioproject
@@ -43,12 +43,12 @@ fastq:
 
 # Genome and gff link to create the pre-built Cell Ranger reference
 reference:
-    link_ref_fasta: "https://ftp.ensembl.org/pub/release-109/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna.primary_assembly.fa.gz"
-    ref_fasta: "Mus_musculus.GRCm39.dna.primary_assembly.fa"
-    link_ref_gtf: "https://ftp.ensembl.org/pub/release-109/gtf/mus_musculus/Mus_musculus.GRCm39.109.gtf.gz"
+    link_ref_fasta: "https://ftp.ensembl.org/pub/release-98/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz"
+    ref_fasta: "Mus_musculus.GRCm38.dna.primary_assembly.fa"
+    link_ref_gtf: "https://storage.googleapis.com/generecovery/mouse_mm10_optimized_annotation_v2.gtf.gz"
     ref_gtf: "Mus_musculus.GRCm39.109.gtf"
     # Name for the file of the cellranger reference
-    ref_cellranger: "refdata-cellranger-mm39"
+    ref_cellranger: "refdata-cellranger-mm10"
     # Optional reference version string to include with
     ref_version: "1.0.0"
 
@@ -92,7 +92,7 @@ seurat:
     # Number of cells above which use ggplot instead of interactive plotly
     plot_raster_nbcells_threshold : 10000
     # CellRanger count path for each sample for Read10X
-    cell_ranger_count_path: "/filtered_feature_bc_matrix/"
+    cell_ranger_count_path: "/count/sample_filtered_feature_bc_matrix/"
 
     ##### Filtering 
     # Switch from QC exploration mode and QC filtering
@@ -107,15 +107,15 @@ seurat:
     # Cells with number of UMIs outside the range will be excluded
     # Can be a list of UMIs but MUST be on the same order than sample.tsv id.
     filter_umi_min: "0,0,0,0"
-    filter_umi_max: "32000,28000,50000,60000"
+    filter_umi_max: "55000,42000,42000,40000"
     # Filter cells that have unique feature counts over/less n
     # Can be a list of feature counts but MUST be on the same order than sample.tsv id.
-    filter_feature_min: "200,500,300,200"
-    filter_feature_max: "7500,7500,7700,8800"
+    filter_feature_min: "1700,1700,1400,1400"
+    filter_feature_max: "7900,7500,7700,7200"
     # Filter cells that have > n% mitochondrial counts
-    filter_percent_mt: "17,15,20,22"
+    filter_percent_mt: "10,10,8,8"
     # Filter cells that have < n% mitochondrial counts
-    filter_percent_mt_min: "0,0,0,0"
+    filter_percent_mt_min: "0.2,0.2,0.2,0.2"
     # Filter cells that have < n% ribosomal counts
     filter_percent_rb: "0,0,0,0"
     # Pattern to match features against => mitochondrial genes | for mouse : "^mt-" / for human : "^MT-"
@@ -140,7 +140,7 @@ seurat:
     # Number of dimention to show for the vizualisation
     dims: 30
     # Default number of dimensions to use for PCA (see Seurat::RunPCA())
-    pca_npc: 20
+    pca_npc: 22
     # Number of dimensions to show in PCA-related plots
     pca_plots_nbdims : 3
     #  Number of'top' features to show when plotting PCA loadings
@@ -148,11 +148,11 @@ seurat:
 
     ##### Dimensionality reduction parameters (TSNE/UMAP)
     # Number of dimensions to use from PCA results
-    dimreduc_use_pca_nbdims : 20
+    dimreduc_use_pca_nbdims : 22
 
     ##### Cluster identification parameters
     # Number of dimensions to use from PCA results
-    findclusters_use_pca_nbdims : 20
+    findclusters_use_pca_nbdims : 22
     # Nearest-neighbor graph construction
     findneighbors_k : 30
     # Value of the resolution parameter, use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities.

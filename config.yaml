@@ -8,6 +8,8 @@ sample: sample.tsv
 # Config
 #-------------------------------------
 
+# If you run the workflow with slurm (sbatch run_slurm.sh)
+run_slurm: false
 # If you data are demultiplexed = true
 run_demultiplex: false
 # If your data are not demultiplexed = true
@@ -165,18 +167,18 @@ seurat:
 reference_sims:
     ##### General #####
     #  Path of the script you want to execute (Corespond to the reference you want to use)
-    # For now : arlotta.R, allen_mouse_whole_cortex.R
-    r_script: "arlotta.R"
+    # For now : arlotta.R, allen_mouse_whole_cortex.R, mousegastrulation.R
+    r_script: "mousegastrulation.R"
     #
-    output_name_ref_metadata:  "arlotta_reference_metadata"
+    output_name_ref_metadata:  "mousegastrulation_reference_metadata"
     #
-    output_name_ref_matrix: "arlotta_reference_matrix"
+    output_name_ref_matrix: "mousegastrulation_reference_matrix"
     #
-    output_name_matrix: "arlotta_matrix"
+    output_name_matrix: "mousegastrulation_matrix"
 
     ##### Our Matrix to annotate #####
     # The name of the folder of the sample you want to annotate (Folder in the Seurat folder)
-    sample_id: "P5_WT"
+    sample_id: "72h"
 
     ##### Paola Arlotta #####
     # Path for the arlotta metadata

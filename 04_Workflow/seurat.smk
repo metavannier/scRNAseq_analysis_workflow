@@ -14,6 +14,7 @@ rule seurat:
         CONTAINER + "seurat.yaml"
 
     params:
+        run_demultiplex = config["run_demultiplex"],
         sc_data = expand(OUTPUTDIR + "01_cellranger/{sample_id}/count/sample_filtered_feature_bc_matrix/",sample_id = SAMPLE_ID),
         cell_ranger_count_path = config["seurat"]["cell_ranger_count_path"],
         sample_id = expand("{sample_id.id}", sample_id = sample_id.itertuples()),

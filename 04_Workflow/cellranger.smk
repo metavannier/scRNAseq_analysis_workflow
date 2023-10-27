@@ -83,9 +83,6 @@ rule multi:
     output:
         cellranger_output = expand(OUTPUTDIR + "01_cellranger/cellranger_output.txt"),
 
-    params:
-        multi_rule = config["rules"]["multi_rule"],
-
     singularity:
         CONTAINER + "cellranger.sif"
 

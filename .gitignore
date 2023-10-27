@@ -4,6 +4,7 @@
 02_Container/cellranger.sif
 02_Container/mambaforge:23.1.0-1.sif
 05_Output
+05_Output_june
 .vscode/
 .bash_history/
 .cache/

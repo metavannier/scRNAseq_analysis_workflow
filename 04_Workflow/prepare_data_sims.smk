@@ -12,6 +12,7 @@ rule data_for_sims:
     params:
         # sims_rule = config["rules"]["sims_rule"],
         # ADD LEA
+        ### ADD LEA V2
         # ADD THOMAS REBASE
         # General
         r_script = config["reference_sims"]["r_script"],

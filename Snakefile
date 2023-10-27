@@ -21,8 +21,10 @@ REPORT = srcdir("07_Report/")
 BENCHMARK = srcdir("08_benchmark/")
 LOG = srcdir("09_log/")
 
-# If using conda environment in slurm
-container: CONTAINER + "mambaforge:23.1.0-1.sif"
+# If running the workflow with slurm
+run_slurm = config["run_slurm"]
+if run_slurm:
+	container: CONTAINER + "mambaforge:23.1.0-1.sif"
 
 # ----------------------------------------------
 # Load sample sheet
@@ -72,9 +74,9 @@ rule all:
 		# demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
 		# tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
 		# Seurat
-		seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
+		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
 		### Prepare data for SIMS
-		# data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
+		data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
 		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### SIMS
 		# sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
@@ -135,7 +137,7 @@ if run_multiplex:
 	# include: ENVDIR + "clean.smk"
 	# include: ENVDIR + "cellranger.smk"
 	include: ENVDIR + "seurat.smk"
-	# include: ENVDIR + "prepare_data_sims.smk"
+	include: ENVDIR + "prepare_data_sims.smk"
 	# include: ENVDIR + "SIMS.smk"
 
 # include: ENVDIR + "demuxlet.smk"

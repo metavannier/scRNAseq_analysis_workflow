@@ -11,6 +11,7 @@ rule data_for_sims:
 
     params:
         # sims_rule = config["rules"]["sims_rule"],
+        # ADD LEA
         # ADD THOMAS REBASE
         # General
         r_script = config["reference_sims"]["r_script"],
@@ -29,6 +30,7 @@ rule data_for_sims:
         allen_matrix = config["reference_sims"]["allen_matrix"],
         allen_genes = config["reference_sims"]["allen_genes"],
         allen_cells = config["reference_sims"]["allen_cells"],
+        # ADD LEA
 
     conda:
         CONTAINER + "preparation_sims.yaml"

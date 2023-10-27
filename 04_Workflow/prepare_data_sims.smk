@@ -11,7 +11,6 @@ rule data_for_sims:
 
     params:
         # sims_rule = config["rules"]["sims_rule"],
-        # ADD LEA
         # General
         r_script = config["reference_sims"]["r_script"],
         sample_id = config["reference_sims"]["sample_id"],

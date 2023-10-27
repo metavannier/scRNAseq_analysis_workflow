@@ -5,6 +5,10 @@ channels :
     - defaults
 dependencies :
     - r-base =4.3.0
+    # - r-data.table =1.14.2
+    # - r-matrix
+    # - conda-forge::anndata = 0.9.2
+    # - conda-forge::pandas = 2.1.1
     - r-biocmanager = 1.30.22
     - r-magick =2.7.5
 

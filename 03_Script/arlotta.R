@@ -101,7 +101,7 @@ rows_to_keep <- grepl(paste(pattern_to_keep, collapse = "|"), rownames(reference
 reference_matrix <- reference_matrix[rows_to_keep, ]
 
 #-------------------------------------
-# Keep cells thaht match both the 
+# Keep cells that match both the 
 # metadata an matrix of reference
 #-------------------------------------
 column_metadata <- reference_metadata$NAME

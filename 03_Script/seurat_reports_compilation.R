@@ -18,6 +18,7 @@ REPORT_LIST <- snakemake@output[["seurat_report"]]
 SAMPLE_ID_LIST <- snakemake@params[["sample_id"]]
 PLOT_RASTER_NBCELLS_THRESHOLD <- snakemake@params[["plot_raster_nbcells_threshold"]]
 CELL_RANGER_COUNT_PATH <- snakemake@params[["cell_ranger_count_path"]]
+RUN_DEMULTIPLEX <- snakemake@params[["run_demultiplex"]]
 
 # Filtering
 QC_EXPLORATION_MODE <- snakemake@params[["qc_exploration_mode"]]

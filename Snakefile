@@ -21,9 +21,8 @@ REPORT = srcdir("07_Report/")
 BENCHMARK = srcdir("08_benchmark/")
 LOG = srcdir("09_log/")
 
-# If using conda environment
-# container: "docker://condaforge/mambaforge:22.11.1-4"
-# container: "docker://condaforge/mambaforge:23.1.0-1"
+# If using conda environment (For slurm)
+container: CONTAINER + "mambaforge:23.1.0-1.sif"
 
 # ----------------------------------------------
 # Load sample sheet
@@ -78,7 +77,13 @@ rule all:
 		# data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
 		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### SIMS
-		sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+		# sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+		########################################################################################################################################################## TEST
+		### Test Remi
+		# test_output = expand(OUTPUTDIR + "test_output.txt"),
+		### Test KNNOR
+		knnor_output = expand(OUTPUTDIR +"03_sims/knnor_output.txt"),
+
 
 		## Differential expression analyses
 		# violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
@@ -131,6 +136,8 @@ if run_demultiplex:
 	include: ENVDIR + "seurat.smk"
 	include: ENVDIR + "prepare_data_sims.smk"
 	include: ENVDIR + "SIMS.smk"
+	include: ENVDIR + "knnor.smk"
+	# include: ENVDIR + "test.smk"
 
 if run_multiplex:	
 	include: ENVDIR + "clean.smk"
@@ -138,6 +145,9 @@ if run_multiplex:
 	include: ENVDIR + "seurat.smk"
 	include: ENVDIR + "prepare_data_sims.smk"
 	include: ENVDIR + "SIMS.smk"
+	include: ENVDIR + "knnor.smk"
+	# include: ENVDIR + "test.smk"
+
 
 # include: ENVDIR + "demuxlet.smk"
 # include: ENVDIR + "seurat.smk"

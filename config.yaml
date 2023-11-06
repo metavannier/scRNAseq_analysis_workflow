@@ -164,67 +164,60 @@ seurat:
 # Parameters to build correct reference(s) for sims
 reference_sims:
     ##### General #####
-    #  Path of the script you want to execute (Corespond to the reference you want to use)
-    # For now : arlotta.R, allen_mouse_whole_cortex.R
+    #  Name of the script you want to execute (Corespond to the reference you want to use)
+    # For now : arlotta.R, (allen_mouse_whole_cortex.R => A tester)
     r_script: "arlotta.R"
-    #
-    output_name_ref_metadata:  "arlotta_reference_metadata"
-    #
-    output_name_ref_matrix: "arlotta_reference_matrix"
-    #
-    output_name_matrix: "arlotta_matrix"
+    # Output file name for the reference metadata
+    output_name_ref_metadata:  "P4_arlotta_reference_metadata"
+    # Output file name for the reference matrix
+    output_name_ref_matrix: "P4_arlotta_reference_matrix"
+    # Output file name for the matrix to annotate
+    output_name_matrix: "P4_arlotta_matrix"
 
     ##### Our Matrix to annotate #####
-    # The name of the folder of the sample you want to annotate (Folder in the Seurat folder)
+    # The name of the folder of the sample you want to annotate (One of the output in the seurat folder)
     sample_id: "P5_WT"
 
     ##### Paola Arlotta #####
     # Path for the arlotta metadata
     arlotta_metadata: "arlotta/metaData_scDevSC.txt"
-    #
+    # Path for the arlotta matrix (matrix + barcodes + genes)
     arlotta_matrix: "arlotta/gene_sorted-matrix.mtx.gz"
-    #
     arlotta_cells: "arlotta/barcodes.tsv"
-    #
     arlotta_features: "arlotta/genes.tsv"
     # Pattern that correspond to the mouse age that we want to keep for the training of our data
     # It's possible to select multiple ones if separate by a coma
     # In this reference : E10, E11, E12, E13, E14, E15, E16, E17, E18, P1, P4
-    pattern_to_keep: "P4"
-
-    ##### Allen_mouse_whole_cortex #####
-    #
+    pattern_to_keep: ["P4"]
+    
+    ##### Allen_mouse_whole_cortex #####    TO DO !!! => A tester
+    # Path for the arlotta metadata
     allen_metadata: "allen/"
-    #
+    # Path for the allen matrix (matrix + genes + cells)
     allen_matrix: "allen/"
-    #
     allen_genes: "allen/"
-    #
     allen_cells: "allen/"
 
 sims:
     ##### General
     # Name of the column in your metadata on which you wish to train your model.
     class_label: "New_cellType"
-    # 
-    # https://lightning.ai/docs/pytorch/stable/advanced/speed.html
-    num_workers: 12
-    #
-    max_epoch: 100
+    # Your personnal key to connect to your wandb account
+    key: "5f86a9267b08ff77c21a8872d763cb76048dfaca"
+    # Number of cores (Put the same in the run_slurm.sh if necessary)
+    num_workers: 24
+    # Maximum number of epoch to train our model (Will stop after, start counting from 0)
+    max_epoch: 2
 
     ##### Logger
-    # Name of the project (Will be the name of the folder where the model checkpoint will be saved)
-    project_name: "P5_WT_test"
+    # Name of the project (Will be the name of the run and checkpoint)
+    project_name: "test_to_erase"
 
     ##### Early Stopping
     # The validation metric you wish to monitor for early stop.
     monitor: "val_loss"
-    # The number of epochs during which the validation metric may not improve before early shutdown is triggered.
-    # 10% of the number of epoch to beggin with
-    patience: 10
-
-    ##### Model Checkpoint
-    #
+    # The number of epochs during which the validation metric (monitor) may not improve before early shutdown is triggered. (To prevent overtraining)
+    patience: 20
 
 # Differentially expressed features analyses
 diffexp:

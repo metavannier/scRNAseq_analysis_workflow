@@ -81,8 +81,6 @@ rule all:
 		### SIMS
 		# sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
 		########################################################################################################################################################## TEST
-		### Test Remi
-		# test_output = expand(OUTPUTDIR + "test_output.txt"),
 		### Test KNNOR
 		knnor_output = expand(OUTPUTDIR +"03_sims/knnor_output.txt"),
 
@@ -139,7 +137,6 @@ if run_demultiplex:
 	include: ENVDIR + "prepare_data_sims.smk"
 	include: ENVDIR + "SIMS.smk"
 	include: ENVDIR + "knnor.smk"
-	# include: ENVDIR + "test.smk"
 
 if run_multiplex:	
 	# include: ENVDIR + "clean.smk"
@@ -148,7 +145,6 @@ if run_multiplex:
 	include: ENVDIR + "prepare_data_sims.smk"
 	include: ENVDIR + "SIMS.smk"
 	include: ENVDIR + "knnor.smk"
-	# include: ENVDIR + "test.smk"
 
 
 # include: ENVDIR + "demuxlet.smk"

@@ -52,14 +52,16 @@ reference_metadata <- subset(reference_metadata, !rows_to_delete)
 # Rename some subclass to match the
 # Allen reference
 #-------------------------------------
-reference_metadata$New_cellType[reference_metadata$New_cellType == "UL CPN"] <- "IT"
-reference_metadata$New_cellType[reference_metadata$New_cellType == "Layer 4"] <- "IT"
-reference_metadata$New_cellType[reference_metadata$New_cellType == "DL CPN"] <- "DL CPN"
-reference_metadata$New_cellType[reference_metadata$New_cellType == "SCPN"] <- "L5 PT"
-reference_metadata$New_cellType[reference_metadata$New_cellType == "NP"] <- "L5 NP"
-reference_metadata$New_cellType[reference_metadata$New_cellType == "CThPN"] <- "L6 CT"
-reference_metadata$New_cellType[reference_metadata$New_cellType == "Layer 6b"] <- "L6b"
-reference_metadata$New_cellType[reference_metadata$New_cellType == "Cajal Retzius cells"] <- "CR"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "UL CPN"] <- "IT"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "Layer 4"] <- "IT"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "DL CPN"] <- "IT"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "DL_CPN_1"] <- "IT"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "DL_CPN_2"] <- "IT"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "SCPN"] <- "L5 PT"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "NP"] <- "L5 NP"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "CThPN"] <- "L6 CT"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "Layer 6b"] <- "L6b"
+# reference_metadata$New_cellType[reference_metadata$New_cellType == "Cajal Retzius cells"] <- "CR"
 
 ######################################################################################################
 
@@ -82,7 +84,7 @@ rownames(reference_matrix) = feature.names$V1
 # #-------------------------------------
 # # Transpose the matrix :
 # # Cells in row and genes in columns +
-# # Transform rownames ans colnames
+# # Transform rownames and colnames
 # # as characters (for sims).
 # #-------------------------------------
 reference_matrix <- t(reference_matrix)
@@ -101,7 +103,7 @@ rows_to_keep <- grepl(paste(pattern_to_keep, collapse = "|"), rownames(reference
 reference_matrix <- reference_matrix[rows_to_keep, ]
 
 #-------------------------------------
-# Keep cells thaht match both the 
+# Keep cells that match both the 
 # metadata an matrix of reference
 #-------------------------------------
 column_metadata <- reference_metadata$NAME

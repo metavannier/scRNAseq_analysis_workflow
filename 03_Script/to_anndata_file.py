@@ -71,13 +71,13 @@ print("-------------------------------------------------------------------")
 print(cell_data)
 
 
-gene_name_to_observe = "mt-Cytb"
+# gene_name_to_observe = "mt-Cytb"
 
-gene_data = anndata_ref_matrix.var.loc[gene_name_to_observe ]
-print("")
-print("")
-print("-------------------------------------------------------------------")
-print(gene_data.head(5))
+# gene_data = anndata_ref_matrix.var.loc[gene_name_to_observe ]
+# print("")
+# print("")
+# print("-------------------------------------------------------------------")
+# print(gene_data.head(5))
 
 #-------------------------------------
 # Load the matrix to annotate

@@ -204,6 +204,11 @@ reference_sims:
     #
     allen_cells: "allen/"
 
+    ##### mousegastrulation #####
+    # Samples from the reference as described in EmbryoAtlasData object (for lenne project : c(1:20,23:37)
+    # mousegastrulation_samples: "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37"
+    mousegastrulation_samples: "1,5"
+
 sims:
     ##### General
     # Name of the column in your metadata on which you wish to train your model.

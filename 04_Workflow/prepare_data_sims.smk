@@ -28,7 +28,8 @@ rule data_for_sims:
         allen_matrix = config["reference_sims"]["allen_matrix"],
         allen_genes = config["reference_sims"]["allen_genes"],
         allen_cells = config["reference_sims"]["allen_cells"],
-        # ADD LEA
+        # Reference MouseGastrulation
+        mousegastrulation_samples = config["reference_sims"]["mousegastrulation_samples"].split(','),
 
     conda:
         CONTAINER + "preparation_sims.yaml"

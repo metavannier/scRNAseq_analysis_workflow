@@ -27,6 +27,7 @@ STEP3 = "03_sims/"
 #-------------------------------------
 # Load reference matrix
 #-------------------------------------
+
 reference_matrix = an.read_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, OUTPUT_NAME_REF_MATRIX + ".csv"))
 
 #-------------------------------------
@@ -61,23 +62,6 @@ print(anndata_ref_matrix.var_names)
 print("-------------------------------------------------------------------")
 print(anndata_ref_matrix.obs_names)
 print("-------------------------------------------------------------------")
-
-cell_name_to_observe = "P4_AAACCTGAGATCGATA-1"
-
-cell_data = anndata_ref_matrix.obs.loc[cell_name_to_observe]
-print("")
-print("")
-print("-------------------------------------------------------------------")
-print(cell_data)
-
-
-# gene_name_to_observe = "mt-Cytb"
-
-# gene_data = anndata_ref_matrix.var.loc[gene_name_to_observe ]
-# print("")
-# print("")
-# print("-------------------------------------------------------------------")
-# print(gene_data.head(5))
 
 #-------------------------------------
 # Load the matrix to annotate

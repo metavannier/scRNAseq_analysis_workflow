@@ -9,6 +9,14 @@ rule knnor:
     
     output:
         knnor_output = expand(OUTPUTDIR +"03_sims/knnor_output.txt"),
+
+    params:
+        knnor_rule = config["rules"]["knnor_rule"],
+        sample_id = config["reference_sims"]["sample_id"],
+        matrix = config["reference_sims"]["output_name_ref_matrix"],
+        metadata = config["reference_sims"]["output_name_ref_metadata"],
+        class_label = config["knnor"]["class_label"],
+        max_oversampling = config["knnor"]["max_oversampling"],
     
     conda: 
         CONTAINER + "knnor.yaml"
@@ -18,6 +26,12 @@ rule knnor:
 
     shell:
         """
-            python 03_Script/imbalenced_datasets.py
+        if [ {params.knnor_rule} = "FALSE" ]
+        then
             touch {output.knnor_output}
+        else
+            
+            python 03_Script/imbalenced_datasets.py {params.sample_id} {params.matrix} {params.metadata} {params.class_label} "{params.max_oversampling}"
+            touch {output.knnor_output}
+        fi
         """

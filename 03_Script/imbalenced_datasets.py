@@ -64,7 +64,7 @@ print("")
 # Delete cells in matrix that are not
 # anymore in the metadata
 #-------------------------------------
-new_matrix = matrix[matrix.iloc[:, 0].isin(new_metadata["NAME"])]
+new_matrix = matrix[matrix.iloc[:, 0].isin(new_metadata["NEW_NAME"])]
 print("The new matrix that match the new metadata :")
 print(new_matrix)
 print("")
@@ -73,7 +73,7 @@ print("")
 # Check if cells are in the same order
 # in booth file
 #-------------------------------------
-are_identical = new_matrix.iloc[:, 0].equals(new_metadata["NAME"])
+are_identical = new_matrix.iloc[:, 0].equals(new_metadata["NEW_NAME"])
 
 if are_identical:
     print("Column are in the same order")
@@ -142,7 +142,7 @@ print("")
 # -------------------------------------
 # Create a dictionary to store new data
 metadata_knnor = {
-    "NAME": ["KNNOR" + str(i) for i in range(1, len(y_aug_min) + 1)],
+    "NEW_NAME": ["KNNOR" + str(i) for i in range(1, len(y_aug_min) + 1)],
     CLASS_LABEL: list(y_aug_min)
 }
 
@@ -174,7 +174,7 @@ metadata.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, "KNNOR_" + METADATA + 
 # Create final matrix
 # -------------------------------------
 # Recover new cell names created for new data
-cell_names = list(metadata_knnor["NAME"])
+cell_names = list(metadata_knnor["NEW_NAME"])
 
 # Add a new column (first column) to the numpy array (for the concat step at the end)
 num_rows = X_aug_min.shape[0]

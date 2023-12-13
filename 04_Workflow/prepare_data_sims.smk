@@ -18,11 +18,13 @@ rule data_for_sims:
         output_name_ref_matrix = config["reference_sims"]["output_name_ref_matrix"],
         output_name_matrix = config["reference_sims"]["output_name_matrix"],
         # Reference Arlotta
-        arlotta_metadata = config["reference_sims"]["arlotta_metadata"],
-        arlotta_matrix = config["reference_sims"]["arlotta_matrix"],
-        arlotta_cells = config["reference_sims"]["arlotta_cells"],
-        arlotta_features = config["reference_sims"]["arlotta_features"],
-        pattern_to_keep = config["reference_sims"]["pattern_to_keep"],
+        # arlotta_metadata = config["reference_sims"]["arlotta_metadata"],
+        # arlotta_matrix = config["reference_sims"]["arlotta_matrix"],
+        # arlotta_cells = config["reference_sims"]["arlotta_cells"],
+        # arlotta_features = config["reference_sims"]["arlotta_features"],
+        developmental_time = config["reference_sims"]["developmental_time"],
+        norm_method = config["seurat"]["norm_method"],
+        norm_scale_factor = config["seurat"]["norm_scale_factor"],
         # Reference Allen mouse whole cortex
         allen_metadata = config["reference_sims"]["allen_metadata"],
         allen_matrix = config["reference_sims"]["allen_matrix"],

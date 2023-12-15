@@ -9,11 +9,11 @@ sample: sample.tsv
 #-------------------------------------
 
 # If you run the workflow with slurm (sbatch run_slurm.sh)
-run_slurm: false
+run_slurm: true
 # If you data are demultiplexed = true
-run_demultiplex: false
+run_demultiplex: true
 # If your data are not demultiplexed = true
-run_multiplex: true
+run_multiplex: false
 
 rules:
     # Optimizing and assembling genome annotations for 3’ single-cell RNA-sequencing analysis
@@ -21,7 +21,9 @@ rules:
     # Build the reference with cellranger
     ref_cellranger_rule: "FALSE"
     # Run SIMS to anotate cells
-    sims_rule: "FALSE"
+    sims_rule: "TRUE"
+    # Run Knnor to help with imbalanced datasets
+    knnor_rule: "TRUE"
 
 run:
     # FASTQ file naming convention : [Sample name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz
@@ -45,12 +47,12 @@ fastq:
 
 # Genome and gff link to create the pre-built Cell Ranger reference
 reference:
-    link_ref_fasta: "https://ftp.ensembl.org/pub/release-98/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz"
-    ref_fasta: "Mus_musculus.GRCm38.dna.primary_assembly.fa"
-    link_ref_gtf: "https://storage.googleapis.com/generecovery/mouse_mm10_optimized_annotation_v2.gtf.gz"
+    link_ref_fasta: "https://ftp.ensembl.org/pub/release-109/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna.primary_assembly.fa.gz"
+    ref_fasta: "Mus_musculus.GRCm39.dna.primary_assembly.fa"
+    link_ref_gtf: "https://ftp.ensembl.org/pub/release-109/gtf/mus_musculus/Mus_musculus.GRCm39.109.gtf.gz"
     ref_gtf: "Mus_musculus.GRCm39.109.gtf"
     # Name for the file of the cellranger reference
-    ref_cellranger: "refdata-cellranger-mm10"
+    ref_cellranger: "refdata-cellranger-mm39"
     # Optional reference version string to include with
     ref_version: "1.0.0"
 
@@ -94,7 +96,7 @@ seurat:
     # Number of cells above which use ggplot instead of interactive plotly
     plot_raster_nbcells_threshold : 10000
     # CellRanger count path for each sample for Read10X
-    cell_ranger_count_path: "/count/sample_filtered_feature_bc_matrix/"
+    cell_ranger_count_path: "/filtered_feature_bc_matrix/"
 
     ##### Filtering 
     # Switch from QC exploration mode and QC filtering
@@ -108,18 +110,18 @@ seurat:
     min_features: 200
     # Cells with number of UMIs outside the range will be excluded
     # Can be a list of UMIs but MUST be on the same order than sample.tsv id.
-    filter_umi_min: "0,0,0,0"
-    filter_umi_max: "55000,42000,42000,40000"
+    filter_umi_min: "1400"
+    filter_umi_max: "25000"
     # Filter cells that have unique feature counts over/less n
     # Can be a list of feature counts but MUST be on the same order than sample.tsv id.
-    filter_feature_min: "1700,1700,1400,1400"
-    filter_feature_max: "7900,7500,7700,7200"
+    filter_feature_min: "1250"
+    filter_feature_max: "6250"
     # Filter cells that have > n% mitochondrial counts
-    filter_percent_mt: "10,10,8,8"
+    filter_percent_mt: "14"
     # Filter cells that have < n% mitochondrial counts
-    filter_percent_mt_min: "0.2,0.2,0.2,0.2"
+    filter_percent_mt_min: "2"
     # Filter cells that have < n% ribosomal counts
-    filter_percent_rb: "0,0,0,0"
+    filter_percent_rb: "2"
     # Pattern to match features against => mitochondrial genes | for mouse : "^mt-" / for human : "^MT-"
     pattern_mt: "^mt-"
     # Pattern to match features against => ribosomal genes
@@ -127,7 +129,7 @@ seurat:
 
     ##### Normalization
     # Normalization parameters (see Seurat::NormalizeData())
-    norm_method: "LogNormalize"
+    norm_method: "RC"
     norm_scale_factor: 10000
 
     ##### Find the most variable genes
@@ -170,11 +172,11 @@ reference_sims:
     # For now : arlotta.R, (allen_mouse_whole_cortex.R => A tester)
     r_script: "arlotta.R"
     # Output file name for the reference metadata
-    output_name_ref_metadata:  "P4_arlotta_reference_metadata"
+    output_name_ref_metadata: "to_gliogenesis_arlotta_reference_metadata"
     # Output file name for the reference matrix
-    output_name_ref_matrix: "P4_arlotta_reference_matrix"
+    output_name_ref_matrix: "to_gliogenesis_arlotta_reference_matrix"
     # Output file name for the matrix to annotate
-    output_name_matrix: "P4_arlotta_matrix"
+    output_name_matrix: "P5_WT_arlotta_matrix"
 
     ##### Our Matrix to annotate #####
     # The name of the folder of the sample you want to annotate (One of the output in the seurat folder)
@@ -182,15 +184,15 @@ reference_sims:
 
     ##### Paola Arlotta #####
     # Path for the arlotta metadata
-    arlotta_metadata: "arlotta/metaData_scDevSC.txt"
+    # arlotta_metadata: "arlotta/metaData_scDevSC.txt"
     # Path for the arlotta matrix (matrix + barcodes + genes)
-    arlotta_matrix: "arlotta/gene_sorted-matrix.mtx.gz"
-    arlotta_cells: "arlotta/barcodes.tsv"
-    arlotta_features: "arlotta/genes.tsv"
+    # arlotta_matrix: "arlotta/gene_sorted-matrix.mtx.gz"
+    # arlotta_cells: "arlotta/barcodes.tsv"
+    # arlotta_features: "arlotta/genes.tsv"
     # Pattern that correspond to the mouse age that we want to keep for the training of our data
-    # It's possible to select multiple ones if separate by a coma
-    # In this reference : E10, E11, E12, E13, E14, E15, E16, E17, E18, P1, P4
-    pattern_to_keep: ["P4"]
+    # It's possible to select multiple ones if separate by a coma, exemple: ["E10", "E11", "P4"]
+    # In this reference : E10, E11, E12, E13, E14, E15, E16, E17, E18_S1, E18_S3, P1, P1_S1, P4
+    developmental_time: ["E18_S1", "E18_S3", "P1", "P1_S1", "P4"]
     
     ##### Allen_mouse_whole_cortex #####    TO DO !!! => A tester
     # Path for the arlotta metadata
@@ -200,6 +202,15 @@ reference_sims:
     allen_genes: "allen/"
     allen_cells: "allen/"
 
+# An oversampling technique for imalanced datasets
+knnor:
+    # Name of the column in your metadata you want to oversample
+    class_label: "New_cellType"
+    # This method will increase the minority labels up to the value of the majority label.
+    # If you want to reduce the maximum number of new labels created, you need to remove the majority labels.
+    # If multiple labels to delete, put a comma between them (with NO SPACE). (You can also keep them all by not writting)
+    max_oversampling : "Apical progenitors,UL CPN,Migrating neurons,Interneurons,Intermediate progenitors,Layer 4,CThPN,DL CPN,SCPN,Astrocytes,Immature neurons,Oligodendrocytes,Cycling glial cells,Cajal Retzius cells,DL_CPN_1,NP,VLMC"
+
 sims:
     ##### General
     # Name of the column in your metadata on which you wish to train your model.
@@ -207,13 +218,13 @@ sims:
     # Your personnal key to connect to your wandb account
     key: "5f86a9267b08ff77c21a8872d763cb76048dfaca"
     # Number of cores (Put the same in the run_slurm.sh if necessary)
-    num_workers: 24
+    num_workers: 18
     # Maximum number of epoch to train our model (Will stop after, start counting from 0)
-    max_epoch: 2
+    max_epoch: 500
 
     ##### Logger
     # Name of the project (Will be the name of the run and checkpoint)
-    project_name: "test_to_erase"
+    project_name: "P5_WT_arlotta_norm_to_gliogenesis_cells"
 
     ##### Early Stopping
     # The validation metric you wish to monitor for early stop.
@@ -244,6 +255,3 @@ diffexpsubset:
     genetoremove: ""
     # Cluster on the seurat object (choose cluster with high number of the marker gene of interest)
     cluster: "Normal_Melanocytes,M15,M27,A375,MM057,MM087,MM001,MM074"
-
-
-    

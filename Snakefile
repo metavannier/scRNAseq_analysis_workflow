@@ -80,6 +80,7 @@ rule all:
 		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### KNNOR
 		# knnor_output = expand(OUTPUTDIR +"03_sims/knnor_output.txt"),
+		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### SIMS
 		sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
 

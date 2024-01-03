@@ -118,7 +118,7 @@ print(reference_matrix[1:20, 1:10])
 #-------------------------------------
 # Load our matrix to annotate
 #-------------------------------------
-matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv"))) # The count matrix is used for this reference.
+matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv")))
 matrix <- as.matrix(matrix)
 rownames(matrix) <- matrix[,"V1"]
 

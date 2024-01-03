@@ -1,10 +1,10 @@
 #!/bin/sh
 
-#SBATCH -J SIMS
+#SBATCH -J allen_SIMS
 #SBATCH -p kepler
 #SBATCH --ntasks-per-node 18
 #SBATCH -A b324
-#SBATCH -t 01:00:00
+#SBATCH -t 20:00:00
 #SBATCH -o ./%N.%x.out
 #SBATCH -e ./%N.%x.errs
 

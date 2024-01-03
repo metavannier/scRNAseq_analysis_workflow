@@ -110,18 +110,18 @@ seurat:
     min_features: 200
     # Cells with number of UMIs outside the range will be excluded
     # Can be a list of UMIs but MUST be on the same order than sample.tsv id.
-    filter_umi_min: "1400"
-    filter_umi_max: "25000"
+    filter_umi_min: "0"
+    filter_umi_max: "45000"
     # Filter cells that have unique feature counts over/less n
     # Can be a list of feature counts but MUST be on the same order than sample.tsv id.
     filter_feature_min: "1250"
-    filter_feature_max: "6250"
+    filter_feature_max: "7500"
     # Filter cells that have > n% mitochondrial counts
-    filter_percent_mt: "14"
+    filter_percent_mt: "15"
     # Filter cells that have < n% mitochondrial counts
-    filter_percent_mt_min: "2"
+    filter_percent_mt_min: "0"
     # Filter cells that have < n% ribosomal counts
-    filter_percent_rb: "2"
+    filter_percent_rb: "0"
     # Pattern to match features against => mitochondrial genes | for mouse : "^mt-" / for human : "^MT-"
     pattern_mt: "^mt-"
     # Pattern to match features against => ribosomal genes
@@ -169,18 +169,21 @@ seurat:
 reference_sims:
     ##### General #####
     #  Name of the script you want to execute (Corespond to the reference you want to use)
-    # For now : arlotta.R, (allen_mouse_whole_cortex.R => A tester)
-    r_script: "arlotta.R"
+    # For now : arlotta.R, allen_mouse_whole_cortex.R
+    r_script: "allen_mouse_whole_cortex.R"
     # Output file name for the reference metadata
-    output_name_ref_metadata: "to_gliogenesis_arlotta_reference_metadata"
+    output_name_ref_metadata: "allen_ssp_reference_metadata"
     # Output file name for the reference matrix
-    output_name_ref_matrix: "to_gliogenesis_arlotta_reference_matrix"
+    output_name_ref_matrix: "allen_ssp_reference_matrix"
     # Output file name for the matrix to annotate
-    output_name_matrix: "P5_WT_arlotta_matrix"
+    output_name_matrix: "P30_WT_allen_matrix"
+    # Name of the column that contain the cells
+    # allen mouse whole cortex : "sample_name", arlotta : "NEW_NAME"
+    cells_column: "sample_name"
 
     ##### Our Matrix to annotate #####
     # The name of the folder of the sample you want to annotate (One of the output in the seurat folder)
-    sample_id: "P5_WT"
+    sample_id: "P30_WT"
 
     ##### Paola Arlotta #####
     # Path for the arlotta metadata
@@ -196,11 +199,9 @@ reference_sims:
     
     ##### Allen_mouse_whole_cortex #####    TO DO !!! => A tester
     # Path for the arlotta metadata
-    allen_metadata: "allen/"
+    allen_metadata: "allen/metadata.csv"
     # Path for the allen matrix (matrix + genes + cells)
-    allen_matrix: "allen/"
-    allen_genes: "allen/"
-    allen_cells: "allen/"
+    allen_matrix: "allen/expression_matrix.hdf5"
 
 # An oversampling technique for imalanced datasets
 knnor:
@@ -214,7 +215,8 @@ knnor:
 sims:
     ##### General
     # Name of the column in your metadata on which you wish to train your model.
-    class_label: "New_cellType"
+    # Aallen mouse whole cortex : "subclass_label", arlotta : "New_cellType"
+    class_label: "subclass_label"
     # Your personnal key to connect to your wandb account
     key: "5f86a9267b08ff77c21a8872d763cb76048dfaca"
     # Number of cores (Put the same in the run_slurm.sh if necessary)
@@ -224,7 +226,7 @@ sims:
 
     ##### Logger
     # Name of the project (Will be the name of the run and checkpoint)
-    project_name: "P5_WT_arlotta_norm_to_gliogenesis_cells"
+    project_name: "P30_WT_allen_norm_ssp_cells"
 
     ##### Early Stopping
     # The validation metric you wish to monitor for early stop.

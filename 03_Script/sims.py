@@ -39,10 +39,10 @@ STEP3 = "03_sims/"
 #                                       To train the model 
 #-----------------------------------------------------------------------------------------------
 
-#-------------------------------------
+# -------------------------------------
 # Logger : Allows you to visualize 
 # data training.
-#-------------------------------------
+# -------------------------------------
 wandb.login(key = KEY)
 
 logger = WandbLogger(project = PROJECT_NAME, name = PROJECT_NAME, save_dir = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID), version = "")
@@ -66,12 +66,13 @@ sims.setup_trainer(
         EarlyStopping(
             monitor = MONITOR,
             patience = int(PATIENCE),
-            verbose = 1
+            verbose = 1,
+            # mode = 'max'
         ),
         LearningRateMonitor(logging_interval = "epoch"),
         ModelCheckpoint(
             dirpath = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID),
-            filename = "checkpoint_" + PROJECT_NAME + ".ckpt"
+            # filename = "checkpoint_" + PROJECT_NAME + ".ckpt"
         ),
     ],
     max_epochs = int(MAX_EPOCH)
@@ -86,7 +87,7 @@ sims.train()
 # #-------------------------------------
 # # Load the model
 # #-------------------------------------
-# model = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, "epoch=66-step=122409.ckpt")
+# model = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, "epoch=129-step=88010.ckpt")
 
 # #-------------------------------------
 # # Prediction

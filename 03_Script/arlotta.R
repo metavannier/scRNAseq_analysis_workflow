@@ -12,7 +12,7 @@ library(data.table)
 library(Seurat)
 
 #-------------------------------------
-# Path to files / folders
+# Path to files / folderss
 #-------------------------------------
 DIRECTORY = getwd()
 TEXT_OUTPUT = snakemake@output[["data_for_sims_output"]]
@@ -38,6 +38,14 @@ STEP3 = "03_sims/"
 reference_metadata <- fread(file = file.path(REF, "arlotta/metaData_scDevSC.txt"))
 reference_metadata <- reference_metadata[-1, ]
 reference_metadata <- reference_metadata[, NEW_NAME := gsub("[^ATCG]", "", NAME)] ### Keep only the A,T,G and C in the original name
+
+#-------------------------------------
+# For the training we need at least
+# two cells per labels
+#-------------------------------------
+occurence <- table(reference_metadata$New_cellType)
+one_cell_per_label <- names(occurence[occurence == 1])
+reference_metadata <- reference_metadata[!(reference_metadata$New_cellType %in% one_cell_per_label), ]
 
 #-------------------------------------
 # Erase some labels in the metadata :

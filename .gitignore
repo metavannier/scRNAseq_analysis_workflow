@@ -4,7 +4,6 @@
 02_Container/cellranger.sif
 02_Container/mambaforge:23.1.0-1.sif
 05_Output
-05_Output_june
 .vscode/
 .bash_history/
 .cache/
@@ -18,4 +17,6 @@ test
 S004647_to_S004650_unoptimized_ref/
 S004647_to_S004650/
 __pycache__
-
+.netrc
+*.errs
+*.out

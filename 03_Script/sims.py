@@ -1,5 +1,7 @@
 #..............................................................
-# 
+# SIMS : Scalable, Interpretable Machine Learning for 
+# Single-Cell : A machine learning tool for scRNA-Seq label
+# transfer in neuroscience
 #..............................................................
 
 #-------------------------------------
@@ -11,6 +13,7 @@ from pytorch_lightning.callbacks import EarlyStopping, LearningRateMonitor, Mode
 import os
 import sys
 import anndata as an
+import wandb
 
 #-------------------------------------
 # Path to files / folders
@@ -28,72 +31,75 @@ MONITOR = sys.argv[6]
 PATIENCE = sys.argv[7]
 MAX_EPOCH = sys.argv[8]
 MATRIX = sys.argv[9]
+KEY = sys.argv[10]
 
 STEP3 = "03_sims/"
 
-# #-----------------------------------------------------------------------------------------------
-# #                                       To train the model 
-# #-----------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------
+#                                       To train the model 
+#-----------------------------------------------------------------------------------------------
 
-# #-------------------------------------
-# # Logger : Allows you to visualize 
-# # data training.
-# #-------------------------------------
-# logger = WandbLogger(project = PROJECT_NAME, name = PROJECT_NAME, save_dir = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID), version = "")
+# -------------------------------------
+# Logger : Allows you to visualize 
+# data training.
+# -------------------------------------
+wandb.login(key = KEY)
 
-# #-------------------------------------
-# # Load the anndata file
-# #-------------------------------------
-# reference_matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, REFERENCE_MATRIX + "_join_metadata.h5ad"))
+logger = WandbLogger(project = PROJECT_NAME, name = PROJECT_NAME, save_dir = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID), version = "")
 
-# #-------------------------------------
-# # Custom training jobs
-# #-------------------------------------
-# sims = SIMS(data = reference_matrix, class_label = CLASS_LABEL, num_workers = 12, stratify = True) 
+#-------------------------------------
+# Load the anndata file
+#-------------------------------------
+reference_matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, REFERENCE_MATRIX + "_join_metadata.h5ad"))
 
-# # weighting loss inversely proportional by label freq, helps learn rare cell types (recommended)
-# sims.setup_model(n_a=64, n_d=64, weights=sims.weights)
+#-------------------------------------
+# Custom training jobs
+#-------------------------------------
+sims = SIMS(data = reference_matrix, class_label = CLASS_LABEL, num_workers = int(NUM_WORKERS), stratify = True) 
 
-# sims.setup_trainer(
-#     logger = logger,
-#     callbacks = [
-#         EarlyStopping(
-#             monitor = MONITOR,
-#             patience = 25,
-#             verbose = 1
-#         ),
-#         LearningRateMonitor(logging_interval = "epoch"),
-#         ModelCheckpoint(
-#             dirpath = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID),
-#             filename = "checkpoint"
-#         ),
-#     ],
-#     max_epochs = 100,
-#     devices = 1
-# )
+# weighting loss inversely proportional by label freq, helps learn rare cell types (recommended)
+sims.setup_model(n_a=64, n_d=64, weights=sims.weights)
 
-# sims.train()
+sims.setup_trainer(
+    logger = logger,
+    callbacks = [
+        EarlyStopping(
+            monitor = MONITOR,
+            patience = int(PATIENCE),
+            verbose = 1,
+            # mode = 'max'
+        ),
+        LearningRateMonitor(logging_interval = "epoch"),
+        ModelCheckpoint(
+            dirpath = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID),
+            # filename = "checkpoint_" + PROJECT_NAME + ".ckpt"
+        ),
+    ],
+    max_epochs = int(MAX_EPOCH)
+)
+
+sims.train()
 
 #-----------------------------------------------------------------------------------------------
 #                                To predict labels on our data 
 #-----------------------------------------------------------------------------------------------
 
-#-------------------------------------
-# Load the model
-#-------------------------------------
-model = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, "checkpoint-v1.ckpt")
+# #-------------------------------------
+# # Load the model
+# #-------------------------------------
+# model = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, "epoch=129-step=88010.ckpt")
 
-#-------------------------------------
-# Prediction
-#-------------------------------------
-sims = SIMS(weights_path = model)
-cell_prediction = sims.predict(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
+# #-------------------------------------
+# # Prediction
+# #-------------------------------------
+# sims = SIMS(weights_path = model)
+# cell_prediction = sims.predict(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
 
-#-------------------------------------
-# Write prediction in a csv file
-#-------------------------------------
-matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
+# #-------------------------------------
+# # Write prediction in a csv file
+# #-------------------------------------
+# matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
 
-cell_prediction.insert(0,"Cells", matrix.obs_names)
+# cell_prediction.insert(0,"Cells", matrix.obs_names)
 
-cell_prediction.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + "_prediction.csv"), index = False)
+# cell_prediction.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + "_prediction.csv"), index = False)

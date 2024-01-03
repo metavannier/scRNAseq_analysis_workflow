@@ -8,18 +8,22 @@
 # Library
 #-------------------------------------
 
-library(magick)
-library(BiocManager)
-library(reshape2)
-library(Matrix)
-library(data.table)
-library(scran)
-library(igraph)
-library(scuttle)
-library(scater)
-
+# library(magick)
+# # library(BiocManager)
+# # library(reshape2)
+# # library(data.table)
+# library(Matrix)
+# library(dplyr)
+library(SingleCellExperiment)
 BiocManager::install("MouseGastrulationData")
 library(MouseGastrulationData)
+library(scran)
+library(scuttle)
+library(scater)
+# library(Matrix)
+# library(igraph)
+
+sessionInfo()
 
 #-------------------------------------
 # Path to files / folders
@@ -55,44 +59,51 @@ sce <- EmbryoAtlasData(samples = c(MOUSEGASTRULATION_SAMPLES))
 #-------------------------------------
 
 
-#### DANS LE GIT HUB, VOIR SI A FAIRE SACHANT QUE LES SIZEFACTOR SONT DANS L'OBJET sce
-head(sizeFactors(sce))
-## Size factors for normalisation with scran.
-sce = sce[calcAverage(sce)>0.1,]
+## Calculate size factors for normalisation with scran.
+# #### DANS LE GIT HUB, VOIR SI A FAIRE SACHANT QUE LES SIZEFACTOR SONT DANS L'OBJET sce
+# lib.sizes = Matrix::colSums(counts(sce))
+## calcAverage doesn't work
+# sce = sce[calcAverage(sce)>0.1,]
 
+## STEP from https://rstudio-pubs-static.s3.amazonaws.com/699579_c6be4bf3220746088bdfd12a61aa15c4.html
+# and https://github.com/MarioniLab/EmbryoTimecourse2018/blob/master/analysis_scripts/atlas/4_normalisation/normalise.Rmd
 # For pre-clustering, we use scran's `quickCluster` function, using the `igraph` method. We specify a maximum cluster size of 3000 cells and a minimum cluster size of 100 cells.
-clusts = as.numeric(quickCluster(sce, method = "igraph", min.size = 100))
-#now run the normalisation
-#number of cells in each cluster should be at least twice that of the largest 'sizes'
+clusts <- as.numeric(quickCluster(sce,
+                        method = "igraph",
+                        use.ranks = FALSE, # suggested by the authors
+                        min.size = 100)) # require at least 100 cells per cluster
+# Number of cells in each cluster should be at least twice that of the largest 'sizes'
 min.clust = min(table(clusts))/2
 new_sizes = c(floor(min.clust/3), floor(min.clust/2), floor(min.clust))
-compute_sce = computeSumFactors(sce, clusters = clusts, sizes = new_sizes, max.cluster.size = 3000)
-### Pour voir si on trouve la même normalisation que dans l'objet :
-head(compute_sce)
-#####
+sce = computeSumFactors(sce, clusters = clusts, sizes = new_sizes, max.cluster.size = 3000)
 
-# Normalisation using use scuttle to get lognormcounts function
+## Use scuttle to normalize function, which calculates log2-transformed normalized expression values.
+# This is done by dividing each count by its size factor, adding a pseudo-count and log-transforming.
 sce <- logNormCounts(sce)
-normcounts_atlas <- normcounts(sce)
 
-#-------------------------------------
-# Metadata reference file
-#-------------------------------------
+logcounts(sce)[40:50, 40:50]
 
-## Produce the reference metadata matrice
-reference_metadata <- cbind(sce$cell,sce$celltype)
+# LA mettre objet seurat des data de Pierre François et voir la différence entre normalisation seurat et scutle
 
-#-------------------------------------
-# Wtrite the two new matrix +
-# create directory
-#-------------------------------------
 
-dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
+# #-------------------------------------
+# # Metadata reference file
+# #-------------------------------------
 
-class(sce) <- "numeric"
-write.csv(normcounts_atlas, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
+# ## Produce the reference metadata matrice
+# reference_metadata <- cbind(sce$cell,sce$celltype)
 
-fwrite(x = reference_metadata, file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_METADATA,".csv")))
+# #-------------------------------------
+# # Wtrite the two new matrix +
+# # create directory
+# #-------------------------------------
+
+# dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
+
+# class(sce) <- "numeric"
+# write.csv(normcounts_atlas, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
+
+# fwrite(x = reference_metadata, file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_METADATA,".csv")))
 
 #-------------------------------------
 # create the output file for the snakemake rule

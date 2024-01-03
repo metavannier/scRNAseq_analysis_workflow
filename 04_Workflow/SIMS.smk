@@ -17,11 +17,12 @@ rule sims:
         reference_matrix = config["reference_sims"]["output_name_ref_matrix"],
         project_name = config["sims"]["project_name"],
         class_label = config["sims"]["class_label"],
-        num_workers = int(config["sims"]["num_workers"]),
+        num_workers = config["sims"]["num_workers"],
         monitor = config["sims"]["monitor"],
-        patience = int(config["sims"]["patience"]),
-        max_epoch = int(config["sims"]["max_epoch"]),
+        patience = config["sims"]["patience"],
+        max_epoch = config["sims"]["max_epoch"],
         matrix = config["reference_sims"]["output_name_matrix"],
+        key = config["sims"]["key"],
 
     message:
         "Run SIMS for cell annotation"
@@ -34,7 +35,7 @@ rule sims:
         else
             pip install --use-pep517 git+https://github.com/braingeneers/SIMS.git
             python 03_Script/sims.py {params.sample_id} {params.reference_matrix} {params.project_name} {params.class_label} \
-            {params.num_workers} {params.monitor} {params.patience} {params.max_epoch} {params.matrix}
+            {params.num_workers} {params.monitor} {params.patience} {params.max_epoch} {params.matrix} {params.key}
             touch {output.sims_output}
         fi
         """

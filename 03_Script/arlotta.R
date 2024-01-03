@@ -3,7 +3,7 @@
 # Paola Arlotta reference :
 # https://www.nature.com/articles/s41586-021-03670-5
 #..............................................................
-
+###########################################################################
 #-------------------------------------
 # Library
 #-------------------------------------
@@ -12,7 +12,7 @@ library(data.table)
 library(Seurat)
 
 #-------------------------------------
-# Path to files / folderss
+# Path to files / folders
 #-------------------------------------
 DIRECTORY = getwd()
 TEXT_OUTPUT = snakemake@output[["data_for_sims_output"]]

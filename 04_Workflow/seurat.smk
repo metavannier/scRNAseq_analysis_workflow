@@ -51,3 +51,26 @@ rule seurat:
 
     script:
         SCRIPTDIR + "seurat_reports_compilation.R"
+
+#----------------------------------------
+# Normalisation with Scran
+#----------------------------------------
+
+rule normalisation:
+    input:
+        seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
+
+    output:
+        normalisation_output = expand(OUTPUTDIR + "02_seurat/normalisation_output.txt"),
+
+    conda:
+        CONTAINER + "normalisation.yaml"
+
+    params:
+        sample_id = expand("{sample_id.id}", sample_id = sample_id.itertuples()),
+
+    message:
+        "Run normalisation with scran"
+
+    script:
+        SCRIPTDIR + "normalisation.R"

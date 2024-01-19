@@ -12,7 +12,6 @@
 # # library(BiocManager)
 # # library(reshape2)
 # # library(data.table)
-# library(Matrix)
 # library(dplyr)
 library(SingleCellExperiment)
 BiocManager::install("MouseGastrulationData")
@@ -20,7 +19,9 @@ library(MouseGastrulationData)
 library(scran)
 library(scuttle)
 library(scater)
-# library(Matrix)
+library(Seurat)
+library(Matrix)
+library(irlba)
 # library(igraph)
 
 sessionInfo()
@@ -58,13 +59,6 @@ sce <- EmbryoAtlasData(samples = c(MOUSEGASTRULATION_SAMPLES))
 # (doi:10.1038/s41586-019-0933-9)
 #-------------------------------------
 
-
-## Calculate size factors for normalisation with scran.
-# #### DANS LE GIT HUB, VOIR SI A FAIRE SACHANT QUE LES SIZEFACTOR SONT DANS L'OBJET sce
-# lib.sizes = Matrix::colSums(counts(sce))
-## calcAverage doesn't work
-# sce = sce[calcAverage(sce)>0.1,]
-
 ## STEP from https://rstudio-pubs-static.s3.amazonaws.com/699579_c6be4bf3220746088bdfd12a61aa15c4.html
 # and https://github.com/MarioniLab/EmbryoTimecourse2018/blob/master/analysis_scripts/atlas/4_normalisation/normalise.Rmd
 # For pre-clustering, we use scran's `quickCluster` function, using the `igraph` method. We specify a maximum cluster size of 3000 cells and a minimum cluster size of 100 cells.
@@ -81,11 +75,6 @@ sce = computeSumFactors(sce, clusters = clusts, sizes = new_sizes, max.cluster.s
 # This is done by dividing each count by its size factor, adding a pseudo-count and log-transforming.
 sce <- logNormCounts(sce)
 
-logcounts(sce)[40:50, 40:50]
-
-# LA mettre objet seurat des data de Pierre François et voir la différence entre normalisation seurat et scutle
-
-
 # #-------------------------------------
 # # Metadata reference file
 # #-------------------------------------
@@ -98,10 +87,10 @@ logcounts(sce)[40:50, 40:50]
 # # create directory
 # #-------------------------------------
 
-# dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
+dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
 
 # class(sce) <- "numeric"
-# write.csv(normcounts_atlas, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
+write.csv(sizeFactors(sce), file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
 
 # fwrite(x = reference_metadata, file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_METADATA,".csv")))
 

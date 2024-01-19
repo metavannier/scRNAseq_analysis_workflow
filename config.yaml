@@ -8,7 +8,7 @@ sample: sample.tsv
 # Config
 #-------------------------------------
 
-# If you run the workflow with slurm (sbatch run_slurm.sh)
+# If you run the workflow with slurm (sbatch run_slurm.sh) = true
 run_slurm: false
 # If you data are demultiplexed = true
 run_demultiplex: false
@@ -162,6 +162,10 @@ seurat:
     # Algorithm for modularity optimization
     # 1 = Louvain; 2 = Louvain with multilevel refinement; 3 = SLM; 4 = Leiden
     findclusters_algorithm : 1
+
+rm_doublets:
+    # If you want to use the scran normalisation : scran or "" if seurat
+    normalisation : "scran"
 
 # Parameters to build correct reference(s) for sims
 reference_sims:

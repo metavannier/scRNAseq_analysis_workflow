@@ -1,5 +1,5 @@
 # ----------------------------------------------
-# This script is used to launch thr compilation
+# This script is used to launch the compilation
 # of the RMarkdown report independently 
 # of Rstudio interface
 # ----------------------------------------------

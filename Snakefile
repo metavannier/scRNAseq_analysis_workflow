@@ -77,12 +77,15 @@ rule all:
 		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
 		### Prepare data for SIMS
 		# data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
-		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
+		anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### KNNOR
 		# knnor_output = expand(OUTPUTDIR +"03_sims/knnor_output.txt"),
 		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### SIMS
-		sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+		# sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+		# umapAssignation_output = expand(OUTPUTDIR + "03_sims/umapAssignation_output.txt"),
+		################### REMI
+		# remi_output = expand(OUTPUTDIR + "remi_output.txt"),
 
 
 
@@ -138,6 +141,8 @@ if run_demultiplex:
 	include: ENVDIR + "prepare_data_sims.smk"
 	include: ENVDIR + "SIMS.smk"
 	include: ENVDIR + "knnor.smk"
+	include: ENVDIR + "remi.smk"
+	include: ENVDIR + "umapCellAssignation.smk"
 
 if run_multiplex:	
 	include: ENVDIR + "clean.smk"
@@ -146,6 +151,8 @@ if run_multiplex:
 	include: ENVDIR + "prepare_data_sims.smk"
 	include: ENVDIR + "SIMS.smk"
 	include: ENVDIR + "knnor.smk"
+	include: ENVDIR + "remi.smk"
+	include: ENVDIR + "umapCellAssignation.smk"
 
 
 # include: ENVDIR + "demuxlet.smk"

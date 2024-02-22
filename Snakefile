@@ -74,16 +74,18 @@ rule all:
 		# demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
 		# tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
 		# Seurat
-		seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
+		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
 		# Normalisation with other method than Seurat
-        normalisation_output = expand(OUTPUTDIR + "02_seurat/normalisation_output.txt"),
-		# Doublet detection
-		doublets_output = expand(OUTPUTDIR + "rm_doublet/doublets_output.txt"),
+        # normalisation_output = expand(OUTPUTDIR + "02_seurat/normalisation_output.txt"),
+		# NE MARCHE PAS : Doublet detection
+		# doublets_output = expand(OUTPUTDIR + "rm_doublet/doublets_output.txt"),
 		### Prepare data for SIMS
 		# data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
 		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### SIMS
-		# sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+		sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+		### Representing cellular assignation on UMAP
+		# umapAssignation_output = expand(OUTPUTDIR + "03_sims/umapAssignation_output.txt"),
 		## Differential expression analyses
 		# violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
 		# umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
@@ -116,12 +118,8 @@ rule all:
 		# defile_tar = OUTPUTDIR + "03_diffexp/differencial_expression_tests.tar.gz",
 		# volcano_tar = OUTPUTDIR + "03_diffexp/volcano_plot.tar.gz",
 		# sign_up_down_tar = OUTPUTDIR + "03_diffexp/up_down_regulated_genes_list.tar.gz",
-		# defile_subset_tar = OUTPUTDIR + "04_diffexp_subset/differencial_expression_tests.tar.gz",
-		# volcano_subset_tar = OUTPUTDIR + "04_diffexp_subset/volcano_plot.tar.gz",
-		# sign_up_subset_tar = OUTPUTDIR + "04_diffexp_subset/up_down_regulated_genes_list.tar.gz",
-		# violinplot_subset_tar = OUTPUTDIR + "04_diffexp_subset/violin_plot.tar.gz",
-		# clean = OUTPUTDIR + "03_diffexp/clean.txt",
-  
+		# defile_subset_tar = OUTPUTDIR + "04_diffexp_sub		# sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+
 # ----------------------------------------------
 # Load rules 
 # ----------------------------------------------
@@ -135,15 +133,17 @@ if run_demultiplex:
 	include: ENVDIR + "seurat.smk"
 	include: ENVDIR + "prepare_data_sims.smk"
 	include: ENVDIR + "SIMS.smk"
+	include: ENVDIR + "umapCellAssignation.smk"
 
 if run_multiplex:	
 	# include: ENVDIR + "clean.smk"
 	# include: ENVDIR + "cellranger.smk"
 	# NE MARCHE PAS include: ENVDIR + "processing_multiplex.smk"
-	include: ENVDIR + "seurat.smk"
-	include: ENVDIR + "rm_doublets.smk"
+	# include: ENVDIR + "seurat.smk"
+	# NE MARCHE PAS include: ENVDIR + "rm_doublets.smk"
 	# include: ENVDIR + "prepare_data_sims.smk"
-	# include: ENVDIR + "SIMS.smk"
+	include: ENVDIR + "SIMS.smk"
+	# include: ENVDIR + "umapCellAssignation.smk"
 
 # include: ENVDIR + "demuxlet.smk"
 # include: ENVDIR + "seurat.smk"

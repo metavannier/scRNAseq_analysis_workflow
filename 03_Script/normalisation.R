@@ -50,10 +50,6 @@ while(i <= len)
 
     sce_dataset <- logNormCounts(sce_dataset)
 
-    print(rownames(sce_dataset)[1:5])
-
-    print(colData(sce_dataset)[1:5, ])
-
     so[["RNA"]] <- SetAssayData(so[["RNA"]],
                                   slot = "data", 
                                   new.data = logcounts(sce_dataset))
@@ -65,13 +61,17 @@ while(i <= len)
     # Save each seurat object
     saveRDS(so, file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID[i], paste0(SAMPLE_ID[i],"_filteredscran_seurat_object.rds")))
 
-    # Save the normalize matrix as csv file
-    normalized_matrix <- GetAssayData(object = so[["RNA"]], slot = "data")
-    # normalized_matrix <- as.matrix(normalized_matrix)
-    # normalized_matrix <- t(normalized_matrix)
-    normalized_matrix <- as.data.frame(normalized_matrix)
+    # We need the genes as first column for next rules
+    normalized_matrix <- as.data.frame(logcounts(sce_dataset))
 
+    # Save the normalize matrix as csv file with genes = rowname
     fwrite(x = normalized_matrix , file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID[i], paste0( SAMPLE_ID[i], "_scran_normalized_matrix.csv")), row.names = TRUE)
+
+    normalized_matrix <- as.matrix(normalized_matrix)
+
+    # normalized_matrix <- t(normalized_matrix)
+    # normalized_matrix <- as.data.frame(normalized_matrix)
+    # fwrite(x = normalized_matrix , file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID[i], paste0( SAMPLE_ID[i], "_scran_normalized_matrix.csv")), row.names = TRUE)
 
     # Next sample
     i = i + 1

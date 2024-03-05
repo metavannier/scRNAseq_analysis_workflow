@@ -34,6 +34,7 @@ PATIENCE = sys.argv[7]
 MAX_EPOCH = sys.argv[8]
 MATRIX = sys.argv[9]
 KEY = sys.argv[10]
+EPOCH = sys.argv[11]
 
 STEP3 = "03_sims/"
 
@@ -87,27 +88,3 @@ sims.setup_trainer(
 )
 
 sims.train()
-
-#-----------------------------------------------------------------------------------------------
-#                                To predict labels on our data 
-#-----------------------------------------------------------------------------------------------
-
-#-------------------------------------
-# Load the model
-#-------------------------------------
-model = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, "epoch=54-step=143055.ckpt")
-
-#-------------------------------------
-# Prediction
-#-------------------------------------
-sims = SIMS(weights_path = model)
-cell_prediction = sims.predict(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
-
-#-------------------------------------
-# Write prediction in a csv file
-#-------------------------------------
-matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
-
-cell_prediction.insert(0,"Cells", matrix.obs_names)
-
-cell_prediction.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + "_prediction.csv"), index = False)

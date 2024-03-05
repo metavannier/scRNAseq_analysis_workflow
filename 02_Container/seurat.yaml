@@ -4,7 +4,7 @@ channels :
     - conda-forge
     - defaults
 dependencies :
-    - r-ggplot2 =3.3.5
+    - r-ggplot2
     - r-dt
     - r-data.table =1.14.2
     - r-seurat =4.0.3
@@ -16,6 +16,7 @@ dependencies :
     - bioconductor-dittoseq
     - bioconductor-enhancedvolcano=1.8.0
     - r-ggpubr
+    - r-cowplot
     # Report snakemake
     - conda-forge::jinja2=2.11.2
     - conda-forge::networkx=2.5

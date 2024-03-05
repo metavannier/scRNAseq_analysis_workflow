@@ -83,9 +83,10 @@ rule all:
 		# data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
 		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### SIMS
-		sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+		# sims_training_output = expand(OUTPUTDIR + "03_sims/output_sims_training.txt"),
+		# sims_prediction_output = expand(OUTPUTDIR + "03_sims/output_sims_prediction.txt"),
 		### Representing cellular assignation on UMAP
-		# umapAssignation_output = expand(OUTPUTDIR + "03_sims/umapAssignation_output.txt"),
+		umapAssignation_output = expand(OUTPUTDIR + "03_sims/umapAssignation_output.txt"),
 		## Differential expression analyses
 		# violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
 		# umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
@@ -118,7 +119,7 @@ rule all:
 		# defile_tar = OUTPUTDIR + "03_diffexp/differencial_expression_tests.tar.gz",
 		# volcano_tar = OUTPUTDIR + "03_diffexp/volcano_plot.tar.gz",
 		# sign_up_down_tar = OUTPUTDIR + "03_diffexp/up_down_regulated_genes_list.tar.gz",
-		# defile_subset_tar = OUTPUTDIR + "04_diffexp_sub		# sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+		# defile_subset_tar = OUTPUTDIR + "04_diffexp_sub		
 
 # ----------------------------------------------
 # Load rules 
@@ -142,8 +143,8 @@ if run_multiplex:
 	# include: ENVDIR + "seurat.smk"
 	# NE MARCHE PAS include: ENVDIR + "rm_doublets.smk"
 	# include: ENVDIR + "prepare_data_sims.smk"
-	include: ENVDIR + "SIMS.smk"
-	# include: ENVDIR + "umapCellAssignation.smk"
+	# include: ENVDIR + "SIMS.smk"
+	include: ENVDIR + "umapCellAssignation.smk"
 
 # include: ENVDIR + "demuxlet.smk"
 # include: ENVDIR + "seurat.smk"

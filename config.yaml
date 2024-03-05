@@ -21,7 +21,7 @@ rules:
     # Build the reference with cellranger
     ref_cellranger_rule: "FALSE"
     # Run SIMS to anotate cells
-    sims_rule: "FALSE"
+    sims_rule: "TRUE"
 
 run:
     # FASTQ file naming convention : [Sample name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz
@@ -173,16 +173,21 @@ reference_sims:
     #  Path of the script you want to execute (Corespond to the reference you want to use)
     # For now : arlotta.R, allen_mouse_whole_cortex.R, mousegastrulation.R
     r_script: "mousegastrulation.R"
-    #
-    output_name_ref_metadata:  "mousegastrulation_reference_metadata"
-    #
-    output_name_ref_matrix: "mousegastrulation_reference_matrix"
-    #
-    output_name_matrix: "mousegastrulation_matrix"
+    # Metadata of the reference matrix
+    output_name_ref_metadata: "metadata"
+    # Reference matrix
+    output_name_ref_matrix: "mousegastrulation"
+    # Reference matrix with metadata
+    output_name_ref_matrix_metadata: "mousegastrulation_join_metadata"
+
+    output_name_matrix: "data_matrix"
+    # Name of the column that contain the cells
+    # allen mouse whole cortex : "sample_name", arlotta : "NEW_NAME"
+    cells_column: "Cell"
 
     ##### Our Matrix to annotate #####
     # The name of the folder of the sample you want to annotate (Folder in the Seurat folder)
-    sample_id: "72h"
+    sample_id: "86h"
 
     ##### Paola Arlotta #####
     # Path for the arlotta metadata
@@ -209,33 +214,45 @@ reference_sims:
     allen_cells: "allen/"
 
     ##### mousegastrulation #####
-    # Samples from the reference as described in EmbryoAtlasData object (for lenne project : c(1:20,23:37)
-    # mousegastrulation_samples: "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37"
-    mousegastrulation_samples: "1,5"
+    # Samples from the reference as described in EmbryoAtlasData object (for Lenne project : c(1:20,23:37)
+    mousegastrulation_samples: "1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,20,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37"
+    # mousegastrulation_samples: "1,5"
+    # File to save the atlas reference matrice in h5ad (col: genes (in exactly the same order than the data to annotate) ; raw = cells (need to be exactly the same than the metadata)) + celllabels
+    mousegastrulation_matrix: "mousegastrulation.h5ad"
+    # File to save the data to annotate in h5ad (col: genes (in exactly the same order than the reference)
+    data_matrix: "data_matrix.h5ad"
 
 sims:
     ##### General
     # Name of the column in your metadata on which you wish to train your model.
-    class_label: "New_cellType"
-    # 
-    # https://lightning.ai/docs/pytorch/stable/advanced/speed.html
-    num_workers: 12
-    #
-    max_epoch: 100
+    # Allen mouse whole cortex : "subclass_label", arlotta : "New_cellType"
+    class_label: "CellType"
+    # Your personnal key to connect to your wandb account
+    key: "536dbe5b6a398ef77292f0db3e39d55089c56583"
+    # Number of cores (Put the same in the run_slurm.sh if necessary)
+    num_workers: 24
+    # Maximum number of epoch to train our model (Will stop after, start counting from 0)
+    max_epoch: 500
 
     ##### Logger
-    # Name of the project (Will be the name of the folder where the model checkpoint will be saved)
-    project_name: "P5_WT_test"
+    # Name of the project (Will be the name of the run and checkpoint)
+    project_name: "mouse_gastrulation_86h"
 
     ##### Early Stopping
     # The validation metric you wish to monitor for early stop.
     monitor: "val_loss"
-    # The number of epochs during which the validation metric may not improve before early shutdown is triggered.
-    # 10% of the number of epoch to beggin with
-    patience: 10
+    # The number of epochs during which the validation metric (monitor) may not improve before early shutdown is triggered. (To prevent overtraining)
+    patience: 20
 
-    ##### Model Checkpoint
-    #
+    # Epoch file from wandb to chosse for the cell assignation
+    epoch: epoch=34-step=76230.ckpt
+
+    ##### Cells annotation
+    # Threshold of the difference between the first and second score of the prediction to say if a cell is unknown or not
+    threshold: 0.1
+    # Matrix with cell predtion after filtration with the threshold
+    pred_filtered: data_matrix_prediction_filtered.csv
+
 
 # Differentially expressed features analyses
 diffexp:
@@ -260,6 +277,3 @@ diffexpsubset:
     genetoremove: ""
     # Cluster on the seurat object (choose cluster with high number of the marker gene of interest)
     cluster: "Normal_Melanocytes,M15,M27,A375,MM057,MM087,MM001,MM074"
-
-
-    

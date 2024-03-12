@@ -56,6 +56,30 @@ patterns_to_delete <- c("Low quality cells", "Doublet", "Red blood cells", "grou
 rows_to_delete <- apply(sapply(patterns_to_delete, grepl, reference_metadata$New_cellType), 1, any)
 reference_metadata <- subset(reference_metadata, !rows_to_delete)
 
+########################################################################################################################
+
+### Add the class_label
+reference_metadata$class_label <- NA
+
+# Dorsal Pallium Progenitor
+reference_metadata$class_label <- ifelse(reference_metadata$New_cellType %in% c("Apical progenitors", "Intermediate progenitors"), "Dorsal Pallium Progenitor", reference_metadata$class_label)
+
+# GABAergic
+reference_metadata$class_label <- ifelse(reference_metadata$New_cellType %in% c("Interneurons"), "GABAergic", reference_metadata$class_label)
+
+# Immature_Migrating
+reference_metadata$class_label <- ifelse(reference_metadata$New_cellType %in% c("Immature neurons", "Migrating neurons"), "Immature/Migrating", reference_metadata$class_label)
+
+# Glutamatergic
+reference_metadata$class_label <- ifelse(reference_metadata$New_cellType %in% c("Cajal Retzius cells", "CThPN", "DL CPN", "DL_CPN_2", "Layer 4", "Layer 6b", "NP", "SCPN", "UL CPN"), "Glutamatergic", reference_metadata$class_label)
+
+# Non Neuronal
+reference_metadata$class_label <- ifelse(reference_metadata$New_cellType %in% c("Astrocytes", "Cycling glial cells", "Endothelial cells", "Microglia", "Oligodendrocytes", "Pericytes", "VLMC", "Ependymocytes"), "Non Neuronal", reference_metadata$class_label)
+
+print(table(reference_metadata$class_label))
+
+########################################################################################################################
+
 #-------------------------------------
 # Load the matrix of reference 
 # (Lot of developmental time points)
@@ -94,9 +118,9 @@ for (x in file_to_open){
 # (cell in rows) + Transform them
 # in matrix
 #-------------------------------------
-list_reference_matrix <- lapply(list_reference_matrix, function(x){
-    normalized_matrix <- NormalizeData( object = x, normalization.method = NORM_METHOD, scale.factor = NORM_SCALE_FACTOR, verbose = FALSE)
-})
+# list_reference_matrix <- lapply(list_reference_matrix, function(x){
+#     normalized_matrix <- NormalizeData( object = x, normalization.method = NORM_METHOD, scale.factor = NORM_SCALE_FACTOR, verbose = FALSE)
+# })
 
 list_reference_matrix <-  lapply(list_reference_matrix, function(x) as.matrix(x))
 list_reference_matrix <-  lapply(list_reference_matrix, function(x) t(x))
@@ -139,7 +163,7 @@ reference_matrix <- do.call(rbind, list_reference_matrix)
 #-------------------------------------
 # Load our matrix to annotate
 #-------------------------------------
-matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv"))) # The normalized matrix is used for this reference.
+matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_count_matrix.csv"))) # The normalized matrix is used for this reference.
 matrix <- as.matrix(matrix)
 rownames(matrix) <- matrix[,"V1"]
 

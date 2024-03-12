@@ -58,7 +58,7 @@ rule all:
 		### fastqc ###
 		# fastqc_output = expand(OUTPUTDIR + "00_clean/fastqc_output.txt"),
 		### multiqc ###
-		# multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
+		multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
 		### ReferenceEnhancer to generate a scRNA-seq optimized transcriptomic reference ###
 		### To improve with manual curration of the file overlapping_gene_list
 		# reference_enhancer_output = expand(OUTPUTDIR + "01_cellranger/reference_enhancer_output.txt"),
@@ -82,7 +82,7 @@ rule all:
 		# knnor_output = expand(OUTPUTDIR +"03_sims/knnor_output.txt"),
 		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### SIMS
-		sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
+		# sims_output = expand(OUTPUTDIR + "03_sims/output_sims.txt"),
 
 
 

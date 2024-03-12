@@ -1,8 +1,8 @@
 ---
-title: "Single-cell RNAseq analysis of gastruloids"
+title: "Single-cell RNAseq analysis of the somatosensory cortex"
 subtitle: "Seurat | QC and Clustering"
 author:
-- Thomas Vannier
+- Léa Chabot
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
     html_document:
@@ -49,11 +49,12 @@ read_chunk( path=file.path( SCRIPTDIR, "02_variables_genes.R"));
 read_chunk( path=file.path( SCRIPTDIR, "03_cell_heterogeneity_PCA.R"));
 read_chunk( path=file.path( SCRIPTDIR, "04_cell_heterogeneity_tSNE_UMAP.R"));
 read_chunk( path=file.path( SCRIPTDIR, "05_cell_heterogeneity_clustering.R"));
+read_chunk( path=file.path( SCRIPTDIR, "06_markers.R"));
 ```
 
 This report present the analyse of dataset generated with 10x Genomics Single Cell Protocol.
 
-# Primary analysis : QC and selecting cells for further analysis of the sample `r snakemake@params[["sample_id"]]`
+# Primary analysis : QC and selecting cells for further analysis of the sample `r SAMPLE_ID`
 
 ```{r loadData, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
 <<loadData>>
@@ -228,11 +229,68 @@ rm("useReduction");
 useReduction='tsne'
 <<heterogeneity_dimReduc_with_clusters_tSNE>>
 rm("useReduction");
+```
 
-###
+### {-}
 
 <br /><br />
 
 ```{r save_RDS, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
 <<save_RDS>>
 ```
+
+
+## Markers {.tabset .tabset-fade}
+Here you can vizualize markers expression.
+
+### Cajal Retzius cells 
+```{r Cajal_Retzius_cells_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Cajal_Retzius_cells_markers>>
+```
+
+### L5 
+```{r L5_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L5_markers>>
+```
+
+### L6
+```{r L6_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L6_markers>>
+```
+
+### L6b
+```{r L6b_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L6b_markers>>
+```
+
+### Glutamatergic
+```{r Glutamatergic_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Glutamatergic_markers>>
+```
+
+### GABAergic
+```{r GABAergic_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<GABAergic_markers>>
+```
+
+### Oligo
+```{r oligo_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<oligo_markers>>
+```
+
+### Astro
+```{r astro_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<astro_markers>>
+```
+
+### DorsalPP
+```{r DorsalPaliumProgenitor_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<DorsalPaliumProgenitor_markers>>
+```
+
+### Microglia
+```{r microglia_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<microglia_markers>>
+```
+
+## {-}

@@ -4,7 +4,8 @@
 
 rule fastqc:
 	input:
-		expand(RAWDATA + "{rawsample}_{library}_{types}.fastq.gz", rawsample=RAWSAMPLE, library=LIBRARY, types=TYPES)
+		# expand(RAWDATA + "{rawsample}_{library}_{types}.fastq.gz", rawsample=RAWSAMPLE, library=LIBRARY, types=TYPES) # Thomas
+		expand(RAWDATA + "{rawsample}_{types}.fastq.gz", rawsample=RAWSAMPLE, types=TYPES)
 
 	output:
 		fastqc_output = expand(OUTPUTDIR + "00_clean/fastqc_output.txt")
@@ -35,7 +36,8 @@ rule multiqc:
 		multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
 
 	params:
-		raw_qc = expand(OUTPUTDIR + "00_clean/{rawsample}_{library}_{types}_fastqc.zip", rawsample=RAWSAMPLE, library=LIBRARY, types=TYPES),
+		# raw_qc = expand(OUTPUTDIR + "00_clean/{rawsample}_{library}_{types}_fastqc.zip", rawsample=RAWSAMPLE, library=LIBRARY, types=TYPES), # Thomas
+		raw_qc = expand(OUTPUTDIR + "00_clean/{rawsample}_{types}_fastqc.zip", rawsample=RAWSAMPLE, types=TYPES),
 		raw_multiqc_html = expand(OUTPUTDIR + "00_clean/raw_multiqc.html"),
 
 	message:

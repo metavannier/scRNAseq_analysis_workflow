@@ -82,7 +82,10 @@ rule all:
 		# NE MARCHE PAS : Doublet detection
 		# doublets_output = expand(OUTPUTDIR + "rm_doublet/doublets_output.txt"),
 		### Prepare data for SIMS
-		data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
+		# data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
+		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
+		### KNNOR
+		# knnor_output = expand(OUTPUTDIR +"03_sims/knnor_output.txt"),
 		anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### SIMS
 		sims_training_output = expand(OUTPUTDIR + "03_sims/output_sims_training.txt"),
@@ -148,6 +151,7 @@ if run_demultiplex:
 	include: ENVDIR + "prepare_data_sims.smk"
 	include: ENVDIR + "SIMS.smk"
 	include: ENVDIR + "umapCellAssignation.smk"
+	include: ENVDIR + "knnor.smk"
 
 if run_multiplex:	
 	include: ENVDIR + "clean.smk"

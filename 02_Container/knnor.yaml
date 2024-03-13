@@ -1,0 +1,12 @@
+channels :
+    - main
+    - defaults
+    - bioconda
+    - conda-forge
+dependencies :
+    - python = 3.9
+    - pandas
+    - numpy
+    - pip
+    - pip :
+        - knnor

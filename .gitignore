@@ -4,7 +4,6 @@
 02_Container/cellranger.sif
 02_Container/mambaforge:23.1.0-1.sif
 05_Output
-05_Output_june
 .vscode/
 .bash_history/
 .cache/
@@ -19,8 +18,13 @@ S004647_to_S004650_unoptimized_ref/
 S004647_to_S004650/
 __pycache__
 .netrc
+<<<<<<< HEAD
 global_report.html
 run_slurm_sims.sh
 run_slurm.sh
 run-slurm_sims_gpu.sh
 processing_multiplex.Rmd_all
+=======
+*.errs
+*.out
+>>>>>>> 56510dd4a7e1bfb9c9741370b68e135cc6b8d932

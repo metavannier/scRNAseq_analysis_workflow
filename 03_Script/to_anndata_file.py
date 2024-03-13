@@ -30,6 +30,7 @@ STEP3 = "03_sims/"
 # Load reference matrix
 #-------------------------------------
 
+
 reference_matrix = an.read_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, OUTPUT_NAME_REF_MATRIX + ".csv"))
 
 #-------------------------------------
@@ -52,6 +53,7 @@ print(reference_matrix.X)
 # Write matrix as anndata with
 # metadata inside
 #-------------------------------------
+reference_metadata = pd.read_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, OUTPUT_NAME_REF_METADATA + ".csv"), index_col = CELLS_COLUMN )
 reference_metadata = pd.read_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, OUTPUT_NAME_REF_METADATA + ".csv"), index_col = CELLS_COLUMN )
 anndata_ref_matrix.obs = pd.concat([anndata_ref_matrix.obs, reference_metadata], axis=1, join='inner')
 

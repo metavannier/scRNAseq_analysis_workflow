@@ -1,12 +1,12 @@
 #!/bin/sh
-#SBATCH -J Snakemake_run
-#SBATCH -p skylake
-#SBATCH -N 1
-#SBATCH -n 12
+
+#SBATCH -J allen_SIMS
+#SBATCH -p kepler
+#SBATCH --ntasks-per-node 18
 #SBATCH -A b324
 #SBATCH -t 10:00:00
 #SBATCH -o ./%N.%x.out
-#SBATCH -e ./%N.%x.err
+#SBATCH -e ./%N.%x.errs
 
 # This script needs to be started from the run directory
 
@@ -16,10 +16,15 @@ module load userspace/all
 module load python3/3.6.3
 module load singularity/3.5.1
 pip install snakemake==6.3.0
-pip install pandas
+# module load cuda/11.6
 
 # ================================================
 # Run the workflow
 # ================================================
 
-snakemake --snakefile Snakefile --use-singularity --use-conda --conda-frontend conda --conda-not-block-search-path-envvars --singularity-args="-B /scratch/$SLURM_JOB_USER/ibdm_lenne_scrnaseq_gastruloids/" --cores 12
+# For the worflow in general
+snakemake --unlock
+# snakemake --snakefile Snakefile --use-singularity --use-conda --conda-frontend conda --conda-not-block-search-path-envvars --singularity-args="-B /scratch/$SLURM_JOB_USER/scRNAseq_analysis_workflow/" --cores 18
+
+### For sims
+snakemake --snakefile Snakefile --use-singularity --singularity-args="-B /scratch/$SLURM_JOB_USER/scRNAseq_analysis_workflow/" --cores 18

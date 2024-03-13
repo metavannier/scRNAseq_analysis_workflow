@@ -1,0 +1,242 @@
+---
+title: "Single-cell RNAseq analysis of gastruloids"
+subtitle: "Processing with DropletUtils, Seurat and Scran | QC and Clustering"
+author:
+- Thomas Vannier
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+    html_document:
+        theme: cerulean
+        toc: true
+        toc_float: true
+        self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error=TRUE)
+```
+
+```{r loadLibraries, echo=FALSE, warning=FALSE, message=FALSE}
+library(DropletUtils)
+library(cowplot)
+library(Matrix)
+library(rmarkdown)
+library(tidyverse)
+library(stringr)
+library(tinytex)
+library(knitr)
+library(readr)
+library(dplyr)
+library(Seurat)
+library(patchwork)
+library(sctransform)
+library(glmGamPoi)
+library(ggplot2)
+library(data.table)
+library(devtools)
+library(sessioninfo)
+library(dittoSeq)
+library(DT)
+library(ggpubr)
+library( ggrepel)
+library( RColorBrewer)
+library( scales)
+library(plotly)
+library( htmltools)
+library(biocparallel)
+```
+
+[//]: # "Load the various chunks in the various files"
+```{r readChunks, echo=FALSE, warning=FALSE, message=FALSE}
+read_chunk( path=file.path( SCRIPTDIR, "dropletutils.R"));
+read_chunk( path=file.path( SCRIPTDIR, "01_prepare_data.R"));
+read_chunk( path=file.path( SCRIPTDIR, "02_variables_genes.R"));
+read_chunk( path=file.path( SCRIPTDIR, "03_cell_heterogeneity_PCA.R"));
+read_chunk( path=file.path( SCRIPTDIR, "04_cell_heterogeneity_tSNE_UMAP.R"));
+read_chunk( path=file.path( SCRIPTDIR, "05_cell_heterogeneity_clustering.R"));
+```
+
+This report present the analyse of dataset generated with 10x Genomics Single Cell Protocol.
+
+# Primary analysis : QC and selecting cells for further analysis of the sample `r snakemake@params[["sample_id"]]`
+
+```{r loadData, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<loadData>>
+```
+## Filtering cells
+
+We visualize QC metrics, and use these to filter cells.
+
+- We filter cells that have unique UMI counts over `r FILTER_UMI_MAX` (different number corresponding to the different samples) or less than `r FILTER_UMI_MIN`
+
+- We filter cells that have unique feature counts over `r FILTER_FEATURE_MAX` (different number corresponding to the different samples) or less than `r FILTER_FEATURE_MIN`
+
+- We filter cells that have > `r FILTER_PERCENT_MT`% mitochondrial counts or or less than `r FILTER_PERCENT_MT_MIN`.
+
+- We filter cells that have > `r FILTER_PERCENT_RB`% ribosomal counts.
+
+```{r filterData_selection, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<filterData_selection>>
+```
+
+```{r filterData_summaryPlot, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<filterData_summaryPlot>>
+```
+
+```{r filterData_filterObject, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<filterData_filterObject>>
+```
+
+## Normalizing the data
+
+After removing unwanted cells from the dataset we normalize the feature expression measurements for each cell (and correct the batch effect using the Seurat integration procedure if necessary) with `r snakemake@params[["norm_method"]]`
+We apply a linear transformation (‘scaling’) that is a standard pre-processing step prior to dimensional reduction techniques like PCA. If SCTransform is performed, it's not necessary to scale the data after it.
+
+```{r normalizeData, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<normalizeData>>
+```
+
+<br /><br />
+
+## Identification of highly variable genes
+
+Subset of features that exhibit high cell-to-cell variation in the dataset
+
+```{r findVariableGenes_seuratMethod, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
+<<findVariableGenes_seuratMethod>>
+```
+
+Number of variable genes found: `r variablesGenesStats`
+
+```{r findVariableGenes_summaryPlot, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
+<<findVariableGenes_summaryPlot>>
+```
+
+<br />
+
+Top `r VARIABLE_FEATURES_SHOWTOP` most variable annotations:
+
+```{r findVariableGenes_summaryTable, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
+<<findVariableGenes_summaryTable>>
+```
+
+<br /><br />
+
+## PCA results
+
+Visualizing both cells and features that define the PCA
+
+```{r ldr, echo=FALSE,fig.height=20,fig.width=20,out.height=600,out.width=600, results = "asis", message=FALSE}
+<<ldr>>
+```
+
+## Determine the ‘dimensionality’ of the dataset
+
+How many components have to be include?
+
+### Elbow Plot
+
+A ranking of principle components based on the percentage of variance explained by each one.
+
+```{r elbowplot, echo=FALSE, message=FALSE}
+<<elbowplot>>
+```
+
+Number of dimensions to use for PCA : `r snakemake@params[["pca_npc"]]``
+
+PCA projections for dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")` (colored by batch)  
+
+```{r heterogeneity_pca, echo = FALSE, out.width='33%', results = "asis", message = FALSE, warning = FALSE}
+<<heterogeneity_pca>>
+```
+
+<br />
+
+UMIs counts on PCA dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")`  
+```{r heterogeneity_pca_umisCounts, echo = FALSE, out.width='33%', results = "asis", message = FALSE, warning = FALSE}
+<<heterogeneity_pca_umisCounts>>
+```
+
+<br />
+
+Genes counts on PCA dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")`     
+```{r heterogeneity_pca_genesCounts, echo = FALSE, out.width='33%', results = "asis", message = FALSE, warning = FALSE}
+<<heterogeneity_pca_genesCounts>>
+```
+
+<br />
+
+Correlation (Spearman) of PCA dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")` with UMIs and genes counts  
+```{r heterogeneity_pca_correlations, echo = FALSE, fig.dim = c(9,6), results = "asis", message = FALSE, warning = FALSE}
+<<heterogeneity_pca_correlations>>
+```
+<br />
+
+PCA loadings of top `r PCA_PLOTS_NBFEATURES` features for dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")`  
+```{r heterogeneity_pca_loadings, echo = FALSE, fig.dim = c(4, 4), out.width='33%', results = "asis", message = FALSE, warning = FALSE}
+<<heterogeneity_pca_loadings>>
+```
+<br /><br />
+
+## Dimensionality reduction
+
+```{r heterogeneity_dimReduc, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
+<<heterogeneity_dimReduc>>
+```
+
+### Colored by batch {.tabset .tabset-fade}
+
+#### UMAP
+```{r dimreduc_ggplot_covariables, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+useReduction='umap'
+<<dimreduc_ggplot_covariables>>
+rm("useReduction");
+```
+
+#### TSNE
+```{r dimreduc_ggplot_covariables_tSNE, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+useReduction='tsne'
+<<dimreduc_ggplot_covariables_tSNE>>
+rm("useReduction");
+```
+
+<br /><br />
+
+
+## Clusters identification
+
+We use a graph-based clustering approach : 1. Construct a KNN graph based on the euclidian distance in PCA space, and refine the edge weights between any two cells based on the shared overlap in their local neighborhoods (Jaccard similarity). 2. Modularity optimization techniques such as the Louvain algorithm or SLM, to iteratively group cells together, with the goal of optimizing the standard modularity function.
+
+### Cells distribution
+```{r heterogeneity_identifyClusters, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<heterogeneity_identifyClusters>>
+```
+
+### Statistics by cluster
+```{r heterogeneity_identifyClusters_splitStats, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
+<<heterogeneity_identifyClusters_splitStats>>
+```
+<br /><br />
+
+### Clusters projection {.tabset .tabset-fade}
+
+#### UMAP
+```{r heterogeneity_dimReduc_with_clusters, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+useReduction='umap'
+<<heterogeneity_dimReduc_with_clusters>>
+rm("useReduction");
+```
+
+#### tSNE
+```{r heterogeneity_dimReduc_with_clusters_tSNE, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+useReduction='tsne'
+<<heterogeneity_dimReduc_with_clusters_tSNE>>
+rm("useReduction");
+
+###
+
+<br /><br />
+
+```{r save_RDS, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
+<<save_RDS>>
+```

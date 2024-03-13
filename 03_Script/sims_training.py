@@ -14,6 +14,8 @@ import os
 import sys
 import anndata as an
 import wandb
+# import tensorflow as tf
+# print(tf.config.list_physical_devices('GPU'))
 
 #-------------------------------------
 # Path to files / folders
@@ -32,6 +34,7 @@ PATIENCE = sys.argv[7]
 MAX_EPOCH = sys.argv[8]
 MATRIX = sys.argv[9]
 KEY = sys.argv[10]
+EPOCH = sys.argv[11]
 
 STEP3 = "03_sims/"
 
@@ -43,6 +46,7 @@ STEP3 = "03_sims/"
 # Logger : Allows you to visualize 
 # data training.
 # -------------------------------------
+
 wandb.login(key = KEY)
 
 logger = WandbLogger(project = PROJECT_NAME, name = PROJECT_NAME, save_dir = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID), version = "")
@@ -50,7 +54,7 @@ logger = WandbLogger(project = PROJECT_NAME, name = PROJECT_NAME, save_dir = os.
 #-------------------------------------
 # Load the anndata file
 #-------------------------------------
-reference_matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, REFERENCE_MATRIX + "_join_metadata.h5ad"))
+reference_matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, REFERENCE_MATRIX + ".h5ad"))
 
 #-------------------------------------
 # Custom training jobs
@@ -61,6 +65,9 @@ sims = SIMS(data = reference_matrix, class_label = CLASS_LABEL, num_workers = in
 sims.setup_model(n_a=64, n_d=64, weights=sims.weights)
 
 sims.setup_trainer(
+    # TO REMOVE IF DOES NOT WORK
+    # accelerator="gpu",
+    # devices=1,
     logger = logger,
     callbacks = [
         EarlyStopping(
@@ -72,6 +79,8 @@ sims.setup_trainer(
         LearningRateMonitor(logging_interval = "epoch"),
         ModelCheckpoint(
             dirpath = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID),
+            every_n_epochs = 5,
+            save_top_k=-1
             # filename = "checkpoint_" + PROJECT_NAME + ".ckpt"
         ),
     ],
@@ -79,27 +88,3 @@ sims.setup_trainer(
 )
 
 sims.train()
-
-#-----------------------------------------------------------------------------------------------
-#                                To predict labels on our data 
-#-----------------------------------------------------------------------------------------------
-
-# #-------------------------------------
-# # Load the model
-# #-------------------------------------
-# model = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, "epoch=129-step=88010.ckpt")
-
-# #-------------------------------------
-# # Prediction
-# #-------------------------------------
-# sims = SIMS(weights_path = model)
-# cell_prediction = sims.predict(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
-
-# #-------------------------------------
-# # Write prediction in a csv file
-# #-------------------------------------
-# matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
-
-# cell_prediction.insert(0,"Cells", matrix.obs_names)
-
-# cell_prediction.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + "_prediction.csv"), index = False)

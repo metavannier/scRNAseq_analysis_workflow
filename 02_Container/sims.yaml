@@ -5,7 +5,10 @@ channels :
   - bioconda
 dependencies : 
   - python = 3.9
+  - bioconductor-zellkonverter = 1.12.1
   - pip
   - pip:
     - --upgrade pip setuptools wheel
-    - --use-pep517 git+https://github.com/braingeneers/SIMS.git
+    # - --install tensorflow-gpu
+    # Sims version Nov 17, 2023
+    - --use-pep517 git+https://github.com/braingeneers/SIMS.git@c3cc547e9223e979fdc70f9af2ae932b729da88e

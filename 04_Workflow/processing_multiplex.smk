@@ -1,17 +1,17 @@
 #----------------------------------------
-# Seurat
+# Processing multiplex
 #----------------------------------------
 
-rule seurat:
+rule processing_multiplex:
     input:
         cellranger_output = expand(OUTPUTDIR + "01_cellranger/cellranger_output.txt"),
 
     output:
         seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
-        seurat_report = report(expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID), caption = REPORT + "seurat.rst", category = "02 seurat"),
+        seurat_report = report(expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID), caption = REPORT + "processing_multiplex.rst", category = "02 seurat"),
 
     conda:
-        CONTAINER + "seurat.yaml"
+        CONTAINER + "processing_multiplex.yaml"
 
     params:
         run_demultiplex = config["run_demultiplex"],
@@ -47,30 +47,7 @@ rule seurat:
         findclusters_algorithm = config["seurat"]["findclusters_algorithm"],
 
     message:
-        "Run Seurat for the clustering"
+        "Run pre-processing scRNAseq data"
 
     script:
-        SCRIPTDIR + "seurat_reports_compilation.R"
-
-#----------------------------------------
-# Normalisation with Scran
-#----------------------------------------
-
-rule normalisation:
-    input:
-        seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
-
-    output:
-        normalisation_output = expand(OUTPUTDIR + "02_seurat/normalisation_output.txt"),
-
-    conda:
-        CONTAINER + "normalisation.yaml"
-
-    params:
-        sample_id = expand("{sample_id.id}", sample_id = sample_id.itertuples()),
-
-    message:
-        "Run normalisation with scran"
-
-    script:
-        SCRIPTDIR + "normalisation.R"
+        SCRIPTDIR + "processing_multiplex_reports_compilation.R"

@@ -1,0 +1,64 @@
+---
+title: "Doublet detection and stripped nuclei removal"
+subtitle: "Method from Pijuan-Sala, Griffiths, Guibentif et al.: A single-cell resolution molecular roadmap from mouse gastrulation to early organogenesis."
+author:
+- Thomas Vannier | CENTURI Multi-Engineering Platform
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+    html_document:
+        theme: cerulean
+        toc: true
+        toc_float: true
+        self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error=TRUE)
+```
+
+```{r loadLibraries, echo=FALSE, warning=FALSE, message=FALSE}
+# library(Seurat)
+# library(seuratobject)
+# library(irlba)
+# library(Rtsne)
+library(SingleCellExperiment)
+# library(ggplot2)
+# library(biomaRt)
+# library(BiocParallel)
+# ncores = 4
+# mcparam = MulticoreParam(workers = ncores)
+# register(mcparam)
+library(Matrix)
+# library(matrixStats)
+# library(igraph)
+library(scater)
+library(reshape2)
+library(knitr)
+library(biomaRt)
+library(scran)
+library(rmarkdown)
+# library(data.table)
+
+```
+
+```{r readChunks, echo=FALSE, warning=FALSE, message=FALSE}
+read_chunk( path=file.path( SCRIPTDIR, "doublets.R"))
+```
+
+## Computing doublet scores
+
+Specifically, we use the `doubletCells` method in *scran* to score cells for doublet calling. This works in two steps: first simulating doublets, then by estimating the densities of simulated doublets and observed cells across the gene expression space.
+
+To simulate doublets, random pairs of cells are selected. The count vectors for each of these cells are added together, to form a transcriptional profile for the new simulated doublet. This is then normalised by the sum of the two size factors of each of the original cells (i.e. as if it were normalised "with" the observed data). This process is repeated many times, and the normalised doublet profiles are projected into a principal component space that is calculated from the log-counts of the observed cells only.
+
+Once the cells are projected, the density of doublets and observed cells are estimated at each observed cell's position using a tricube weighted kernel. The per-cell doublet score is the ratio of the doublet density by the observed cell density. This process is carried out considering only highly variable genes (which were calculated per-sample using `trendVar` and `decomposeVar`, selecting cells with adjusted $p<0.05$).
+
+```{r computescores, echo=FALSE, message=FALSE, eval = TRUE}
+<<computescores>>
+```
+
+## Session Info
+
+```{r info, echo=FALSE, message=FALSE, eval = TRUE}
+<<info>>
+```

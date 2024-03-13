@@ -74,8 +74,9 @@ while(i <= len)
     FILTER_PERCENT_MT <- FILTER_PERCENT_MT_LIST[i]
     FILTER_PERCENT_MT_MIN <- FILTER_PERCENT_MT_MIN_LIST[i]
     FILTER_PERCENT_RB <- FILTER_PERCENT_RB_LIST[i]
+    INCREMENT_SAMPLE <- i
 
-    rmarkdown::render( input = file.path(SCRIPTDIR, "seurat.Rmd"),
+    rmarkdown::render( input = file.path(SCRIPTDIR, "processing_multiplex.Rmd"),
                     output_dir = file.path(OUTPUTDIR, STEP, SAMPLE_ID),
                     output_file = REPORT,
                     quiet = FALSE)
@@ -83,7 +84,7 @@ while(i <= len)
 }
 
 output_file<-file(SEURAT_OUTPUT)
-writeLines(c("Rule seurat FINISHED"), output_file)
+writeLines(c("Rule processing_multiplex FINISHED"), output_file)
 close(output_file)
 
     

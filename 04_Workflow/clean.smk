@@ -33,10 +33,10 @@ rule multiqc:
 
 	output:
 		multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
+		raw_multiqc_html = report(expand(OUTPUTDIR + "00_clean/raw_multiqc.html", sample_id = SAMPLE_ID), caption = REPORT + "multiqc.rst", category = "00 quality"),
 
 	params:
 		raw_qc = expand(OUTPUTDIR + "00_clean/{rawsample}_{library}_{types}_fastqc.zip", rawsample=RAWSAMPLE, library=LIBRARY, types=TYPES),
-		raw_multiqc_html = expand(OUTPUTDIR + "00_clean/raw_multiqc.html"),
 
 	message:
 		"Synthetize quality with multiqc"

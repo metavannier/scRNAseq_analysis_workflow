@@ -1,0 +1,24 @@
+channels :
+    - r
+    - bioconda
+    - conda-forge
+    - defaults
+dependencies :
+    - r-base
+    - bioconductor-scran = 1.10.1
+    # - r-biocmanager
+    # - r-seurat = 3.1.5 
+    - r-irlba = 2.3.3
+    - bioconductor-singlecellexperiment = 1.4.0
+    # - bioconductor-biocparallel
+    # - r-ggplot2
+    - r-matrix = 1.2-18 
+    # - r-matrixstats
+    # - r-igraph
+    - bioconductor-scater = 1.10.1
+    - r-reshape2 = 1.4.4
+    - r-knitr = 1.28
+    - conda-forge::r-rmarkdown = 2.1 
+    - bioconductor-biomart = 2.38.0 
+    # - r-data.table
+    # - r-seuratobject

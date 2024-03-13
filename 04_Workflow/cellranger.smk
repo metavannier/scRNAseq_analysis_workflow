@@ -82,6 +82,8 @@ rule multi:
 
     output:
         cellranger_output = expand(OUTPUTDIR + "01_cellranger/cellranger_output.txt"),
+        # Do the loop on the shell command to save these files in the good repository
+        cellranger_html = report(expand(OUTPUTDIR + "01_cellranger/{sample_id}/web_summary.html", sample_id = SAMPLE_ID), caption = REPORT + "cellranger_summary.rst", category = "01 cellranger"),
 
     singularity:
         CONTAINER + "cellranger.sif"

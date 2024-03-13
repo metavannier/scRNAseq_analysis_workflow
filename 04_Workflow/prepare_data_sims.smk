@@ -5,6 +5,7 @@
 rule data_for_sims:
     input:
         seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
+        normalisation_output = expand(OUTPUTDIR + "02_seurat/normalisation_output.txt")
     
     output: 
         data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
@@ -12,7 +13,7 @@ rule data_for_sims:
     params:
         # sims_rule = config["rules"]["sims_rule"],
         # General
-        r_script = config["reference_sims"]["r_script"],
+        # r_script = config["reference_sims"]["r_script"],
         sample_id = config["reference_sims"]["sample_id"],
         output_name_ref_metadata = config["reference_sims"]["output_name_ref_metadata"],
         output_name_ref_matrix = config["reference_sims"]["output_name_ref_matrix"],
@@ -41,7 +42,7 @@ rule data_for_sims:
         "Create matrix for sims (CSV format)"
 
     script:
-        SCRIPTDIR + "{params.r_script}"
+        SCRIPTDIR + config["reference_sims"]["r_script"]
 
 #----------------------------------------
 # Use the csv create in the precedent

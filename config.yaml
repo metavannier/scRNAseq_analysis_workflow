@@ -250,9 +250,10 @@ sims:
     ##### Cells annotation
     # Threshold of the difference between the first and second score of the prediction to say if a cell is unknown or not
     threshold: 0.1
+    # Seurat object with sims cell_assignation
+    rds_assignation: filtered_assigned_seurat_object.rds
     # Matrix with cell predtion after filtration with the threshold
     pred_filtered: data_matrix_prediction_filtered.csv
-
 
 # Differentially expressed features analyses
 diffexp:

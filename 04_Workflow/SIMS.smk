@@ -47,6 +47,8 @@ rule sims_prediction:
 
     output:
         sims_prediction_output = expand(OUTPUTDIR + "03_sims/output_sims_prediction.txt"),
+        sims_prediction_report = report(expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_data_matrix_prediction.csv", sample_id = SAMPLE_ID), caption = REPORT + "label.rst", category = "03 sims"),
+        sims_prediction_unknown_report = report(expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_data_matrix_prediction_filtered.csv", sample_id = SAMPLE_ID), caption = REPORT + "label.rst", category = "03 sims"),
 
     params:
         sims_rule = config["rules"]["sims_rule"],

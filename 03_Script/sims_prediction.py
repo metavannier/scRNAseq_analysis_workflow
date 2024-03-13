@@ -51,4 +51,4 @@ matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"
 
 cell_prediction.insert(0,"Cells", matrix.obs_names)
 
-cell_prediction.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + "_prediction.csv"), index = False)
+cell_prediction.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, SAMPLE_ID + MATRIX + "_prediction.csv"), index = False)

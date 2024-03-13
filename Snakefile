@@ -56,37 +56,44 @@ CLUSTER = config["diffexpsubset"]["cluster"].split(',')
 rule all:
 	input:
 		### fastqc ###
-		# fastqc_output = expand(OUTPUTDIR + "00_clean/fastqc_output.txt"),
+		fastqc_output = expand(OUTPUTDIR + "00_clean/fastqc_output.txt"),
 		### multiqc ###
-		# multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
+		multiqc_output = expand(OUTPUTDIR + "00_clean/multiqc_output.txt"),
+		raw_multiqc_html = expand(OUTPUTDIR + "00_clean/raw_multiqc.html"),
 		### ReferenceEnhancer to generate a scRNA-seq optimized transcriptomic reference ###
 		### To improve with manual curration of the file overlapping_gene_list
 		# reference_enhancer_output = expand(OUTPUTDIR + "01_cellranger/reference_enhancer_output.txt"),
 		### reference for cellranger ###
-		# ref_cellranger_output = expand(OUTPUTDIR + "01_cellranger/ref_cellranger_output.txt"),
+		ref_cellranger_output = expand(OUTPUTDIR + "01_cellranger/ref_cellranger_output.txt"),
 		### Cell Multiplexing with cellranger multi ###
-		# cellranger_output = expand(OUTPUTDIR + "01_cellranger/cellranger_output.txt"),
+		cellranger_output = expand(OUTPUTDIR + "01_cellranger/cellranger_output.txt"),
+		cellranger_html = expand(OUTPUTDIR + "01_cellranger/{sample_id}/web_summary.html", sample_id = SAMPLE_ID),
 		## If you need to aggregate your data
 		# aggrcsv = ROOTDIR + "/aggregation.csv",
 		# out_aggregate = expand(OUTPUTDIR + "01_cellranger/{agrr}/outs/aggregate_web_summary.html", agrr=AGRR),
-		## If demuxiplexing is used
+		## If demultiplexing is used
 		# bcf = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.bcf",
 		# demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
 		# tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
-		# Seurat
-		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
-		# Normalisation with other method than Seurat
-        # normalisation_output = expand(OUTPUTDIR + "02_seurat/normalisation_output.txt"),
+		### Seurat ###
+		seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
+		### Normalisation with other method than Seurat ###
+        normalisation_output = expand(OUTPUTDIR + "02_seurat/normalisation_output.txt"),
 		# NE MARCHE PAS : Doublet detection
 		# doublets_output = expand(OUTPUTDIR + "rm_doublet/doublets_output.txt"),
 		### Prepare data for SIMS
-		# data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
-		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
+		data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
+		anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### SIMS
-		# sims_training_output = expand(OUTPUTDIR + "03_sims/output_sims_training.txt"),
-		# sims_prediction_output = expand(OUTPUTDIR + "03_sims/output_sims_prediction.txt"),
+		sims_training_output = expand(OUTPUTDIR + "03_sims/output_sims_training.txt"),
+		sims_prediction_output = expand(OUTPUTDIR + "03_sims/output_sims_prediction.txt"),
+		sims_prediction_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_data_matrix_prediction.csv", sample_id = SAMPLE_ID),
+        sims_prediction_unknown_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_data_matrix_prediction_filtered.csv", sample_id = SAMPLE_ID),
 		### Representing cellular assignation on UMAP
 		umapAssignation_output = expand(OUTPUTDIR + "03_sims/umapAssignation_output.txt"),
+		umap_sims_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_sims.pdf", sample_id = SAMPLE_ID),
+		umap_sims_threshold_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_sims_threshold.pdf", sample_id = SAMPLE_ID),
+		umap_per_labels_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_per_labels.pdf", sample_id = SAMPLE_ID),
 		## Differential expression analyses
 		# violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
 		# umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
@@ -122,6 +129,12 @@ rule all:
 		# defile_subset_tar = OUTPUTDIR + "04_diffexp_sub		
 
 # ----------------------------------------------
+# setup report
+# ----------------------------------------------
+
+report: "07_Report/workflow.rst"
+
+# ----------------------------------------------
 # Load rules 
 # ----------------------------------------------
 
@@ -137,13 +150,13 @@ if run_demultiplex:
 	include: ENVDIR + "umapCellAssignation.smk"
 
 if run_multiplex:	
-	# include: ENVDIR + "clean.smk"
-	# include: ENVDIR + "cellranger.smk"
+	include: ENVDIR + "clean.smk"
+	include: ENVDIR + "cellranger.smk"
 	# NE MARCHE PAS include: ENVDIR + "processing_multiplex.smk"
-	# include: ENVDIR + "seurat.smk"
+	include: ENVDIR + "seurat.smk"
 	# NE MARCHE PAS include: ENVDIR + "rm_doublets.smk"
-	# include: ENVDIR + "prepare_data_sims.smk"
-	# include: ENVDIR + "SIMS.smk"
+	include: ENVDIR + "prepare_data_sims.smk"
+	include: ENVDIR + "SIMS.smk"
 	include: ENVDIR + "umapCellAssignation.smk"
 
 # include: ENVDIR + "demuxlet.smk"

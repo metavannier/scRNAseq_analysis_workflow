@@ -4,7 +4,7 @@
 #SBATCH -N 1
 #SBATCH -n 12
 #SBATCH -A b324
-#SBATCH -t 2:00:00
+#SBATCH -t 10:00:00
 #SBATCH -o ./%N.%x.out
 #SBATCH -e ./%N.%x.err
 

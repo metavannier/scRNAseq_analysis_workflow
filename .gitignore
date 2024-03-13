@@ -18,4 +18,9 @@ test
 S004647_to_S004650_unoptimized_ref/
 S004647_to_S004650/
 __pycache__
-
+.netrc
+global_report.html
+run_slurm_sims.sh
+run_slurm.sh
+run-slurm_sims_gpu.sh
+processing_multiplex.Rmd_all

@@ -48,7 +48,7 @@ while(i <= len)
     new_sizes = c(floor(min.clust/3), floor(min.clust/2), floor(min.clust))
     sce_dataset = computeSumFactors(sce_dataset, clusters = clusts_sce_dataset, sizes = new_sizes, max.cluster.size = 3000)
 
-    sce_dataset <- logNormCounts(sce_dataset)
+    sce_dataset <- logNormCounts(sce_dataset, size.factors = sizeFactors(sce_dataset))
 
     so[["RNA"]] <- SetAssayData(so[["RNA"]],
                                   slot = "data", 

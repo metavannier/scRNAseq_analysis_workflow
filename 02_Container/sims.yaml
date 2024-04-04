@@ -10,5 +10,5 @@ dependencies :
   - pip:
     - --upgrade pip setuptools wheel
     # - --install tensorflow-gpu
-    # Sims version Nov 17, 2023
-    - --use-pep517 git+https://github.com/braingeneers/SIMS.git@c3cc547e9223e979fdc70f9af2ae932b729da88e
+    # Sims version Mar 14, 2024
+    - --use-pep517 git+https://github.com/braingeneers/SIMS.git@fb652b8822636da039324e659f1b114b9d257fa2

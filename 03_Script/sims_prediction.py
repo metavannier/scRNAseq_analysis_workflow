@@ -52,3 +52,12 @@ matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"
 cell_prediction.insert(0,"Cells", matrix.obs_names)
 
 cell_prediction.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, SAMPLE_ID + MATRIX + "_prediction.csv"), index = False)
+
+## DOESN'T WORK
+# explainability_matrix = sims.explain(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
+
+# # Access each element using indexing
+# for idx, element in enumerate(explainability_matrix):
+#     # Save each element as CSV
+#     element.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, f'element{idx+1}.csv'), index=False)
+

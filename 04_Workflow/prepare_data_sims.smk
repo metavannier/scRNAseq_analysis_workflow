@@ -25,12 +25,12 @@ rule data_for_sims:
         # arlotta_matrix = config["reference_sims"]["arlotta_matrix"],
         # arlotta_cells = config["reference_sims"]["arlotta_cells"],
         # arlotta_features = config["reference_sims"]["arlotta_features"],
-        developmental_time = config["reference_sims"]["developmental_time"],
+        # developmental_time = config["reference_sims"]["developmental_time"],
         ### Reference Allen mouse whole cortex
-        allen_metadata = config["reference_sims"]["allen_metadata"],
-        allen_matrix = config["reference_sims"]["allen_matrix"],
-        allen_genes = config["reference_sims"]["allen_genes"],
-        allen_cells = config["reference_sims"]["allen_cells"],
+        # allen_metadata = config["reference_sims"]["allen_metadata"],
+        # allen_matrix = config["reference_sims"]["allen_matrix"],
+        # allen_genes = config["reference_sims"]["allen_genes"],
+        # allen_cells = config["reference_sims"]["allen_cells"],
         # Reference MouseGastrulation
         sample_list = expand("{sample_id.id}", sample_id = sample_id.itertuples()),
         mousegastrulation_samples = config["reference_sims"]["mousegastrulation_samples"].split(','),

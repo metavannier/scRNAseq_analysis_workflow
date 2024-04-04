@@ -2,9 +2,9 @@
 
 #SBATCH -J allen_SIMS
 #SBATCH -p kepler
-#SBATCH --ntasks-per-node 18
+#SBATCH --ntasks-per-node 24
 #SBATCH -A b324
-#SBATCH -t 10:00:00
+#SBATCH -t 04:00:00
 #SBATCH -o ./%N.%x.out
 #SBATCH -e ./%N.%x.errs
 
@@ -24,7 +24,7 @@ pip install snakemake==6.3.0
 
 # For the worflow in general
 snakemake --unlock
-# snakemake --snakefile Snakefile --use-singularity --use-conda --conda-frontend conda --conda-not-block-search-path-envvars --singularity-args="-B /scratch/$SLURM_JOB_USER/scRNAseq_analysis_workflow/" --cores 18
+snakemake --snakefile Snakefile --use-singularity --use-conda --conda-frontend conda --conda-not-block-search-path-envvars --singularity-args="-B /scratch/$SLURM_JOB_USER/scRNAseq_analysis_workflow/" --cores 24
 
 ### For sims
-snakemake --snakefile Snakefile --use-singularity --singularity-args="-B /scratch/$SLURM_JOB_USER/scRNAseq_analysis_workflow/" --cores 18
+# snakemake --snakefile Snakefile --use-singularity --singularity-args="-B /scratch/$SLURM_JOB_USER/scRNAseq_analysis_workflow/" --cores 18

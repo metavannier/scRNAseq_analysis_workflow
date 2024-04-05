@@ -1,0 +1,10 @@
+channels :
+    - r
+    - bioconda
+    - conda-forge
+    - defaults
+dependencies :
+    - r-seurat = 4.0.3
+    - r-dplyr = 1.0.9
+    - r-ggplot2 =3.3.5
+    - r-cowplot = 1.1.1

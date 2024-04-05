@@ -20,6 +20,7 @@ OUTPUTDIR = file.path((DIRECTORY), "05_Output")
 REF = file.path((DIRECTORY), "01_Reference")
 
 SAMPLE_ID = snakemake@params[["sample_id"]]
+REFERENCE_NAME = snakemake@params[["reference_name"]]
 
 NORM_METHOD = snakemake@params[["norm_method"]]
 NORM_SCALE_FACTOR = snakemake@params[["norm_scale_factor"]]
@@ -33,11 +34,24 @@ OUTPUT_NAME_MATRIX = snakemake@params[["output_name_matrix"]]
  
 STEP2 = "02_seurat/"
 STEP3 = "03_sims/"
+STEP_REMI = "03_remi/"
+
+METADATA_REMI <- TRUE
 
 #-------------------------------------
 # Load the metadata of the reference
 #-------------------------------------
-reference_metadata <- fread(file = file.path(REF, ALLEN_METADATA))
+
+if(METADATA_REMI){
+    reference_metadata <- fread(file = file.path(OUTPUTDIR, STEP_REMI, "final_allen.csv"))
+    cells_names <- "sample_name"
+    celltypes <- "celltype_label"
+} else {
+    reference_metadata <- fread(file = file.path(REF, ALLEN_METADATA))
+    cells_names <- "sample_name"
+    celltypes <- "subclass_label"
+}
+
 print("Reference metadata loaded. It's size is :")
 print(dim(reference_metadata))
 
@@ -46,19 +60,21 @@ print(dim(reference_metadata))
 # Keep only some part of the cortex
 # we want to study: Ssp
 #-------------------------------------
-reference_metadata <- reference_metadata[reference_metadata$region_label %in% "SSp",]
-print("Only SSp are kept in the metadata: The new size of this one is :")
-print(dim(reference_metadata))
-
+if(!METADATA_REMI){
+    reference_metadata <- reference_metadata[reference_metadata$region_label %in% "SSp",]
+    print("Only SSp are kept in the metadata: The new size of this one is :")
+    print(dim(reference_metadata))
+}
 ######################################################################################################
 
 #-------------------------------------
 # For the training we need at least
 # two cells per labels
 #-------------------------------------
-occurence <- table(reference_metadata$subclass_label)
+occurence <- table(reference_metadata[[celltypes]])
 one_cell_per_label <- names(occurence[occurence == 1])
-reference_metadata <- reference_metadata[!(reference_metadata$subclass_label %in% one_cell_per_label), ]
+reference_metadata <- reference_metadata[!(reference_metadata[[celltypes]] %in% one_cell_per_label), ]
+
 print("The new size after removing labels thaht only appear once :")
 print(dim(reference_metadata))
 
@@ -82,10 +98,10 @@ print(dim(reference_matrix))
 # Keep cells that match both the 
 # metadata an matrix of reference
 #-------------------------------------
-reference_matrix <- reference_matrix[rownames(reference_matrix) %in% reference_metadata$sample_name,]
-reference_metadata <- reference_metadata[reference_metadata$sample_name %in% rownames(reference_matrix),]
+reference_matrix <- reference_matrix[rownames(reference_matrix) %in% reference_metadata[[cells_names]],]
+reference_metadata <- reference_metadata[reference_metadata[[cells_names]] %in% rownames(reference_matrix),]
 
-print("The metadata and matrix of reference have the same cells now : The new size of them tow :")
+print("The metadata and matrix of reference have the same cells now : The new size of them two :")
 print(dim(reference_matrix))
 print(dim(reference_metadata))
 
@@ -93,68 +109,76 @@ print(dim(reference_metadata))
 # Order metadata according to matrix
 # (Necessary ?)
 #-------------------------------------
-reference_metadata <- reference_metadata[match(rownames(reference_matrix),reference_metadata$sample_name),]
-print("Cells are in the same order in booth files")
+reference_metadata <- reference_metadata[match(rownames(reference_matrix),reference_metadata[[cells_names]]),]
+print("Cells are in the same order in both files")
 
 #-------------------------------------
 # Write the the metadata as csv   
 #-------------------------------------
-dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
+dir.create(file.path(OUTPUTDIR, STEP3, REFERENCE_NAME))
 
-fwrite(x = reference_metadata, file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_METADATA, ".csv")))
+fwrite(x = reference_metadata, file = file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_METADATA, ".csv")))
 
 rm("reference_metadata")
 gc()
 
 print("Metadata is written")
+
 #-------------------------------------
 # Normalization of the matrix of
 # reference
 #-------------------------------------
-reference_matrix <-  NormalizeData( object = reference_matrix, normalization.method = NORM_METHOD, scale.factor = NORM_SCALE_FACTOR, verbose = FALSE)
-print("The matrix of reference is now normalized the same way as our matrix to analyze: Here the first 20 rows and 10 columns :")
-print(reference_matrix[1:20, 1:10])
+### Seurat change the names of some genes at this step
+cell_before_norm <- as.data.table(colnames(reference_matrix))
+write.csv(cell_before_norm, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, "cells_before_norm.csv"))
 
-#-------------------------------------
-# Load our matrix to annotate
-#-------------------------------------
-matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv")))
-matrix <- as.matrix(matrix)
-rownames(matrix) <- matrix[,"V1"]
+reference_matrix <- NormalizeData( object = reference_matrix, normalization.method = NORM_METHOD, scale.factor = NORM_SCALE_FACTOR, verbose = FALSE)
 
-print("Our matrix to annotate is loaded, see the dimension below :")
-print(dim(matrix))
+cell_after_norm <- as.data.table(colnames(reference_matrix))
+write.csv(cell_after_norm, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, "cells_after_norm.csv"))
 
-#-------------------------------------
-# Look at genes who are common in both
-# matrix and subset genes who are nots
-#-------------------------------------
-gene_intersection <- intersect(colnames(matrix), colnames(reference_matrix))
-reference_matrix <- reference_matrix[, gene_intersection]
-matrix <- matrix[, gene_intersection]
+print("The matrix of reference is now normalized the same way as our matrix to analyze: Here the first 10 rows and 10 columns :")
+print(reference_matrix[1:10, 1:10])
 
-print("Only the gene in common in booth our matrix are kept : The new dimmension :")
-print(dim(reference_matrix))
-print(dim(matrix))
+# #-------------------------------------
+# # Load our matrix to annotate
+# #-------------------------------------
+# matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv")))
+# matrix <- as.matrix(matrix)
+# rownames(matrix) <- matrix[,"V1"]
+
+# print("Our matrix to annotate is loaded, see the dimension below :")
+# print(dim(matrix))
+
+# #-------------------------------------
+# # Look at genes who are common in both
+# # matrix and subset genes who are nots
+# #-------------------------------------
+# gene_intersection <- intersect(colnames(matrix), colnames(reference_matrix))
+# reference_matrix <- reference_matrix[, gene_intersection]
+# matrix <- matrix[, gene_intersection]
+
+# print("Only the gene in common in booth our matrix are kept : The new dimmension :")
+# print(dim(reference_matrix))
+# print(colnames(reference_matrix)[1:35])
+# print(dim(matrix))
+# print(colnames(matrix)[1:35])
 
 #-------------------------------------
 # Wtrite the two new matrix
 #-------------------------------------
-class(matrix) <- "numeric"
-write.csv(matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_MATRIX,".csv")))
-print("Our matrix is written")
+# class(matrix) <- "numeric"
+# write.csv(matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_MATRIX,".csv")))
+# print("Our matrix is written")
 
-rm("matrix")
-gc()
+# rm("matrix")
+# gc()
 
-# reference_matrix <- as.matrix(reference_matrix)
-# rownames(reference_matrix) <- reference_matrix[,"sample_name"]
-# class(reference_matrix) <- "numeric"
-write.csv(reference_matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
+write.csv(reference_matrix, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
 print("Our matrix of reference is written")
 
-rm("reference_matrix")
-gc()
+# rm("reference_matrix")
+# gc()
 
 #-------------------------------------
 # create the output file

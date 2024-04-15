@@ -8,4 +8,5 @@ dependencies :
   - pip
   - pip:
     - --upgrade pip setuptools wheel
-    - --use-pep517 git+https://github.com/braingeneers/SIMS.git
+    # Sims version Nov 17, 2023
+    - --use-pep517 git+https://github.com/braingeneers/SIMS.git@c3cc547e9223e979fdc70f9af2ae932b729da88e

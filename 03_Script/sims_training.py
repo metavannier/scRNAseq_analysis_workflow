@@ -22,7 +22,7 @@ DIRECTORY = os.getcwd()
 REF = os.path.join(DIRECTORY, "01_Reference")
 OUTPUTDIR = os.path.join(DIRECTORY, "05_Output")
 
-SAMPLE_ID = sys.argv[1]
+REFERENCE_NAME = sys.argv[1]
 REFERENCE_MATRIX = sys.argv[2]
 PROJECT_NAME = sys.argv[3]
 CLASS_LABEL = sys.argv[4]
@@ -43,14 +43,17 @@ STEP3 = "03_sims/"
 # Logger : Allows you to visualize 
 # data training.
 # -------------------------------------
+### To use wandb
 wandb.login(key = KEY)
+logger = WandbLogger(project = PROJECT_NAME, name = PROJECT_NAME, save_dir = os.path.join(OUTPUTDIR, STEP3, REFERENCE_NAME), version = "")
 
-logger = WandbLogger(project = PROJECT_NAME, name = PROJECT_NAME, save_dir = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID), version = "")
+### To turn off wandb
+# logger = WandbLogger(offline=True)
 
 #-------------------------------------
 # Load the anndata file
 #-------------------------------------
-reference_matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, REFERENCE_MATRIX + "_join_metadata.h5ad"))
+reference_matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, REFERENCE_NAME, REFERENCE_MATRIX + "_join_metadata.h5ad"))
 
 #-------------------------------------
 # Custom training jobs
@@ -67,39 +70,15 @@ sims.setup_trainer(
             monitor = MONITOR,
             patience = int(PATIENCE),
             verbose = 1,
-            # mode = 'max'
         ),
         LearningRateMonitor(logging_interval = "epoch"),
         ModelCheckpoint(
-            dirpath = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID),
-            # filename = "checkpoint_" + PROJECT_NAME + ".ckpt"
+            dirpath = os.path.join(OUTPUTDIR, STEP3, REFERENCE_NAME),
+            every_n_epochs = 1,
+            save_top_k = -1
         ),
     ],
     max_epochs = int(MAX_EPOCH)
 )
 
 sims.train()
-
-#-----------------------------------------------------------------------------------------------
-#                                To predict labels on our data 
-#-----------------------------------------------------------------------------------------------
-
-# #-------------------------------------
-# # Load the model
-# #-------------------------------------
-# model = os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, "epoch=129-step=88010.ckpt")
-
-# #-------------------------------------
-# # Prediction
-# #-------------------------------------
-# sims = SIMS(weights_path = model)
-# cell_prediction = sims.predict(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
-
-# #-------------------------------------
-# # Write prediction in a csv file
-# #-------------------------------------
-# matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + ".h5ad"))
-
-# cell_prediction.insert(0,"Cells", matrix.obs_names)
-
-# cell_prediction.to_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, MATRIX + "_prediction.csv"), index = False)

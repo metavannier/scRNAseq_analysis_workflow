@@ -38,117 +38,143 @@ STEP_REMI = "03_remi/"
 
 METADATA_REMI <- TRUE
 
-#-------------------------------------
-# Load the metadata of the reference
-#-------------------------------------
+# #-------------------------------------
+# # Load the metadata of the reference
+# #-------------------------------------
 
-if(METADATA_REMI){
-    reference_metadata <- fread(file = file.path(OUTPUTDIR, STEP_REMI, "final_allen.csv"))
-    cells_names <- "sample_name"
-    celltypes <- "celltype_label"
-} else {
-    reference_metadata <- fread(file = file.path(REF, ALLEN_METADATA))
-    cells_names <- "sample_name"
-    celltypes <- "subclass_label"
-}
+# if(METADATA_REMI){
+#     reference_metadata <- fread(file = file.path(OUTPUTDIR, STEP_REMI, "final_allen.csv"))
+#     cells_names <- "sample_name"
+#     celltypes <- "celltype_label"
+# } else {
+#     reference_metadata <- fread(file = file.path(REF, ALLEN_METADATA))
+#     cells_names <- "sample_name"
+#     celltypes <- "subclass_label"
+# }
 
-print("Reference metadata loaded. It's size is :")
-print(dim(reference_metadata))
+# print("Reference metadata loaded. It's size is :")
+# print(dim(reference_metadata))
 
-########################################## PROPRE AU PROJET ##########################################
-#-------------------------------------
-# Keep only some part of the cortex
-# we want to study: Ssp
-#-------------------------------------
-if(!METADATA_REMI){
-    reference_metadata <- reference_metadata[reference_metadata$region_label %in% "SSp",]
-    print("Only SSp are kept in the metadata: The new size of this one is :")
-    print(dim(reference_metadata))
-}
-######################################################################################################
-
-#-------------------------------------
-# For the training we need at least
-# two cells per labels
-#-------------------------------------
-occurence <- table(reference_metadata[[celltypes]])
-one_cell_per_label <- names(occurence[occurence == 1])
-reference_metadata <- reference_metadata[!(reference_metadata[[celltypes]] %in% one_cell_per_label), ]
-
-print("The new size after removing labels thaht only appear once :")
-print(dim(reference_metadata))
-
-#-------------------------------------
-# Load the matrix of reference
-#-------------------------------------
-reference_matrix <- h5read(file = file.path(REF, ALLEN_MATRIX), "/data/counts")
-reference_genes <- h5read(file = file.path(REF, ALLEN_MATRIX), "/data/gene")
-reference_cells <- h5read(file = file.path(REF, ALLEN_MATRIX), "/data/samples")
-
-rownames(reference_matrix) <- as.character(reference_cells)
-colnames(reference_matrix) <- as.character(reference_genes)
-
-rm(list = c("reference_genes","reference_cells"))
-gc()
-
-print("Reference matrix loaded. The size is :")
-print(dim(reference_matrix))
-
-#-------------------------------------
-# Keep cells that match both the 
-# metadata an matrix of reference
-#-------------------------------------
-reference_matrix <- reference_matrix[rownames(reference_matrix) %in% reference_metadata[[cells_names]],]
-reference_metadata <- reference_metadata[reference_metadata[[cells_names]] %in% rownames(reference_matrix),]
-
-print("The metadata and matrix of reference have the same cells now : The new size of them two :")
-print(dim(reference_matrix))
-print(dim(reference_metadata))
-
-#-------------------------------------
-# Order metadata according to matrix
-# (Necessary ?)
-#-------------------------------------
-reference_metadata <- reference_metadata[match(rownames(reference_matrix),reference_metadata[[cells_names]]),]
-print("Cells are in the same order in both files")
-
-#-------------------------------------
-# Write the the metadata as csv   
-#-------------------------------------
-dir.create(file.path(OUTPUTDIR, STEP3, REFERENCE_NAME))
-
-fwrite(x = reference_metadata, file = file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_METADATA, ".csv")))
-
-rm("reference_metadata")
-gc()
-
-print("Metadata is written")
-
-#-------------------------------------
-# Normalization of the matrix of
-# reference
-#-------------------------------------
-### Seurat change the names of some genes at this step
-cell_before_norm <- as.data.table(colnames(reference_matrix))
-write.csv(cell_before_norm, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, "cells_before_norm.csv"))
-
-reference_matrix <- NormalizeData( object = reference_matrix, normalization.method = NORM_METHOD, scale.factor = NORM_SCALE_FACTOR, verbose = FALSE)
-
-cell_after_norm <- as.data.table(colnames(reference_matrix))
-write.csv(cell_after_norm, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, "cells_after_norm.csv"))
-
-print("The matrix of reference is now normalized the same way as our matrix to analyze: Here the first 10 rows and 10 columns :")
-print(reference_matrix[1:10, 1:10])
+# ########################################## PROPRE AU PROJET ##########################################
+# #-------------------------------------
+# # Keep only some part of the cortex
+# # we want to study: Ssp
+# #-------------------------------------
+# if(!METADATA_REMI){
+#     reference_metadata <- reference_metadata[reference_metadata$region_label %in% "SSp",]
+#     print("Only SSp are kept in the metadata: The new size of this one is :")
+#     print(dim(reference_metadata))
+# }
+# ######################################################################################################
 
 # #-------------------------------------
-# # Load our matrix to annotate
+# # For the training we need at least
+# # two cells per labels
 # #-------------------------------------
-# matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv")))
-# matrix <- as.matrix(matrix)
-# rownames(matrix) <- matrix[,"V1"]
+# occurence <- table(reference_metadata[[celltypes]])
+# one_cell_per_label <- names(occurence[occurence == 1])
+# reference_metadata <- reference_metadata[!(reference_metadata[[celltypes]] %in% one_cell_per_label), ]
 
-# print("Our matrix to annotate is loaded, see the dimension below :")
-# print(dim(matrix))
+# print("The new size after removing labels thaht only appear once :")
+# print(dim(reference_metadata))
+
+# #-------------------------------------
+# # Load the matrix of reference
+# #-------------------------------------
+# reference_matrix <- h5read(file = file.path(REF, ALLEN_MATRIX), "/data/counts")
+# reference_genes <- h5read(file = file.path(REF, ALLEN_MATRIX), "/data/gene")
+# reference_cells <- h5read(file = file.path(REF, ALLEN_MATRIX), "/data/samples")
+
+# rownames(reference_matrix) <- as.character(reference_cells)
+# colnames(reference_matrix) <- as.character(reference_genes)
+
+# rm(list = c("reference_genes","reference_cells"))
+# gc()
+
+# print("Reference matrix loaded. The size is :")
+# print(dim(reference_matrix))
+
+# #-------------------------------------
+# # Keep cells that match both the 
+# # metadata and matrix of reference
+# #-------------------------------------
+# reference_matrix <- reference_matrix[rownames(reference_matrix) %in% reference_metadata[[cells_names]],]
+# reference_metadata <- reference_metadata[reference_metadata[[cells_names]] %in% rownames(reference_matrix),]
+
+# print("The metadata and matrix of reference have the same cells now : The new size of them two :")
+# print(dim(reference_matrix))
+# print(dim(reference_metadata))
+# print(reference_matrix[1:5, 1:25])
+
+# #-------------------------------------
+# # Order metadata according to matrix
+# # (Necessary ?)
+# #-------------------------------------
+# reference_metadata <- reference_metadata[match(rownames(reference_matrix),reference_metadata[[cells_names]]),]
+# print("Cells are in the same order in both files")
+
+# #-------------------------------------
+# # Write the the metadata as csv   
+# #-------------------------------------
+# dir.create(file.path(OUTPUTDIR, STEP3, REFERENCE_NAME))
+
+# fwrite(x = reference_metadata, file = file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_METADATA, ".csv")))
+
+# rm("reference_metadata")
+# gc()
+
+# print("Metadata is written")
+
+# #-------------------------------------
+# # Normalization of the matrix of
+# # reference
+# #-------------------------------------
+# reference_matrix <- NormalizeData( object = reference_matrix, normalization.method = NORM_METHOD, scale.factor = NORM_SCALE_FACTOR, verbose = FALSE)
+# reference_matrix <- as.matrix(reference_matrix)
+
+# print("The matrix of reference is now normalized the same way as our matrix to analyze: Here the first 10 rows and 10 columns :")
+# print(reference_matrix[1:5, 1:25])
+
+#-------------------------------------
+# Load our matrix to annotate
+#-------------------------------------
+dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
+
+matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv")))
+matrix <- as.matrix(matrix)
+rownames(matrix) <- matrix[,"V1"]
+matrix <- matrix[, -1]
+
+print("Our matrix to annotate is loaded, see the dimension below :")
+print(dim(matrix))
+
+# -------------------------------------
+# Wtrite the two new matrix
+# -------------------------------------
+class(matrix) <- "numeric"
+write.csv(matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_MATRIX,".csv")))
+print("Our matrix is written")
+
+rm("matrix")
+gc()
+
+# class(reference_matrix) <- "numeric"
+# write.csv(reference_matrix, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
+# print("Our matrix of reference is written")
+
+# rm("reference_matrix")
+# gc()
+
+#-------------------------------------
+# create the output file
+#-------------------------------------
+output_file<-file(TEXT_OUTPUT)
+writeLines(c("Files preparation for the Allen reference for SIMS finished (CSV format)"), output_file)
+close(output_file)
+
+
+
+
 
 # #-------------------------------------
 # # Look at genes who are common in both
@@ -163,26 +189,3 @@ print(reference_matrix[1:10, 1:10])
 # print(colnames(reference_matrix)[1:35])
 # print(dim(matrix))
 # print(colnames(matrix)[1:35])
-
-#-------------------------------------
-# Wtrite the two new matrix
-#-------------------------------------
-# class(matrix) <- "numeric"
-# write.csv(matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_MATRIX,".csv")))
-# print("Our matrix is written")
-
-# rm("matrix")
-# gc()
-
-write.csv(reference_matrix, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
-print("Our matrix of reference is written")
-
-# rm("reference_matrix")
-# gc()
-
-#-------------------------------------
-# create the output file
-#-------------------------------------
-output_file<-file(TEXT_OUTPUT)
-writeLines(c("Files preparation for the Allen reference for SIMS finished (CSV format)"), output_file)
-close(output_file)

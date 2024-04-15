@@ -171,39 +171,40 @@ print("The final size of the metadata : ")
 print(dim(metadata))
 
 reference_matrix <- do.call(rbind, list_reference_matrix)
+
 print("The size of the matrix of reference : ")
 print(dim(reference_matrix))
 print("Here the first 10 rows and 10 columns :")
 print(reference_matrix[1:10, 1:10])
 
-# # #-------------------------------------
-# # # Load our matrix to annotate
-# # #-------------------------------------
-# # matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_count_matrix.csv"))) # The normalized matrix is used for this reference.
-# # matrix <- as.matrix(matrix)
-# # rownames(matrix) <- matrix[,"V1"]
+#-------------------------------------
+# Load our matrix to annotate
+#-------------------------------------
+matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv"))) # The normalized matrix is used for this reference.
+matrix <- as.matrix(matrix)
+rownames(matrix) <- matrix[,"V1"]
+matrix <- matrix[, -1]
 
-# # #-------------------------------------
-# # # Look at genes who are common in both
-# # # matrix and subset genes who are not
-# # #-------------------------------------
-# # gene_intersection <- intersect(colnames(matrix), colnames(reference_matrix))
-# # reference_matrix <- reference_matrix[, gene_intersection]
-# # matrix <- matrix[, gene_intersection]
+print("Our matrix to annotate is loaded, here the first rows : ")
+print(matrix[1:10, 1:10])
 
-# #-------------------------------------
-# # Wtrite the two new matrix +
-# # create directory
-# #-------------------------------------
+#-------------------------------------
+# Wtrite the two new matrix +
+# create directory
+#-------------------------------------
 dir.create(file.path(OUTPUTDIR, STEP3, REFERENCE_NAME))
-
 class(reference_matrix) <- "numeric"
-write.csv(reference_matrix, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_MATRIX,".csv")))
+write.csv(reference_matrix, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_MATRIX,".csv")), row.names = TRUE)
+print("The reference matrix is written")
 
-# # class(matrix) <- "numeric"
-# # write.csv(matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_MATRIX,".csv")))
 
-fwrite(x = metadata, file = file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_METADATA,".csv")))
+dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
+class(matrix) <- "numeric"
+write.csv(matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_MATRIX,".csv")))
+print("The matrix is written")
+
+fwrite(x = metadata, file = file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_METADATA,".csv")), row.names = TRUE)
+print("The metadaa is written")
 
 #-------------------------------------
 # create the output file
@@ -212,3 +213,16 @@ output_file<-file(TEXT_OUTPUT)
 writeLines(c("Files preparation for the Arlotta reference for SIMS finished (CSV format)"), output_file)
 close(output_file)
 
+
+
+
+
+
+
+# #-------------------------------------
+# # Look at genes who are common in both
+# # matrix and subset genes who are not
+# #-------------------------------------
+# gene_intersection <- intersect(colnames(matrix), colnames(reference_matrix))
+# reference_matrix <- reference_matrix[, gene_intersection]
+# matrix <- matrix[, gene_intersection]

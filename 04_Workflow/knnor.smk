@@ -32,7 +32,7 @@ rule knnor:
             touch {output.knnor_output}
         else
             
-            python 03_Script/imbalenced_datasets.py {params.sample_id} {params.matrix} {params.metadata} {params.class_label} "{params.max_oversampling}" {params.cells_column}
+            python 03_Script/imbalanced_datasets.py {params.sample_id} {params.matrix} {params.metadata} {params.class_label} "{params.max_oversampling}" {params.cells_column}
             touch {output.knnor_output}
         fi
         """

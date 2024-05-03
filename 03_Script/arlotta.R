@@ -177,16 +177,16 @@ print(dim(reference_matrix))
 print("Here the first 10 rows and 10 columns :")
 print(reference_matrix[1:10, 1:10])
 
-#-------------------------------------
-# Load our matrix to annotate
-#-------------------------------------
-matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv"))) # The normalized matrix is used for this reference.
-matrix <- as.matrix(matrix)
-rownames(matrix) <- matrix[,"V1"]
-matrix <- matrix[, -1]
+# #-------------------------------------
+# # Load our matrix to annotate
+# #-------------------------------------
+# matrix <- fread(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv"))) # The normalized matrix is used for this reference.
+# matrix <- as.matrix(matrix)
+# rownames(matrix) <- matrix[,"V1"]
+# matrix <- matrix[, -1]
 
-print("Our matrix to annotate is loaded, here the first rows : ")
-print(matrix[1:10, 1:10])
+# print("Our matrix to annotate is loaded, here the first rows : ")
+# print(matrix[1:10, 1:10])
 
 #-------------------------------------
 # Wtrite the two new matrix +
@@ -198,10 +198,10 @@ write.csv(reference_matrix, file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(O
 print("The reference matrix is written")
 
 
-dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
-class(matrix) <- "numeric"
-write.csv(matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_MATRIX,".csv")))
-print("The matrix is written")
+# dir.create(file.path(OUTPUTDIR, STEP3, SAMPLE_ID))
+# class(matrix) <- "numeric"
+# write.csv(matrix, file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(OUTPUT_NAME_MATRIX,".csv")))
+# print("The matrix is written")
 
 fwrite(x = metadata, file = file.path(OUTPUTDIR, STEP3, REFERENCE_NAME, paste0(OUTPUT_NAME_REF_METADATA,".csv")), row.names = TRUE)
 print("The metadaa is written")

@@ -25,21 +25,29 @@ source(file.path(dirname(DIRECTORY), "03_Script/00_general_deps.R"))
 in_data_dir = file.path( OUTPUTDIR, STEP1)
 samples <- dir(in_data_dir)
 
-
-
 MIN_CELLS <- as.numeric(MIN_CELLS)
 MIN_FEATURES <- as.numeric(MIN_FEATURES)
+HTO <- unlist(strsplit(HTO, ","))
 
 #........................................
 # Read data
 #........................................
 seurat_data <- Read10X(paste0(in_data_dir,SAMPLE_ID,CELL_RANGER_COUNT_PATH))
+
 # Need a condition if data are depultiplexed with cell ranger multi
 if( RUN_DEMULTIPLEX == TRUE){
         seurat_obj <- CreateSeuratObject(counts = seurat_data, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID)
-} else {
+} else if (as.logical(MULTIPLEX) == TRUE) {
+        seurat_obj <- CreateSeuratObject(counts = seurat_data$`Gene Expression`, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID) 
+        hto <- seurat_data$`Antibody Capture`
+        hto <- hto[c(HTO), ]
+        seurat_obj[["HTO"]] <- CreateAssayObject(counts = hto)
+        seurat_obj <- subset(x = seurat_obj, subset = nCount_HTO > 0)
+        seurat_obj <- NormalizeData(seurat_obj, assay = "HTO", normalization.method = "CLR")       
+} else{
         seurat_obj <- CreateSeuratObject(counts = seurat_data$`Gene Expression`, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID) 
 }
+
 seurat_obj$SampleID <- SAMPLE_ID
 
 # ..........................................................................................................

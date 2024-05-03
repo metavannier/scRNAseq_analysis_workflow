@@ -33,6 +33,8 @@ if run_slurm:
 rawsample = pd.read_table(config["sample"]).set_index(["rawsample"], drop=False)
 sample_id = pd.read_table(config["sample"]).set_index(["id"], drop=False) 
 sample_name = pd.read_table(config["sample"]).set_index(["name"], drop=False) 
+multiplex = pd.read_table(config["sample"]).set_index(["multiplex"], drop=False)
+hto = pd.read_table(config["sample"]).set_index(["hto"], drop=False)
 
 RAWSAMPLE = expand("{rawsample.rawsample}", rawsample = rawsample.itertuples()) # 2_S1_L001, 3_S1_L001 ...
 SAMPLE_ID = expand("{sample_id.id}", sample_id = sample_id.itertuples()) # P5_KO,P5_WT,P30_KO,P30_WT
@@ -76,7 +78,7 @@ rule all:
 		# demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
 		# tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
 		### Seurat
-		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
+		seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
 		### Remi data
 		# remi_output = expand(OUTPUTDIR + "remi_output.txt"),
 		### Prepare data for SIMS
@@ -91,7 +93,7 @@ rule all:
 		# sims_prediction_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_data_matrix_prediction.csv", sample_id = SAMPLE_ID),
 		# sims_prediction_unknown_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_data_matrix_prediction_filtered.csv", sample_id = SAMPLE_ID),
 		### Representing cellular assignation on UMAP
-		umapAssignation_output = expand(OUTPUTDIR + "03_sims/umapAssignation_output.txt"),
+		# umapAssignation_output = expand(OUTPUTDIR + "03_sims/umapAssignation_output.txt"),
 		# umap_sims_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_sims.pdf", sample_id = SAMPLE_ID),
 		# umap_sims_threshold_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_sims_threshold.pdf", sample_id = SAMPLE_ID),
 		# umap_per_labels_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_per_labels.pdf", sample_id = SAMPLE_ID),
@@ -106,20 +108,20 @@ run_multiplex = config["run_multiplex"]
 if run_demultiplex:
 	# include: ENVDIR + "clean_demultiplex.smk"
 	# include: ENVDIR + "cellranger_demultiplex.smk"
-	# include: ENVDIR + "seurat.smk"
+	include: ENVDIR + "seurat.smk"
 	# include: ENVDIR + "remi.smk"
 	# include: ENVDIR + "prepare_data_sims.smk"
 	# include: ENVDIR + "SIMS.smk"
 	# include: ENVDIR + "knnor.smk"
-	include: ENVDIR + "umapCellAssignation.smk"
+	# include: ENVDIR + "umapCellAssignation.smk"
 
 if run_multiplex:	
 	# include: ENVDIR + "clean.smk"
 	# include: ENVDIR + "cellranger.smk"
-	# include: ENVDIR + "seurat.smk"
+	include: ENVDIR + "seurat.smk"
 	# include: ENVDIR + "remi.smk"
 	# include: ENVDIR + "prepare_data_sims.smk"
 	# include: ENVDIR + "SIMS.smk"
 	# include: ENVDIR + "knnor.smk"
-	include: ENVDIR + "umapCellAssignation.smk"
+	# include: ENVDIR + "umapCellAssignation.smk"
 

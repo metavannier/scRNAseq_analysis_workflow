@@ -3,11 +3,30 @@
 #  of cells using dimension reduction techniques
 # ########################################################
 
-## @knitr ldr
-
 # Scales and centers features in the dataset
 seurat_obj = ScaleData( object = seurat_obj,
                    verbose = .VERBOSE)
+
+# ..........................................................................................................
+## @knitr HTODemux
+# ..........................................................................................................
+
+# Demultiplexing data 
+seurat_obj <- HTODemux(seurat_obj, assay = "HTO", positive.quantile = 0.99)
+cat("<br><br>Removed cells after filtering Doublet et Negative:", sum(seurat_obj[["hash.ID"]] == "Negative" | seurat_obj[["hash.ID"]] == "Doublet"));
+cat("<br><br>Remaining cells after filtering:", sum(seurat_obj$hash.ID %in% HTO));
+cat("\n<br>\n");
+seurat_obj <- subset(seurat_obj, idents = c("Doublet","Negative"), invert = TRUE) ### Keep only the Singlet cells (Remove Negative and Doublet)
+
+seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "mean.var.plot")
+seurat_obj <- ScaleData(seurat_obj, features = VariableFeatures(seurat_obj))
+seurat_obj <- RunPCA(seurat_obj)
+seurat_obj <- RunUMAP(seurat_obj, dims = 1:25)
+print(DimPlot(seurat_obj))
+
+# ..........................................................................................................
+## @knitr ldr
+# ..........................................................................................................
 
 # Perform linear dimensional reduction
 seurat_obj <- RunPCA(seurat_obj, features = VariableFeatures(object = seurat_obj))
@@ -16,7 +35,10 @@ VizDimLoadings(seurat_obj, dims = 1:DIMS, reduction = "pca")
 # DimPlot(seurat_obj, reduction = "pca", group.by = "categorie")
 DimHeatmap(seurat_obj, dims = 1:DIMS, cells = 500, balanced = TRUE)
 
+# ..........................................................................................................
 ## @knitr elbowplot
+# ..........................................................................................................
+
 ElbowPlot(seurat_obj, ndims = DIMS)
 
 # ..........................................................................................................

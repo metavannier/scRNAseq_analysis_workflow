@@ -18,6 +18,8 @@ rule seurat:
         sc_data = expand(OUTPUTDIR + "01_cellranger/{sample_id}/count/sample_filtered_feature_bc_matrix/",sample_id = SAMPLE_ID),
         cell_ranger_count_path = config["seurat"]["cell_ranger_count_path"],
         sample_id = expand("{sample_id.id}", sample_id = sample_id.itertuples()),
+        multiplex = expand("{multiplex.multiplex}", multiplex = multiplex.itertuples()),
+        hto = expand("{hto.hto}", hto = hto.itertuples()),
         plot_raster_nbcells_threshold = config["seurat"]["plot_raster_nbcells_threshold"],
         qc_exploration_mode = config["seurat"]["qc_exploration_mode"],
         min_cells = config["seurat"]["min_cells"],

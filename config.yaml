@@ -11,15 +11,15 @@ sample: sample.tsv
 # If you run the workflow with slurm (sbatch run_slurm.sh)
 run_slurm: true
 # If you data are demultiplexed = true
-run_demultiplex: true
+run_demultiplex: false
 # If your data are not demultiplexed = true
-run_multiplex: false
+run_multiplex: true
 
 rules:
     # Optimizing and assembling genome annotations for 3’ single-cell RNA-sequencing analysis
     reference_enhancer_rule: "FALSE"
     # Build the reference with cellranger
-    ref_cellranger_rule: "FALSE"
+    ref_cellranger_rule: "TRUE"
     # Run SIMS to anotate cells
     sims_rule: "TRUE"
     # Run Knnor to help with imbalanced datasets
@@ -110,18 +110,18 @@ seurat:
     min_features: 200
     # Cells with number of UMIs outside the range will be excluded
     # Can be a list of UMIs but MUST be on the same order than sample.tsv id.
-    filter_umi_min: "0"
-    filter_umi_max: "40000"
+    filter_umi_min: "0,0"
+    filter_umi_max: "8000,10000"
     # Filter cells that have unique feature counts over/less n
     # Can be a list of feature counts but MUST be on the same order than sample.tsv id.
-    filter_feature_min: "0"
-    filter_feature_max: "7500"
+    filter_feature_min: "0,0"
+    filter_feature_max: "3400,3400"
     # Filter cells that have > n% mitochondrial counts
-    filter_percent_mt: "17"
+    filter_percent_mt: "2,11"
     # Filter cells that have < n% mitochondrial counts
-    filter_percent_mt_min: "0"
+    filter_percent_mt_min: "0,0"
     # Filter cells that have < n% ribosomal counts
-    filter_percent_rb: "0"
+    filter_percent_rb: "0,0"
     # Pattern to match features against => mitochondrial genes | for mouse : "^mt-" / for human : "^MT-"
     pattern_mt: "^mt-"
     # Pattern to match features against => ribosomal genes
@@ -144,7 +144,7 @@ seurat:
     # Number of dimention to show for the vizualisation
     dims: 30
     # Default number of dimensions to use for PCA (see Seurat::RunPCA())
-    pca_npc: 22
+    pca_npc: 25
     # Number of dimensions to show in PCA-related plots
     pca_plots_nbdims : 3
     #  Number of'top' features to show when plotting PCA loadings
@@ -152,11 +152,11 @@ seurat:
 
     ##### Dimensionality reduction parameters (TSNE/UMAP)
     # Number of dimensions to use from PCA results
-    dimreduc_use_pca_nbdims : 22
+    dimreduc_use_pca_nbdims : 25
 
     ##### Cluster identification parameters
     # Number of dimensions to use from PCA results
-    findclusters_use_pca_nbdims : 22
+    findclusters_use_pca_nbdims : 30
     # Nearest-neighbor graph construction
     findneighbors_k : 30
     # Value of the resolution parameter, use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities.
@@ -172,7 +172,7 @@ reference_sims:
     # For now : arlotta.R, allen_mouse_whole_cortex.R
     r_script: "allen_mouse_whole_cortex.R"
     # Output folder name for the reference
-    reference_name: "Allen"
+    reference_name: "02_Allen_for_P30_WT_norm"
     # Output file name for the reference metadata
     output_name_ref_metadata: "metadata"
     # Output file name for the reference matrix
@@ -181,7 +181,7 @@ reference_sims:
     output_name_matrix: "data_matrix"
     # Name of the column that contain the cells
     # allen mouse whole cortex : "sample_name", arlotta : "NEW_NAME"
-    cells_column: "sample_name"
+    cells_column: "NEW_NAME"
 
     ##### Our Matrix to annotate #####
     # The name of the folder of the sample you want to annotate (One of the output in the seurat folder)
@@ -193,7 +193,7 @@ reference_sims:
     # Pattern that correspond to the mouse age that we want to keep for the training of our data
     # It's possible to select multiple ones if separate by a coma, exemple: ["E10", "E11", "P4"]
     # In this reference : E10, E11, E12, E13, E14, E15, E16, E17, E18_S1, E18_S3, P1, P1_S1, P4
-    developmental_time: ["E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18_S1", "E18_S3", "P1", "P1_S1", "P4"]
+    developmental_time: ["P4"]
     
     ##### Allen_mouse_whole_cortex #####
     # Path for the arlotta metadata
@@ -218,26 +218,26 @@ sims:
     # Your personnal key to connect to your wandb account
     key: "5f86a9267b08ff77c21a8872d763cb76048dfaca"
     # Number of cores (Put the same in the run_slurm.sh if necessary)
-    num_workers: 18
+    num_workers: 12
     # Maximum number of epoch to train our model (Will stop after, start counting from 0)
     max_epoch: 500
 
     ##### Logger
     # Name of the project (Will be the name of the run and checkpoint)
-    project_name: "Allen_norm_slurm"
+    project_name: "Allen_for_P30_WT_norm"
 
     ##### Early Stopping
     # The validation metric you wish to monitor for early stop.
     monitor: "val_loss"
     # The number of epochs during which the validation metric (monitor) may not improve before early shutdown is triggered. (To prevent overtraining)
-    patience: 10
+    patience: 20
 
     # Epoch file from wandb to chosse for the cell assignation
-    epoch: "epoch=47-step=86784.ckpt"
+    epoch: "epoch=40-step=74128.ckpt"
 
     ##### Cells annotation
     # Threshold of the difference between the first and second score of the prediction to say if a cell is unknown or not
-    threshold: 0.1
+    threshold: 0.0
     # Seurat object with sims cell_assignation
     rds_assignation: filtered_assigned_seurat_object.rds
     # Matrix with cell predtion after filtration with the threshold

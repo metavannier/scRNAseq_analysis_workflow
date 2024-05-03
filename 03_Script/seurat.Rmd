@@ -49,11 +49,12 @@ read_chunk( path=file.path( SCRIPTDIR, "02_variables_genes.R"));
 read_chunk( path=file.path( SCRIPTDIR, "03_cell_heterogeneity_PCA.R"));
 read_chunk( path=file.path( SCRIPTDIR, "04_cell_heterogeneity_tSNE_UMAP.R"));
 read_chunk( path=file.path( SCRIPTDIR, "05_cell_heterogeneity_clustering.R"));
+read_chunk( path=file.path( SCRIPTDIR, "06_markers.R"));
 ```
 
 This report present the analyse of dataset generated with 10x Genomics Single Cell Protocol.
 
-# Primary analysis : QC and selecting cells for further analysis of the sample `r snakemake@params[["sample_id"]]`
+# Primary analysis : QC and selecting cells for further analysis of the sample `r SAMPLE_ID`
 
 ```{r loadData, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
 <<loadData>>
@@ -114,6 +115,23 @@ Top `r VARIABLE_FEATURES_SHOWTOP` most variable annotations:
 
 ```{r findVariableGenes_summaryTable, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
 <<findVariableGenes_summaryTable>>
+```
+
+<br /><br />
+
+```{r, echo = FALSE}
+if (as.logical(MULTIPLEX) == TRUE) {
+  include_chunk <- TRUE
+  include_title <- TRUE
+} else {
+  include_chunk <- FALSE
+  include_title <- FALSE
+}
+```
+
+`r if(include_title) "## Demultiplexing"`
+```{r HTODemux, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+if (include_chunk) {<<HTODemux>>}
 ```
 
 <br /><br />
@@ -228,11 +246,173 @@ rm("useReduction");
 useReduction='tsne'
 <<heterogeneity_dimReduc_with_clusters_tSNE>>
 rm("useReduction");
+```
 
-###
+### {-}
 
 <br /><br />
 
 ```{r save_RDS, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
 <<save_RDS>>
 ```
+
+
+##  GABAergic markers {.tabset .tabset-fade}
+Here you can vizualize GABAergic markers expression.
+
+### GABAN
+```{r GABAN, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<GABAN>>
+```
+
+### Meis2
+```{r Meis2, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Meis2>>
+```
+
+### Lamp A7C|CNC
+```{r Lamp5_A7C_CNC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Lamp5_A7C_CNC>>
+```
+
+### Lamp A7C|NGC
+```{r Lamp5_A7C_NGC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Lamp5_A7C_NGC>>
+```
+
+### Sngc CCK|BC
+```{r Sncg_CCK_BC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Sncg_CCK_BC>>
+```
+
+### Vip BP|BTC
+```{r Vip_BP_BTC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Vip_BP_BTC>>
+```
+
+### Sst T-MC
+```{r Sst_T_MC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Sst_T_MC>>
+```
+
+### Sst fan-MC
+```{r Sst_fan_MC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Sst_fan_MC>>
+```
+
+### Sst NMC
+```{r Sst_NMC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Sst_NMC>>
+```
+
+### Sst IVC
+```{r Sst_IVC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Sst_IVC>>
+```
+
+### Sst FS-like
+```{r Sst_FS_like, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Sst_FS_like>>
+```
+
+### Sst Chold|LPC
+```{r Sst_Chold_LPC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Sst_Chold_LPC>>
+```
+
+### Pvalb CHC
+```{r Pvalb_CHC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Pvalb_CHC>>
+```
+
+### Pvalb FS|BC
+```{r Pvalb_FS_BC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Pvalb_FS_BC>>
+```
+
+## {-}
+
+##  Glutamatergic markers {.tabset .tabset-fade}
+Here you can vizualize Glutamatergic markers expression.
+
+### Cajal retzius cells
+```{r Cajal_Retzius_cells_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Cajal_Retzius_cells_markers>>
+```
+
+### L2/3 IT
+```{r L2_3_IT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L2_3_IT>>
+```
+
+### L4 IT SSC
+```{r L4_IT_SSC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L4_IT_SSC>>
+```
+
+### L4 IT PC
+```{r L4_IT_PC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L4_IT_PC>>
+```
+
+### L5 IT
+```{r L5_IT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L5_IT>>
+```
+
+### L5 PT
+```{r L5_PT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L5_PT>>
+```
+
+### L5/6 NP
+```{r L5_6_NP, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L5_6_NP>>
+```
+
+### L6 IT
+```{r L6_IT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L6_IT>>
+```
+
+### L6 CT
+```{r L6_CT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L6_CT>>
+```
+
+### L6b
+```{r L6b, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<L6b>>
+```
+
+## {-}
+
+##  Non-Neuronal markers {.tabset .tabset-fade}
+Here you can vizualize GABAergic markers expression.
+
+### Astrocytes
+```{r astro_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<astro_markers>>
+```
+
+### Oligodendrocytes
+```{r oligo_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<oligo_markers>>
+```
+
+### Microglia
+```{r microglia_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<microglia_markers>>
+```
+
+### Endothelial
+```{r Endothelial_cells_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Endothelial_cells_markers>>
+```
+
+### Pericyte
+```{r Pericyte_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<Pericyte_markers>>
+```
+
+## {-}

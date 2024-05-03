@@ -26,9 +26,9 @@ REFERENCE_NAME = sys.argv[6]
 
 STEP3 = "03_sims/"
 
-# #-------------------------------------
-# # Load reference matrix
-# #-------------------------------------
+#-------------------------------------
+# Load reference matrix
+#-------------------------------------
 
 # reference_matrix = an.read_csv(os.path.join(OUTPUTDIR, STEP3, REFERENCE_NAME, OUTPUT_NAME_REF_MATRIX + ".csv"))
 

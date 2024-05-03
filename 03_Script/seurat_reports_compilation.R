@@ -16,6 +16,8 @@ SEURAT_OUTPUT <- snakemake@output[["seurat_output"]]
 SC_DATA_PATH_LIST <- snakemake@params[["sc_data"]]
 REPORT_LIST <- snakemake@output[["seurat_report"]]
 SAMPLE_ID_LIST <- snakemake@params[["sample_id"]]
+MULTIPLEX_LIST <- snakemake@params[["multiplex"]]
+HTO_LIST <- snakemake@params[["hto"]]
 PLOT_RASTER_NBCELLS_THRESHOLD <- snakemake@params[["plot_raster_nbcells_threshold"]]
 CELL_RANGER_COUNT_PATH <- snakemake@params[["cell_ranger_count_path"]]
 RUN_DEMULTIPLEX <- snakemake@params[["run_demultiplex"]]
@@ -74,6 +76,8 @@ while(i <= len)
     FILTER_PERCENT_MT <- FILTER_PERCENT_MT_LIST[i]
     FILTER_PERCENT_MT_MIN <- FILTER_PERCENT_MT_MIN_LIST[i]
     FILTER_PERCENT_RB <- FILTER_PERCENT_RB_LIST[i]
+    MULTIPLEX <- MULTIPLEX_LIST[i]
+    HTO <- HTO_LIST[i]
 
     rmarkdown::render( input = file.path(SCRIPTDIR, "seurat.Rmd"),
                     output_dir = file.path(OUTPUTDIR, STEP, SAMPLE_ID),

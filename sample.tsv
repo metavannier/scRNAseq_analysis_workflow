@@ -1,3 +1,2 @@
 name	id	rawsample	sample	lane	multiplex	hto
-	P30				TRUE	HTO-5,HTO-10
-	E14				TRUE	HTO-1,HTO-3
+	P8_P16_WT				TRUE	HTO-11,HTO-15

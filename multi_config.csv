@@ -1,10 +1,10 @@
 [gene-expression]
-reference, /scratch/lchabot/scRNAseq_analysis_workflow/01_Reference/
+reference,/scratch/lchabot/scRNAseq_analysis_workflow/01_Reference/refdata-cellranger-mm39/
 expect-cells,30000
 include-introns,true
 
 [feature]
-reference, /scratch/lchabot/scRNAseq_analysis_workflow/feature_config.csv
+reference,/scratch/lchabot/scRNAseq_analysis_workflow/feature_config.csv
 
 [libraries]
 fastq_id,fastqs,feature_types
@@ -12,8 +12,6 @@ NGc-3-CTX,/scratch/lchabot/scRNAseq_analysis_workflow/00_RawData/NGc_3_CTX,Gene 
 NGh-HTO-CTX,/scratch/lchabot/scRNAseq_analysis_workflow/00_RawData/NGh_HTO_CTX,Antibody Capture
 
 [samples]
-sample_id
-72h,CMO301,72h
-80h,CMO302,80h
-86h,CMO303,86h
-96h,CMO304,96h
+sample_id,cmo_ids
+E14_WT,HTO1
+E14_KO,HTO3

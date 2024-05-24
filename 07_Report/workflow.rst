@@ -14,7 +14,7 @@ Materials and methods
 
 - QC steps were performed with `Seurat version 4.0.3 <https://doi.org/10.1038/nbt.4096>`_ (Butler et al. Nature Biotechnology 2018). loaded into R version 4.3.2. Low quality cells were removed with the following thresholds: Unique feature counts (UFC) > 1700 and < 7900 & mitochondrial counts (MC) < 10% & Total RNA counts (TRC) < 55000 for the 72h dataset, UFC > 1700 and < 7500 & MC < 10% & TRC < 42000 for the 80h dataset, UFC > 1400 and < 7700 & MC < 8% & TRC < 42000 for the 86h dataset, UFC > 1400 and < 7200 & MC < 8% & TRC < 40000 for the 96h dataset.
 
-- We normalized the feature expression measurments for each cell with the same method as the paper `mouse atlas <https://doi.org/10.1038/s41586-019-0933-9>`_ (Andrews, 2010) :
+- We normalized the feature expression measurments for each cell with the same method as the paper `mouse atlas <https://doi.org/10.1038/s41586-019-0933-9>`_ (Pijuan-Sala et al.) :
 
 Transcriptome size factors were calculated for each dataset separately, using ‘computeSumFactors’ from the scran R package. 
 Cells were pre-clustered with the ‘quickCluster’ function using the parameter ‘method=igraph’ (using the scran R package), and minimum and maximum cluster sizes of 100 and 3,000 cells, respectively. 

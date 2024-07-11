@@ -20,8 +20,9 @@ REF = file.path((DIRECTORY), "01_Reference")
 SAMPLE_ID = snakemake@params[["sample_id"]]
 MATRIX = snakemake@params[["matrix"]]
 PRED_FILTERED = snakemake@params[["pred_filtered"]]
-MOUSEGASTRULATION_SAMPLES =  snakemake@params[["mousegastrulation_samples"]]
-CONFUSION_MATRIX =  snakemake@params[["confusion_matrix"]]
+MOUSEGASTRULATION_SAMPLES = snakemake@params[["mousegastrulation_samples"]]
+CONFUSION_MATRIX = snakemake@params[["confusion_matrix"]]
+METADATA_UPDATED = snakemake@params[["metadata_updated"]]
 
 STEP3 = "03_sims/"
 
@@ -47,12 +48,41 @@ cell_atlas$CellType_atlas <- replace(cell_atlas$CellType_atlas, is.na(cell_atlas
 
 cell_eval <- merge(cell_predict, cell_atlas, by = "Cells")
 
-# Assigning Cells, Predictions and probabilities to finalpred
-cell_eval_matrix <- cell_eval[, c("Cells", "first_pred", "CellType_atlas"), drop = FALSE]
+#-------------------------------------
+# We keep the atlas annotation and add the new one when unknown on the atlas and assignation on prediction after the filtering
+#-------------------------------------
+
+# Create a new column 'CellType' based on the specified conditions
+cell_eval[, CellType := ifelse(first_pred == "unknown" & CellType_atlas != "unknown", 
+                              CellType_atlas, 
+                              ifelse(first_pred != "unknown" & CellType_atlas != "unknown",
+                                    CellType_atlas, 
+                                    first_pred))]
+
+# Extract the 'Cells' and 'CellType' columns into a new dataframe
+cell_eval_df <- cell_eval[, .(Cells, CellType)]
+
+# Reorder the rows of cell_eval_matrix based on the order of Cells in cell_atlas
+order_index <- match(cell_atlas$Cells, cell_eval_df$Cells)
+cell_eval_df <- cell_eval_df[order_index, ]
+
+# Remove rows where CellType is "unknown"
+cell_eval_df <- cell_eval_df[CellType != "unknown"]
+
+# Convert the data.table to a data.frame
+cell_eval_df <- as.data.frame(cell_eval_df)
+
+# Change the column name from "Cells" to "Cell"
+setnames(cell_eval_df, "Cells", "Cell")
+
+fwrite(x = cell_eval_df , file = file.path( OUTPUTDIR, STEP3, SAMPLE_ID, paste0( METADATA_UPDATED,"_updated.csv")), row.names = TRUE)
 
 #-------------------------------------
 # Create a confusion matrix
 #-------------------------------------
+
+# Assigning Cells, Predictions and probabilities to finalpred
+cell_eval_matrix <- cell_eval[, c("Cells", "first_pred", "CellType_atlas"), drop = FALSE]
 
 confusion_matrix <- table(cell_eval_matrix$first_pred, cell_eval_matrix$CellType_atlas)
 
@@ -103,9 +133,9 @@ ggsave(file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_",CONFUSION_MA
 # create the output file for the snakemake rule
 # -------------------------------------
 
-# TEXT_OUTPUT <- snakemake@output[["evaluate_prediction_output"]]
+TEXT_OUTPUT <- snakemake@output[["evaluate_prediction_output"]]
 
-# output_file<-file(TEXT_OUTPUT)
-# writeLines(c("Rules evaluate prediction finished"), output_file)
-# close(output_file)
+output_file<-file(TEXT_OUTPUT)
+writeLines(c("Rules evaluate prediction finished"), output_file)
+close(output_file)
 

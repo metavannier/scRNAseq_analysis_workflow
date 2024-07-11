@@ -82,12 +82,12 @@ sims_count_atlas <- logNormCounts(sce, size.factors = sizeFactors(sce))
 
 #------------------------------------------------
 # Keep genes that match both the 
-# matrix to annotate and the maytrix of reference
+# matrix to annotate and the matrix of reference
 #-------------------------------------------------
 
 
 # Read genes files from the matrix to annotate
-count_data <- read.delim(file.path( OUTPUTDIR, STEP2, paste0( "mousegastrulation/mousegastrulation_scran_normalized_matrix.csv")), header=TRUE, row.names=1,sep = ",", check.names=FALSE)
+count_data <- read.delim(file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_scran_normalized_matrix.csv")), header=TRUE, row.names=1,sep = ",", check.names=FALSE)
 sims_count_data <- SingleCellExperiment(assays = list(logcounts = count_data))
 rm(count_data)
 

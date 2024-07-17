@@ -4,7 +4,6 @@ channels :
     - conda-forge
     - defaults
 dependencies :
-    - r-base = 4.3.2
-    - r-data.table = 1.14.10
-    - r-ggplot2
-    - r-dplyr
+    - r-base
+    - r-seurat =4.0.3
+    - r-sessioninfo =1.2.1

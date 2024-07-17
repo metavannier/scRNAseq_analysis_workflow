@@ -91,13 +91,16 @@ rule all:
 		# sims_prediction_output = expand(OUTPUTDIR + "03_sims/output_sims_prediction.txt"),
 		# sims_prediction_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_data_matrix_prediction.csv", sample_id = SAMPLE_ID),
 		# sims_prediction_unknown_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_data_matrix_prediction_filtered.csv", sample_id = SAMPLE_ID),
-		unknown_prediction_output = expand(OUTPUTDIR + "03_sims/unknown_prediction_output.txt"),
-		evaluate_prediction_output = expand(OUTPUTDIR + "03_sims/evaluate_prediction_output.txt"),
+		# unknown_prediction_output = expand(OUTPUTDIR + "03_sims/unknown_prediction_output.txt"),
+		# evaluate_prediction_output = expand(OUTPUTDIR + "03_sims/evaluate_prediction_output.txt"),
 		### Representing cellular assignation on UMAP
 		# umapAssignation_output = expand(OUTPUTDIR + "03_sims/umapAssignation_output.txt"),
 		# umap_sims_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_sims.pdf", sample_id = SAMPLE_ID),
 		# umap_sims_threshold_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_sims_threshold.pdf", sample_id = SAMPLE_ID),
 		# umap_per_labels_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_per_labels.pdf", sample_id = SAMPLE_ID),
+		### Velocity analyses
+		# merge_rds_output = expand(OUTPUTDIR + "04_velocity/merge_rds_output.txt"),
+		urd_output = expand(OUTPUTDIR + "04_velocity/urd_output.txt"),
 		## Differential expression analyses
 		# violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
 		# umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
@@ -161,11 +164,11 @@ if run_multiplex:
 	# include: ENVDIR + "seurat.smk"
 	# NE MARCHE PAS include: ENVDIR + "rm_doublets.smk"
 	# include: ENVDIR + "prepare_data_sims.smk"
-	include: ENVDIR + "SIMS.smk"
+	# include: ENVDIR + "SIMS.smk"
 	# include: ENVDIR + "umapCellAssignation.smk"
+	include: ENVDIR + "velocity/urd.smk"
 
 # include: ENVDIR + "demuxlet.smk"
-# include: ENVDIR + "seurat.smk"
 # include: ENVDIR + "diffexp.smk"
 # include: ENVDIR + "diffexp_subset.smk"
 # include: ENVDIR + "report.smk"

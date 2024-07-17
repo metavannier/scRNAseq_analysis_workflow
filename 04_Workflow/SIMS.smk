@@ -106,6 +106,7 @@ rule evaluate_prediction:
         matrix = config["reference_sims"]["output_name_matrix"],
         pred_filtered = config["sims"]["pred_filtered"],
         confusion_matrix = config["sims"]["confusion_matrix"],
+        metadata_updated = config["reference_sims"]["output_name_ref_metadata"],
 
     conda:
         CONTAINER + "eval_prediction.yaml"

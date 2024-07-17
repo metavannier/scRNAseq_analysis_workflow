@@ -1,0 +1,19 @@
+channels :
+  - main
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies : 
+  - r-base
+  - python = 3.9
+  # - r-seurat
+  # - bioconductor-zellkonverter = 1.12.1
+  # - bioconductor-biobase
+  # - bioconductor-s4vectors
+  # - bioconductor-annotationdbi
+  # - bioconductor-destiny
+  # - r-rgl=0.106.8
+  - pip
+  - pip:
+    - --upgrade pip setuptools wheel
+    - --use-pep517 git+https://github.com/farrellja/URD.git@0fed8b824644288ba4ec405ddf82a36960e2d4f9

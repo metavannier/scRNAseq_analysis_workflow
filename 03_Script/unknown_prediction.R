@@ -79,16 +79,28 @@ print(lower_bound)
 # Apply the threshold to update predictions
 finalpred$final_pred <- ifelse(differences <= lower_bound, "unknown", finalpred$first_pred)
 
-### Create a table to record the counts of the two first an second prediction when unknown 
+#-------------------------------------
+# create the predicted matrix with the
+# output file for the snakemake rule
+#-------------------------------------
+
+write.table(file=file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_",PRED_FILTERED)), finalpred ,sep=",", quote=F, row.names=F, col.names=T)
+
+#-------------------------------------
+# Create a table to record the counts 
+# of the two first an second prediction 
+# when unknown
+#-------------------------------------
+
 # Create a new column with sorted combinations of first_pred and second_pred
-finalpred <- finalpred %>%
+finalpred_unknown <- finalpred %>%
   filter(final_pred == "unknown") %>%
   mutate(binome = ifelse(first_pred < second_pred,
                          paste(first_pred, second_pred, sep = "-"),
                          paste(second_pred, first_pred, sep = "-")))
 
 # Count occurrences of each binome
-binome_table <- finalpred %>%
+binome_table <- finalpred_unknown %>%
   count(binome) %>%
   rename(binome_count = n) %>%
   filter(binome_count > 10) %>%
@@ -96,12 +108,6 @@ binome_table <- finalpred %>%
 
 write.table(file=file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_binome_unknown.csv")), binome_table ,sep=",", quote=F, row.names=F, col.names=T)
 
-#-------------------------------------
-# create the predicted matrix with the
-# output file for the snakemake rule
-#-------------------------------------
-
-write.table(file=file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_",PRED_FILTERED)), finalpred ,sep=",", quote=F, row.names=F, col.names=T)
 
 #-------------------------------------
 # create the output file for the snakemake rule

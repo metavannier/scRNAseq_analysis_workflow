@@ -11,9 +11,9 @@ sample: sample.tsv
 # If you run the workflow with slurm (sbatch run_slurm.sh)
 run_slurm: true
 # If you data are demultiplexed = true
-run_demultiplex: false
+run_demultiplex: true
 # If your data are not demultiplexed = true
-run_multiplex: true
+run_multiplex: false
 
 rules:
     # Optimizing and assembling genome annotations for 3’ single-cell RNA-sequencing analysis
@@ -110,12 +110,12 @@ seurat:
     min_features: 200
     # Cells with number of UMIs outside the range will be excluded
     # Can be a list of UMIs but MUST be on the same order than sample.tsv id.
-    filter_umi_min: "0"
-    filter_umi_max: "7500"
+    filter_umi_min: "500"
+    filter_umi_max: ""
     # Filter cells that have unique feature counts over/less n
     # Can be a list of feature counts but MUST be on the same order than sample.tsv id.
-    filter_feature_min: "0"
-    filter_feature_max: "4000"
+    filter_feature_min: "500"
+    filter_feature_max: ""
     # Filter cells that have > n% mitochondrial counts
     filter_percent_mt: "10"
     # Filter cells that have < n% mitochondrial counts
@@ -142,9 +142,9 @@ seurat:
 
     ##### PCA parameters
     # Number of dimention to show for the vizualisation
-    dims: 30
+    dims: 50
     # Default number of dimensions to use for PCA (see Seurat::RunPCA())
-    pca_npc: 25
+    pca_npc: 
     # Number of dimensions to show in PCA-related plots
     pca_plots_nbdims : 3
     #  Number of'top' features to show when plotting PCA loadings
@@ -152,11 +152,11 @@ seurat:
 
     ##### Dimensionality reduction parameters (TSNE/UMAP)
     # Number of dimensions to use from PCA results
-    dimreduc_use_pca_nbdims : 25
+    dimreduc_use_pca_nbdims :
 
     ##### Cluster identification parameters
     # Number of dimensions to use from PCA results
-    findclusters_use_pca_nbdims : 30
+    findclusters_use_pca_nbdims :
     # Nearest-neighbor graph construction
     findneighbors_k : 30
     # Value of the resolution parameter, use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities.
@@ -172,7 +172,7 @@ reference_sims:
     # For now : arlotta.R, allen_mouse_whole_cortex.R
     r_script: "arlotta.R"
     # Output folder name for the reference
-    reference_name: "03_Arlotta_not_norm"
+    reference_name: "02_Arlotta_not_norm"
     # Output file name for the reference metadata
     output_name_ref_metadata: "metadata"
     # Output file name for the reference matrix
@@ -181,11 +181,11 @@ reference_sims:
     output_name_matrix: "data_matrix"
     # Name of the column that contain the cells
     # allen mouse whole cortex : "sample_name", arlotta : "NEW_NAME"
-    cells_column: "NEW_NAME"
+    cells_column: "sample_name"
 
     ##### Our Matrix to annotate #####
     # The name of the folder of the sample you want to annotate (One of the output in the seurat folder)
-    sample_id: "P5_WT"
+    sample_id: "E14sn"
 
     ##### Paola Arlotta #####
     # Path for the arlotta metadata
@@ -224,7 +224,7 @@ sims:
 
     ##### Logger
     # Name of the project (Will be the name of the run and checkpoint)
-    project_name: "03_Arlotta_not_norm"
+    project_name: "02_Arlotta_not_norm"
 
     ##### Early Stopping
     # The validation metric you wish to monitor for early stop.
@@ -233,11 +233,11 @@ sims:
     patience: 20
 
     # Epoch file from wandb to chosse for the cell assignation
-    epoch: "epoch=40-step=74128.ckpt"
+    epoch: "epoch=58-step=80004.ckpt"
 
     ##### Cells annotation
     # Threshold of the difference between the first and second score of the prediction to say if a cell is unknown or not
-    threshold: 0.0
+    threshold: 0.1
     # Seurat object with sims cell_assignation
     rds_assignation: filtered_assigned_seurat_object.rds
     # Matrix with cell predtion after filtration with the threshold
@@ -245,6 +245,8 @@ sims:
 
 # Differentially expressed features analyses
 diffexp:
+    # The name of the time point analysis (without WT or KO, ex : E14)
+    time_point : "E14"
     # Features of interest
     features: "SOX10,SOX9,RIPOR2,MITF,DCT,MYC,FLT1,TNFRSF11B,XIRP2,ST3GAL1"
     # Cells of interest to find differentially expressed features against "Normal" or Wild Type cells

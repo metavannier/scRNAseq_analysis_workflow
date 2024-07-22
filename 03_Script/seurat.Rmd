@@ -1,8 +1,8 @@
 ---
-title: "Single-cell RNAseq analysis of gastruloids"
+title: "Single-cell RNAseq analysis of the somatosensory cortex"
 subtitle: "Seurat | QC and Clustering"
 author:
-- Thomas Vannier
+- Léa Chabot
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
     html_document:
@@ -115,6 +115,10 @@ Top `r VARIABLE_FEATURES_SHOWTOP` most variable annotations:
 
 ```{r findVariableGenes_summaryTable, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
 <<findVariableGenes_summaryTable>>
+```
+
+```{r scaleData, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<scaleData>>
 ```
 
 <br /><br />

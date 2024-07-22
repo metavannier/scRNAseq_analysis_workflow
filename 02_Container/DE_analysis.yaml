@@ -1,0 +1,11 @@
+channels :
+    - r
+    - bioconda
+    - conda-forge
+    - defaults
+dependencies :
+    - r-ggplot2 =3.3.5
+    - r-data.table =1.14.2
+    - r-seurat =4.0.3
+    - r-dplyr =1.0.9
+    - r-ggrepel

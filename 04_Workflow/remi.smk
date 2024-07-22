@@ -6,7 +6,7 @@ rule remi:
         remi_output = expand(OUTPUTDIR + "remi_output.txt"),
 
     conda:
-        CONTAINER + "seurat.yaml"
+        CONTAINER + "preparation_sims.yaml"
 
     message:
         "TEST REMI"

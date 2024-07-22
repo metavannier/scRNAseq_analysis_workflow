@@ -53,3 +53,49 @@ rule seurat:
 
     script:
         SCRIPTDIR + "seurat_reports_compilation.R"
+
+#----------------------------------------
+# Label Transfert with Seurat
+#----------------------------------------
+
+rule seurat_labelTransfert:
+    input:
+        seurat_output = expand(OUTPUTDIR + "02_seurat/seurat_output.txt"),
+
+    output:
+        seurat_labelTransfert_output = expand(OUTPUTDIR + "02_seurat/seurat_labelTransfert_output.txt"),
+
+    conda:
+        CONTAINER + "seurat.yaml"
+
+    params:
+        sample_id = expand("{sample_id.id}", sample_id = sample_id.itertuples()),
+
+    message:
+        "Run Seurat for the transfert data"
+
+    script:
+        SCRIPTDIR + "labelTransfert_seurat.R"
+
+#----------------------------------------
+# DEG analysis with Seurat
+#----------------------------------------
+
+rule seurat_DEG:
+    input:
+        seurat_labelTransfert_output = expand(OUTPUTDIR + "02_seurat/seurat_labelTransfert_output.txt"),
+
+    output:
+        seurat_DEG_output = expand(OUTPUTDIR + "04_diffexp/seurat_DEG_output.txt"),
+
+    conda:
+        CONTAINER + "seurat.yaml"
+
+    params:
+        time_point = config["diffexp"]["time_point"],
+
+    message:
+        "Run Seurat for the DE analysis"
+
+    script:
+        SCRIPTDIR + "DEG_analysis.R"

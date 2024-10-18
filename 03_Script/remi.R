@@ -17,10 +17,6 @@ DIRECTORY = getwd()
 OUTPUTDIR = file.path((DIRECTORY), "05_Output")
 REF = file.path((DIRECTORY), "01_Reference")
 
-STEP_REMI = "03_remi/"
-
-dir.create(file.path(OUTPUTDIR, STEP_REMI)) ### A voir !!!!!
-
 #====================================
 # Open the arlotta metadata :
 # https://singlecell.broadinstitute.org/single_cell/study/SCP1290/molecular-logic-of-cellular-diversification-in-the-mammalian-cerebral-cortex
@@ -90,7 +86,7 @@ modify_arlotta_metadata <- rbind(remi_arlotta_metadata, arlotta_metadata)
 ### Create a new column for cell name, to only keep A,T,C,C (to match the matrix) + write it as csv
 modify_arlotta_metadata <- as.data.table(modify_arlotta_metadata)
 modify_arlotta_metadata <- modify_arlotta_metadata[, new_sample_name := gsub("[^ATCG]", "", sample_name)]
-write.csv(modify_arlotta_metadata, file = file.path(OUTPUTDIR, STEP_REMI, "modify_arlotta_metadata.csv"), row.names = FALSE)
+write.csv(modify_arlotta_metadata, file = file.path(REF, "modify_arlotta_metadata.csv"), row.names = FALSE)
 
 #====================================
 # Match our arlotta matrices to 
@@ -172,10 +168,10 @@ print(dim(reference_matrix))
 #====================================
 # Create a Seurat Object + save it
 #====================================
-rownames(metadata) <- metadata$new_sampl e_name
+rownames(metadata) <- metadata$new_sample_name
 seurat_object <- CreateSeuratObject(counts = reference_matrix, meta.data = metadata)
 
-saveRDS(seurat_object, file = file.path(OUTPUTDIR, STEP_REMI, "modify_arlotta_seurat_object.rds"))
+saveRDS(seurat_object, file = file.path(REF, "modify_arlotta_seurat_object.rds"))
 
 
 ################################################################################################ CREATE FILES TO HAVE ALL CLASS FOR SIMS ANNOTATION

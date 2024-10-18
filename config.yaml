@@ -9,21 +9,21 @@ sample: sample.tsv
 #-------------------------------------
 
 # If you run the workflow with slurm (sbatch run_slurm.sh)
-run_slurm: true
+run_slurm: false
 # If you data are demultiplexed = true
-run_demultiplex: true
+run_demultiplex: false
 # If your data are not demultiplexed = true
-run_multiplex: false
+run_multiplex: true
 
 rules:
     # Optimizing and assembling genome annotations for 3’ single-cell RNA-sequencing analysis
     reference_enhancer_rule: "FALSE"
     # Build the reference with cellranger
-    ref_cellranger_rule: "TRUE"
+    ref_cellranger_rule: "FALSE"
     # Run SIMS to anotate cells
-    sims_rule: "TRUE"
+    sims_rule: "FALSE"
     # Run Knnor to help with imbalanced datasets
-    knnor_rule: "TRUE"
+    knnor_rule: "FALSE"
 
 run:
     # FASTQ file naming convention : [Sample name]_S1_L00[Lane Number]_[Read Type]_001.fastq.gz
@@ -110,14 +110,14 @@ seurat:
     min_features: 200
     # Cells with number of UMIs outside the range will be excluded
     # Can be a list of UMIs but MUST be on the same order than sample.tsv id.
-    filter_umi_min: "500"
-    filter_umi_max: ""
+    filter_umi_min: "800"
+    filter_umi_max: "6000"
     # Filter cells that have unique feature counts over/less n
     # Can be a list of feature counts but MUST be on the same order than sample.tsv id.
-    filter_feature_min: "500"
-    filter_feature_max: ""
+    filter_feature_min: "800"
+    filter_feature_max: "2500"
     # Filter cells that have > n% mitochondrial counts
-    filter_percent_mt: "10"
+    filter_percent_mt: "6"
     # Filter cells that have < n% mitochondrial counts
     filter_percent_mt_min: "0"
     # Filter cells that have < n% ribosomal counts
@@ -129,36 +129,36 @@ seurat:
 
     ##### Normalization
     # Normalization parameters (see Seurat::NormalizeData())
-    norm_method: "LogNormalize"
-    norm_scale_factor: 10000
+    # norm_method: "LogNormalize"
+    # norm_scale_factor: 10000
 
     ##### Find the most variable genes
-    # How to choose top variable features => vst, mean.var.plot or dispersion
-    feature_select_method: "vst"
-    # Number of features to select as top variable features; only used when select_method is set to 'dispersion' or 'vst'
-    variable_features: 2000
-    # For table in report
-    variable_features_showtop : 200
+    # # How to choose top variable features => vst, mean.var.plot or dispersion
+    # feature_select_method: "vst"
+    # # Number of features to select as top variable features; only used when select_method is set to 'dispersion' or 'vst'
+    # variable_features: 2000
+    # # For table in report
+    # variable_features_showtop : 200
 
     ##### PCA parameters
     # Number of dimention to show for the vizualisation
-    dims: 50
-    # Default number of dimensions to use for PCA (see Seurat::RunPCA())
-    pca_npc: 
-    # Number of dimensions to show in PCA-related plots
-    pca_plots_nbdims : 3
-    #  Number of'top' features to show when plotting PCA loadings
-    pca_plot_nbfeatures : 3
+    dims: 10
+    # # Default number of dimensions to use for PCA (see Seurat::RunPCA())
+    # pca_npc: 2
+    # # Number of dimensions to show in PCA-related plots
+    # pca_plots_nbdims : 3
+    # #  Number of'top' features to show when plotting PCA loadings
+    # pca_plot_nbfeatures : 3
 
     ##### Dimensionality reduction parameters (TSNE/UMAP)
-    # Number of dimensions to use from PCA results
-    dimreduc_use_pca_nbdims :
+    # # Number of dimensions to use from PCA results
+    # dimreduc_use_pca_nbdims : 2
 
     ##### Cluster identification parameters
     # Number of dimensions to use from PCA results
-    findclusters_use_pca_nbdims :
-    # Nearest-neighbor graph construction
-    findneighbors_k : 30
+    # findclusters_use_pca_nbdims : 3
+    # Nearest-neighb    # findclusters_use_pca_nbdims : 3or graph construction
+    # findneighbors_k : 30
     # Value of the resolution parameter, use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities.
     findclusters_resolution : 1
     # Algorithm for modularity optimization

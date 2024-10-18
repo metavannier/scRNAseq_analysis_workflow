@@ -1,0 +1,14 @@
+channels :
+    - r
+    - bioconda
+    - conda-forge
+    - defaults
+dependencies :
+    - r-ggplot2 =3.5.1
+    - r-seurat =5.1.0
+    - r-dplyr =1.1.4
+    - r-sctransform=0.4.1  # Include sctransform
+    - r-devtools  # Required for installing packages from GitHub
+    - bioconductor-glmgampoi
+
+ 

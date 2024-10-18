@@ -126,7 +126,7 @@ print("The diferent matrix for diferent developmental time have been loaded in a
 list_reference_matrix <-  lapply(list_reference_matrix, function(x) as.matrix(x))
 list_reference_matrix <-  lapply(list_reference_matrix, function(x) t(x))
 
-print("The matrix have been normalized")
+# print("The matrix have been normalized")
 
 #-------------------------------------
 # Keep only A,T,G and C in every 

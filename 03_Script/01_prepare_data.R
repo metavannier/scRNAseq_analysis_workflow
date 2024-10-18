@@ -23,30 +23,40 @@ STEP2 = "02_seurat/"
 source(file.path(dirname(DIRECTORY), "03_Script/00_general_deps.R"))
 
 in_data_dir = file.path( OUTPUTDIR, STEP1)
+in_data_dir_demux = file.path( OUTPUTDIR, STEP2)
 samples <- dir(in_data_dir)
 
 MIN_CELLS <- as.numeric(MIN_CELLS)
 MIN_FEATURES <- as.numeric(MIN_FEATURES)
-HTO <- unlist(strsplit(HTO, ","))
+# HTO <- unlist(strsplit(HTO, ","))
+
+options(Seurat.object.assay.version = 'v3')
 
 #........................................
 # Read data
 #........................................
-seurat_data <- Read10X(paste0(in_data_dir,SAMPLE_ID,CELL_RANGER_COUNT_PATH))
-
-# Need a condition if data are depultiplexed with cell ranger multi
 if( RUN_DEMULTIPLEX == TRUE){
+        seurat_data <- Read10X(paste0(in_data_dir,SAMPLE_ID,CELL_RANGER_COUNT_PATH))
         seurat_obj <- CreateSeuratObject(counts = seurat_data, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID)
-} else if (as.logical(MULTIPLEX) == TRUE) {
-        seurat_obj <- CreateSeuratObject(counts = seurat_data$`Gene Expression`, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID) 
-        hto <- seurat_data$`Antibody Capture`
-        hto <- hto[c(HTO), ]
-        seurat_obj[["HTO"]] <- CreateAssayObject(counts = hto)
-        seurat_obj <- subset(x = seurat_obj, subset = nCount_HTO > 0)
-        seurat_obj <- NormalizeData(seurat_obj, assay = "HTO", normalization.method = "CLR")       
-} else{
-        seurat_obj <- CreateSeuratObject(counts = seurat_data$`Gene Expression`, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID) 
+} else if (RUN_DEMULTIPLEX == FALSE) {
+        seurat_obj <- readRDS(paste0(in_data_dir_demux,SAMPLE_ID, "/demultiplex_", SAMPLE_ID, ".rds"))     
 }
+
+
+
+# # Need a condition if data are depultiplexed with cell ranger multi
+# if( RUN_DEMULTIPLEX == TRUE){
+#         seurat_obj <- CreateSeuratObject(counts = seurat_data, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID)
+# } else if (as.logical(MULTIPLEX) == TRUE) {
+#         seurat_obj <- CreateSeuratObject(counts = seurat_data$`Gene Expression`, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID) 
+#         hto <- seurat_data$`Antibody Capture`
+#         hto <- hto[c(HTO), ]
+#         seurat_obj[["HTO"]] <- CreateAssayObject(counts = hto)
+#         seurat_obj <- subset(x = seurat_obj, subset = nCount_HTO > 0)
+#         seurat_obj <- NormalizeData(seurat_obj, assay = "HTO", normalization.method = "CLR")       
+# } else{
+#         seurat_obj <- CreateSeuratObject(counts = seurat_data$`Gene Expression`, min.cells = MIN_CELLS, min.features = MIN_FEATURES, project = SAMPLE_ID) 
+# }
 
 seurat_obj$SampleID <- SAMPLE_ID
 
@@ -379,18 +389,20 @@ ggplot( seurat_obj[[]][order( seurat_obj[["outlier"]]),], # Plot FALSE first and
   labs( x = "# Genes", y = "# UMIs") +
   theme( legend.position = "none")
 
-# Mitochondrial vs ribosomal distributions
-if(exists( "mito.drop") && exists( "ribo.drop"))
+if(exists( "mito.drop"))
 {
   ggplot( seurat_obj[[]][order( seurat_obj[["outlier"]]),], # Plot FALSE first and TRUE after
-          aes( x = percent.rb, 
+          aes( x = nCount_RNA, 
                y = percent.mt, 
                color = outlier)) + 
     geom_point( size = 0.5) +
-    geom_vline( xintercept = FILTER_PERCENT_RB, linetype = 2, color = "blue", alpha = 0.5) +
+    geom_vline( xintercept = c( FILTER_FEATURE_MIN, FILTER_FEATURE_MAX), 
+              linetype = 2, 
+              color = c( "blue", "red")[!sapply( list( FILTER_FEATURE_MIN, FILTER_FEATURE_MAX), is.null)], 
+              alpha = 0.5) +
     geom_hline( yintercept = FILTER_PERCENT_MT, linetype = 2, color = "red", alpha = 0.5) +
     scale_color_manual( values = c( "TRUE" = "#FF0000AA", "FALSE" = "#44444444")) + 
-    labs( x = "% Ribosomal genes", y = "% Mitochondrial genes") +
+    labs( x = "# UMIs", y = "% Mitochondrial genes") +
     theme( legend.position = "none")
 }
 
@@ -413,15 +425,8 @@ if( QC_EXPLORATION_MODE == FALSE){
 #              sep="\t");
 
 # ..........................................................................................................
-## @knitr normalizeData
+## @knitr SCTransform
 # ..........................................................................................................
 
-# Normalize the count data present in a given assay
-seurat_obj = NormalizeData( object = seurat_obj,
-                       normalization.method = NORM_METHOD,
-                       scale.factor = NORM_SCALE_FACTOR,
-                       verbose = .VERBOSE)
-
-# # Scales and centers features in the dataset
-# seurat_obj = ScaleData( object = seurat_obj,
-#                    verbose = .VERBOSE)
+# # Normalize the count data present in a given assay
+seurat_obj = SCTransform(seurat_obj, vars.to.regress = "percent.mt", verbose = FALSE)

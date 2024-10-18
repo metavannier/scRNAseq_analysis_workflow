@@ -35,7 +35,11 @@ suppressMessages( suppressWarnings( LabelPoints( plot = VariableFeaturePlot( seu
 ## @knitr findVariableGenes_summaryTable
 # ..........................................................................................................
 
-# Extract variable genes info as data.frame
+# Extract variable genes info as data.frame    feature_select_method: "vst"
+    # Number of features to select as top variable features; only used when select_method is set to 'dispersion' or 'vst'
+    variable_features: 2000
+    # For table in report
+    variable_features_showtop : 200
 variableAnnotationsDT = head( HVFInfo( object = seurat_obj, assay = "RNA", selection.method = FEATURE_SELECT_METHOD)[VariableFeatures( seurat_obj),], VARIABLE_FEATURES_SHOWTOP);
 variableAnnotationsDT = cbind("Gene" = rownames(variableAnnotationsDT), variableAnnotationsDT);
 

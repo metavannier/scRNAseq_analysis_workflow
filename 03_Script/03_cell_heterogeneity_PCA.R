@@ -4,38 +4,30 @@
 # ########################################################
 
 # ..........................................................................................................
-## @knitr scaleData
-# ..........................................................................................................
-
-# Scales and centers features in the dataset
-seurat_obj = ScaleData( object = seurat_obj,
-                   verbose = .VERBOSE)
-
-# ..........................................................................................................
 ## @knitr HTODemux
 # ..........................................................................................................
 
-if(as.logical(MULTIPLEX) == TRUE){
-  # Demultiplexing data 
-  seurat_obj <- HTODemux(seurat_obj, assay = "HTO", positive.quantile = 0.99)
-  cat("<br><br>Removed cells after filtering Doublet et Negative:", sum(seurat_obj[["hash.ID"]] == "Negative" | seurat_obj[["hash.ID"]] == "Doublet"));
-  cat("<br><br>Remaining cells after filtering:", sum(seurat_obj$hash.ID %in% HTO));
-  cat("\n<br>\n");
-  seurat_obj <- subset(seurat_obj, idents = c("Doublet","Negative"), invert = TRUE) ### Keep only the Singlet cells (Remove Negative and Doublet)
+# if(as.logical(MULTIPLEX) == TRUE){
+#   # Demultiplexing data 
+#   seurat_obj <- HTODemux(seurat_obj, assay = "HTO", positive.quantile = 0.99)
+#   cat("<br><br>Removed cells after filtering Doublet et Negative:", sum(seurat_obj[["hash.ID"]] == "Negative" | seurat_obj[["hash.ID"]] == "Doublet"));
+#   cat("<br><br>Remaining cells after filtering:", sum(seurat_obj$hash.ID %in% HTO));
+#   cat("\n<br>\n");
+#   seurat_obj <- subset(seurat_obj, idents = c("Doublet","Negative"), invert = TRUE) ### Keep only the Singlet cells (Remove Negative and Doublet)
 
-  seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "mean.var.plot")
-  seurat_obj <- ScaleData(seurat_obj, features = VariableFeatures(seurat_obj))
-  seurat_obj <- RunPCA(seurat_obj)
-  seurat_obj <- RunUMAP(seurat_obj, dims = 1:25)
-  print(DimPlot(seurat_obj))
-}
+#   seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "mean.var.plot")
+#   seurat_obj <- ScaleData(seurat_obj, features = VariableFeatures(seurat_obj))
+#   seurat_obj <- RunPCA(seurat_obj)
+#   seurat_obj <- RunUMAP(seurat_obj, dims = 1:25)
+#   print(DimPlot(seurat_obj))
+# }
 
 # ..........................................................................................................
 ## @knitr ldr
 # ..........................................................................................................
 
 # Perform linear dimensional reduction
-seurat_obj <- RunPCA(seurat_obj, features = VariableFeatures(object = seurat_obj))
+seurat_obj <- RunPCA(seurat_obj, assay = "SCT", verbose = FALSE)
 VizDimLoadings(seurat_obj, dims = 1:DIMS, reduction = "pca")
 # DimPlot(seurat_obj, reduction = "pca", group.by = "orig.ident")
 # DimPlot(seurat_obj, reduction = "pca", group.by = "categorie")
@@ -47,106 +39,30 @@ DimHeatmap(seurat_obj, dims = 1:DIMS, cells = 500, balanced = TRUE)
 
 ElbowPlot(seurat_obj, ndims = DIMS)
 
+# https://hbctraining.github.io/scRNA-seq/lessons/elbow_plot_metric.html
+pct <- seurat_obj[["pca"]]@stdev / sum(seurat_obj[["pca"]]@stdev) * 100
+cumu <- cumsum(pct)
+co1 <- which(cumu > 90 & pct < 5)[1]
+co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), decreasing = T)[1] + 1
+pcs <- min(co1, co2)
+# Create a dataframe with values
+plot_df <- data.frame(pct = pct, 
+           cumu = cumu, 
+           rank = 1:length(pct))
+
+# Elbow plot to visualize 
+  ggplot(plot_df, aes(cumu, pct, label = rank, color = rank > pcs)) + 
+  geom_text() + 
+  geom_vline(xintercept = 90, color = "grey") + 
+  geom_hline(yintercept = min(pct[pct > 5]), color = "grey") +
+  theme_bw()
+  
 # ..........................................................................................................
 ## @knitr heterogeneity_pca
 # ..........................................................................................................
 
 # Compute PCA on selected variable genes
-nbPC = PCA_NPC
-if(PCA_NPC > length(Cells(seurat_obj)))
-{
-  warning( paste0( "Number of cells in object (", length(Cells(seurat_obj)), ") smaller than requested number of PCs (", PCA_NPC,"), setting lower PC number..." ))
-  nbPC = length(Cells(seurat_obj))
-}           
 seurat_obj <- RunPCA( object = seurat_obj,
-                 features = VariableFeatures( seurat_obj),
-                 npcs     = nbPC,
-                 verbose  = .VERBOSE);
-
-# Plot PCA, highlighting seurat clusters for combination of dimensions
-invisible( apply( combn( 1:PCA_PLOTS_NBDIMS, 2), 2, function(dims)
-{
-  print( DimPlot( object = seurat_obj, reduction = "pca", dims = dims, group.by = "orig.ident") +
-           theme( legend.position = "none"));                              
-}));
-
-# ..........................................................................................................
-## @knitr heterogeneity_pca_umisCounts
-# ..........................................................................................................
-
-# Same PCA plots but highlight UMI counts
-invisible( apply( combn( 1:PCA_PLOTS_NBDIMS, 2), 2, function(dims)
-{
-  print( FeaturePlot( seurat_obj, feature = "nCount_RNA", reduction = "pca", dims = dims) +
-           theme( legend.position = "none",
-                  plot.margin = margin(0, 0, 0, 0, "cm"),
-                  plot.title = element_blank()));
-}));
-
-# ..........................................................................................................
-## @knitr heterogeneity_pca_genesCounts
-# ..........................................................................................................
-
-# Same PCA plots but highlight feature counts
-invisible( apply( combn( 1:PCA_PLOTS_NBDIMS, 2), 2, function(dims)
-{
-  print( FeaturePlot( seurat_obj, feature = "nFeature_RNA", reduction = "pca", dims = dims) +
-           theme( legend.position = "none",
-                  plot.margin = margin(0, 0, 0, 0, "cm"),
-                  plot.title = element_blank()));
-}));
-
-# ..........................................................................................................
-## @knitr heterogeneity_pca_correlations
-# ..........................................................................................................
-
-# Isolate the PCA location of cells in first dimensions, together with UMI and genes counts for correlation analysis (makes use of cbind recycling to repeat values for each stacked PC)
-relationToPC = suppressWarnings( cbind( stack( as.data.frame( Embeddings( seurat_obj, reduction = "pca")[ rownames( seurat_obj[[]]), paste0( "PC_", 1:PCA_PLOTS_NBDIMS) ])),
-                                        seurat_obj[[ c( "nCount_RNA", "nFeature_RNA") ]],
-                                        Cluster = Idents( seurat_obj)));
-
-# Plot relationship of UMIs and genes counts with PCs (combine plots using '/' from 'patchwork' lib)
-print( (ggplot( data = relationToPC, aes( x = values, y = nCount_RNA)) +
-          facet_wrap( ~ind) +
-          stat_binhex( bins = 60) +
-          #geom_point( aes(col = Cluster), alpha = 0.5) +
-          geom_smooth( method = 'lm') +
-          stat_cor( method = "spearman") +
-          ylab( "# UMIs") +
-          theme( axis.title.x = element_blank(),
-                 axis.text.x = element_blank(),
-                 axis.ticks.x = element_blank(),
-                 plot.margin = unit( c( 1, 1, -0.5, 0.5), "lines")))
-       /
-         (ggplot( data = relationToPC, aes( x = values, y = nFeature_RNA)) +
-            facet_wrap( ~ind) +
-            stat_binhex( bins = 60) +
-            #geom_point( aes(col = Cluster), alpha = 0.5) +
-            geom_smooth( method = 'lm') +
-            stat_cor( method = "spearman") +
-            xlab( "PC values") +
-            ylab( "# Genes")));
-
-# ..........................................................................................................
-## @knitr heterogeneity_pca_loadings
-# ..........................................................................................................
-
-# Plot PCA loadings
-invisible( apply( combn( 1:PCA_PLOTS_NBDIMS, 2), 2, function(dims)
-{
-  namesPC=paste0( "PC_", dims);
-  # Get the loading values for concerned PCs
-  loadingsMatrix = Loadings( seurat_obj, reduction = "pca")[ , namesPC ];
-  # Sort features by average absolute value and convert as DF with features names as column
-  loadingsMatrix = head( loadingsMatrix[ order( apply( loadingsMatrix, 1, function(x){ mean( abs( x)) }), decreasing = TRUE), ], PCA_PLOTS_NBFEATURES);
-  loadingsDF = data.frame( loadingsMatrix, features = rownames( loadingsMatrix));
-  
-  # Define symmetric and consistent axes for group of plots
-  axesLimit = max( abs( loadingsMatrix));
-  
-  # Plot arrows and features name
-  print( ggplot( data = loadingsDF, aes_( x = as.name( namesPC[1]), y = as.name( namesPC[2]))) +
-           coord_cartesian( xlim = c( -axesLimit, axesLimit), ylim = c( -axesLimit, axesLimit)) +
-           geom_text_repel( aes( label = features), max.iter = 10000) + #, max.overlaps = Inf
-           geom_segment( x = 0 , y = 0, aes_( xend = as.name(namesPC[1]), yend = as.name(namesPC[2])), col = "#00000044", arrow = arrow( length = unit( 2, "mm"))));
-}));
+                 npcs     = pcs,
+                 verbose  = .VERBOSE,
+                 assay = "SCT");

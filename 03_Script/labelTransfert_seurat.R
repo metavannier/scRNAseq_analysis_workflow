@@ -9,6 +9,9 @@ library(Seurat)
 library(ggplot2)
 library(dplyr)
 library(data.table)
+library(DoubletFinder)
+
+options(future.globals.maxSize = 3000 * 1024^2)
 
 #=====================================
 # Path to file and folder
@@ -17,528 +20,517 @@ DIRECTORY = getwd()
 OUTPUTDIR = file.path((DIRECTORY), "05_Output")
 REF = file.path((DIRECTORY), "01_Reference")
 
-SAMPLE_ID = snakemake@params[["sample_id"]]
+SAMPLE_ID = "P30_WT"
+
+ALLEN = TRUE
 
 STEP2 = "02_seurat/"
 
-#========================================================================
-# Load the data
-#========================================================================
-
-### Reference dataset Allen 
-ref_data <- readRDS(file = file.path(REF, "/remi/refA21_all.rds"))
-premier_modele <- ref_data@assays[["SCT"]]@SCTModel.list[[1]]
-ref_data@assays[["SCT"]]@SCTModel.list <- list(premier_modele)
-
-# ### Reference dataset arlotta
-# ref_data <- readRDS(file = file.path(REF, "/modify_arlotta_seurat_object.rds"))
-# ref_data <- PercentageFeatureSet(ref_data, pattern = "^mt-", col.name = "percent.mt")
-# ref_data <- SCTransform(ref_data, vars.to.regress = "percent.mt", assay = "RNA", new.assay.name = "SCT", verbose = FALSE)
-
-### Querry dataset
-querry_data <- readRDS(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_filtered_seurat_object.rds")))### To change here
-querry_data <- SCTransform(querry_data, vars.to.regress = "percent.mt", assay = "RNA", new.assay.name = "SCT", verbose = FALSE)
-
-# Change the default assay to SCT
-DefaultAssay(ref_data) <- "SCT"
-DefaultAssay(querry_data) <- "SCT"
-
-# Keep genes that are in common between querry and ref datasets
-ref_genes <- as.data.frame(rownames(ref_data))
-querry_genes <- as.data.frame(rownames(querry_data))
-all_genes <- intersect(ref_genes$`rownames(ref_data)`, querry_genes$`rownames(querry_data)`)
-
-#========================================================================
-# Create functions
-#========================================================================
-
-# For findTransfertAnchors function
-calculate_k_score <- function(num_cells, proportion = 0.1, min_value = 1) {
-  k_score <- max(min_value, floor(num_cells * proportion))
-  return(k_score)
-}
-
-# For transferData function
-calculate_k_weight <- function(sample_size, proportion = 0.2, min_value = 1) {
-  k_weight <- round(sample_size * proportion)
-  return(max(min_value, k_weight))
-}
-
-#========================================================================
-# Step 1 : annotate with broad class
-#========================================================================
-
-# Create a new column in metadata
-querry_data$class_label <- NA
-
-K_SCORE <- 30 # Seurat option
-
-if(ncol(querry_data) < K_SCORE){
-
-  # Calculate a new k_score
-  k_score_reference <- calculate_k_score(num_cells = ncol(ref_data))
-  k_score_query <- calculate_k_score(num_cells = ncol(querry_data))
-  k_score <- min(k_score_reference, k_score_query)
-
-  anchors <- FindTransferAnchors(reference = ref_data,
-                               query = querry_data,
-                               k.score = k_score,
-                               normalization.method = "SCT",
-                               features = all_genes)
-} else{
-  anchors <- FindTransferAnchors(reference = ref_data,
-                               query = querry_data,
-                               normalization.method = "SCT",
-                               features = all_genes)
-}
-
-# Number of anchors
-num_anchors <- nrow(anchors@anchors)
-
-if(ncol(querry_data) < num_anchors){
-
-  # Calculate the k weight
-  k_weight <- calculate_k_weight(sample_size = num_anchors)
-
-  # Prediction with transfertData
-  prediction <- TransferData(anchorset = anchors,
-                           refdata = ref_data$class_label,
-                           k.weight = k_weight
-                           )
-} else{
-  prediction <- TransferData(anchorset = anchors,
-                           refdata = ref_data$class_label)
-}
-
-querry_data <- AddMetaData(querry_data, metadata = prediction)
-querry_data$class_label[Cells(querry_data)] <- querry_data$predicted.id
-
-# Plot UMAP
-
-pdf(file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_seurat_labelTransfert.pdf")))
-DimPlot(querry_data, group.by = "class_label", label.size = 6) + theme(legend.position = "bottom",legend.text=element_text(size=4))
-
-# Plot UMAP per labels
-labels <- unique(querry_data@meta.data$`class_label`)
-
-for (label in labels) {
-  plot <- DimPlot(querry_data, group.by = "class_label", cells.highlight = WhichCells(querry_data, expression = class_label == label)) + ggtitle(label)
-  print(plot)
-}
-
-### UMAP plot with the prediction
-FeaturePlot(querry_data, features = "prediction.score.max", reduction = "umap")
-
-
-
-#========================================================================
-# Step 2 : apply a threshold
-#========================================================================
-
-ggplot(querry_data@meta.data, aes(x = prediction.score.max)) + 
-  geom_histogram(binwidth = 0.05) + 
-  theme_minimal() + 
-  xlab("Prediction Score Max") + 
-  ylab("Frequency") + 
-  ggtitle("Distribution of Prediction Scores (Broad Class)")
-
-dev.off()
-
-# Calculate mean and standard deviation
-mean_score <- mean(querry_data@meta.data$prediction.score.max)
-print(mean_score)
-
-sd_score <- sd(querry_data@meta.data$prediction.score.max)
-print(sd_score)
-
-# Define threshold
-threshold <- mean_score - sd_score
-print(threshold)
-
-# Filter cells
-querry_data <- subset(querry_data, subset = prediction.score.max >= threshold)
-gc()
-
-pdf(file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_seurat_labelTransfert.pdf")))
-
-DimPlot(querry_data, group.by = "class_label", label.size = 6) + theme(legend.position = "bottom",legend.text=element_text(size=4))
-
-labels <- unique(querry_data@meta.data$`class_label`)
-
-for (label in labels) {
-  plot <- DimPlot(querry_data, group.by = "class_label", cells.highlight = WhichCells(querry_data, expression = class_label == label)) + ggtitle(label)
-  print(plot)
-}
-
-dev.off()
-
-#========================================================================
-# Step 3 : annotate with supertype
-#========================================================================
-
-querry_data$supertype_label <- NA
-
-for (class in unique(querry_data$class_label)) {
-  print("The supertype class :")
-  print(class)
-  
-  # Set idents=
-  Idents(querry_data) <- "class_label"
-  Idents(ref_data) <- "class_label"
-  
-  # Per class
-  subset_querry_data <- subset(querry_data, idents = class)
-  subset_ref_data <- subset(ref_data, idents = class)
-  
-  # Check subset sizes
-  print(paste("Number of cells in query subset:", ncol(subset_querry_data)))
-  print(paste("Number of cells in reference subset:", ncol(subset_ref_data)))
-
-  # Keep the same genes
-  ref_genes <- as.data.frame(rownames(subset_ref_data))
-  querry_genes <- as.data.frame(rownames(subset_querry_data))
-  all_genes <- intersect(ref_genes$`rownames(subset_ref_data)`, querry_genes$`rownames(subset_querry_data)`)
-  
-  if(ncol(subset_querry_data) < K_SCORE){
-
-  # Calculate a new k_score
-  k_score_reference <- calculate_k_score(num_cells = ncol(subset_ref_data))
-  k_score_query <- calculate_k_score(num_cells = ncol(subset_querry_data))
-  k_score <- min(k_score_reference, k_score_query)
-
-  anchors <- FindTransferAnchors(reference = subset_ref_data,
-                               query = subset_querry_data,
-                               k.score = k_score,
-                               normalization.method = "SCT",
-                               features = all_genes)
-} else{
-  anchors <- FindTransferAnchors(reference = subset_ref_data,
-                               query = subset_querry_data,
-                               normalization.method = "SCT",
-                               features = all_genes)
-}
-
-# Number of anchors
-num_anchors <- nrow(anchors@anchors)
-
-if(ncol(subset_querry_data) < num_anchors){
-
-  # Calculate the k weight
-  k_weight <- calculate_k_weight(sample_size = num_anchors)
-
-  # Prediction with transfertData
-  prediction <- TransferData(anchorset = anchors,
-                           refdata = subset_ref_data$supertype_label,
-                           k.weight = k_weight
-                           )
-} else{
-  prediction <- TransferData(anchorset = anchors,
-                           refdata = subset_ref_data$supertype_label)
-}
-  
-  # Add to the metadata
-  subset_querry_data <- AddMetaData(subset_querry_data, metadata = prediction)
-  querry_data$supertype_label[Cells(subset_querry_data)] <- subset_querry_data$predicted.id
-}
-pdf(file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_seurat_labelTransfert.pdf")))
-
-
-### Plot UMAP
-Idents(querry_data) <- querry_data$supertype_label
-DimPlot(querry_data, group.by = "supertype_label", label.size = 6) + theme(legend.position = "bottom",legend.text=element_text(size=4))
-
-### Plot UMAP per labels
-labels <- unique(querry_data@meta.data$`supertype_label`)
-
-for (label in labels) {
-  plot <- DimPlot(querry_data, group.by = "supertype_label", cells.highlight = WhichCells(querry_data, expression = supertype_label == label)) + ggtitle(label)
-  print(plot)
-}
-
-### UMAP plot with the prediction
-FeaturePlot(querry_data, features = "prediction.score.max", reduction = "umap")
-
-dev.off()
-
-saveRDS(querry_data, file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID,paste0(SAMPLE_ID, "_seurat_labelTransfert.rds")))
-
-
-TEXT_OUTPUT <- snakemake@output[["seurat_labelTransfert_output"]]
-
-output_file<-file(TEXT_OUTPUT)
-writeLines(c("Rules seurat Label Transfert finished"), output_file)
-close(output_file)
-
-
-
-################################################################################################ LABEL TRANSFERT FROM REMI'S ANNOTATION : WT TO KO
-
 # #========================================================================
-# # Load the data
+# # Load the data an the reference
 # #========================================================================
 
-# ### Ouvrir la matrice de référence pour le NN
-# remi_nn <- readRDS("/scratch/lchabot/inmed_deChevigny_scrnaseq/scRNAseq_analysis_workflow/01_Reference/remi/GEcortex_subRef_cluster_class.list.rds")
-# remi_nn <- remi_nn[["P30.scRNA-seq.10X"]]
-# gc()
+## Our data
+so <- readRDS(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_filtered_seurat_object.rds")))
 
-# ### Matrice à annoter 
-# # querry_data <- readRDS("/scratch/lchabot/inmed_deChevigny_scrnaseq/scRNAseq_analysis_workflow/05_Output/02_seurat/P5_KO/P5_KO_filtered_seurat_object.rds")
-# querry_data <- readRDS("/scratch/lchabot/inmed_deChevigny_scrnaseq/scRNAseq_analysis_workflow/05_Output/02_seurat/P30_KO_integrated/P30_KO_integrated_filtered_seurat_object.rds")
+if(ALLEN == TRUE){
+  ref <- readRDS(file = file.path(REF, "/allen_seurat_object_with_metadata.rds"))
+  ref <- PercentageFeatureSet(ref, pattern = "^mt-", col.name = "percent.mt")
+  ref <- SCTransform(ref, vars.to.regress = "percent.mt", verbose = FALSE, future.seed = FALSE)
 
-# querry_data <- SCTransform(querry_data, vars.to.regress = "percent.mt", assay = "RNA", new.assay.name = "SCT", verbose = FALSE)
-# gc()
+} else {
+  ## The arlotta reference
+  ref <- readRDS(file = file.path(REF, "/modify_arlotta_seurat_object.rds"))
 
-# ### Set the default assay to SCT for booth seurat object
-# DefaultAssay(remi_nn) <- "SCT"
-# DefaultAssay(querry_data) <- "SCT"
+  # Keep only some cells in the reference
+  pattern <- "E14"
+  metadata <- ref@meta.data
+  filtered_metadata <- metadata[grepl(pattern, metadata$biosample_id), ]
+  cells_to_keep <- rownames(filtered_metadata)
+  ref <- subset(ref, cells = cells_to_keep)
+  ref <- PercentageFeatureSet(ref, pattern = "^mt-", col.name = "percent.mt")
+  ref <- SCTransform(ref, vars.to.regress = "percent.mt", verbose = FALSE)
+}
 
-# # Keep genes that are in common between querry and ref datasets
-# ref_genes <- as.data.frame(rownames(remi_nn))
-# querry_genes <- as.data.frame(rownames(querry_data))
-# all_genes <- intersect(ref_genes$`rownames(remi_nn)`, querry_genes$`rownames(querry_data)`)
+#========================================================================
+# Doublet Finder
+#========================================================================
+
+pct <- so[["pca"]]@stdev / sum(so[["pca"]]@stdev) * 100
+cumu <- cumsum(pct)
+co1 <- which(cumu > 90 & pct < 5)[1]
+co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), decreasing = T)[1] + 1
+pcs <- min(co1, co2)
+
+sweep.res <- paramSweep(so, PCs = 1:pcs, sct = TRUE)
+sweep.stats <- summarizeSweep(sweep.res, GT = FALSE)
+# bcmvn <- find.pK(sweep.stats)
+homotypic.prop <- modelHomotypic(so$seurat_clusters)
+nExp_poi <- round(0.075 * ncol(so))
+nExp_poi.adj <- round(nExp_poi * (1 - homotypic.prop))
+so <- doubletFinder(so, PCs = 1:pcs, pN = 0.25, pK = 0.09, nExp = nExp_poi.adj, reuse.pANN = FALSE, sct = TRUE)
+
+metadata_columns <- colnames(so@meta.data)
+pattern <- "DF.classifications_0.25_0.09_\\d+"  # Adjust the regex as needed
+matched_column <- metadata_columns[grepl(pattern, metadata_columns)]
+num_doublets <- sub("DF\\.classifications_0\\.25_0\\.09_(\\d+)", "\\1", matched_column)
+print(num_doublets)
+full_column_name <- paste0("DF.classifications_0.25_0.09_", num_doublets)
+cells_to_keep <- rownames(so@meta.data[so@meta.data[[full_column_name]] == "Singlet", ])
+so <- subset(so, cells = cells_to_keep)
+
+#========================================================================
+# Annotation
+#========================================================================
+
+so$celltype_label <- NA
+all_genes <- intersect(rownames(ref), rownames(so))
+anchors <- FindTransferAnchors(reference = ref, query = so, dims = 1:30, normalization.method = "SCT", features = all_genes)
+prediction <- TransferData(anchorset = anchors, refdata = as.vector(ref$celltype_label))
+so <- AddMetaData(so, metadata = prediction)
+so$celltype_label <- so$predicted.id
+
+pdf(file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_annotation_before_filtering_UMAP.pdf")), width = 8, height = 8)
+plot <- DimPlot(so, group.by = "celltype_label", label.size = 6) + theme(legend.position = "bottom", legend.text = element_text(size = 4))
+print(plot)
+
+# UMAP plot per label
+labels <- unique(so$celltype_label)
+for (label in labels) {
+  cells_to_highlight <- rownames(so@meta.data[so@meta.data$celltype_label == label, ])
+  plots <- DimPlot(so, group.by = "celltype_label", cells.highlight = cells_to_highlight) +
+           ggtitle(label) +
+           theme(legend.position = "bottom", legend.text = element_text(size = 4))
+  print(plots)
+}
+dev.off()
+
+#========================================================================
+# Filtering bad predicted cells : KMeans
+#========================================================================
+
+# set.seed(42)  # For reproducibility
+
+# metadata <- so@meta.data
+# metadata$cell_id <- rownames(metadata)
+# unique_labels <- unique(metadata$celltype_label)
+# thresholds <- data.frame(celltype_label = unique_labels, cluster_threshold = NA)
+
+# for (label in unique_labels) {
+#   subset_data <- metadata[metadata$celltype_label == label, ]
+#   print(label)
+#   print(nrow(subset_data))
+#   # Check if there are at least 2 cells for k-means clustering
+#   if (nrow(subset_data) <= 2) {
+#     # If fewer than 2 cells, set the threshold to 0 (no filtering)
+#     cluster_threshold <- 0
+#   } else {
+#     # Perform k-means clustering
+#     kmeans_result <- kmeans(subset_data$prediction.score.max, centers = 2)
+#     cluster_centers <- kmeans_result$centers
+#     high_confidence_cluster <- which.max(cluster_centers)
+#     cluster_threshold <- min(subset_data$prediction.score.max[kmeans_result$cluster == high_confidence_cluster])
+#   }
+  
+#   thresholds[thresholds$celltype_label == label, "cluster_threshold"] <- cluster_threshold
+# }
+
+# # Merge the thresholds with the metadata
+# metadata <- merge(metadata, thresholds, by = "celltype_label")
+
+# # Apply the filtering based on the prediction score and cluster threshold
+# metadata <- metadata[metadata$prediction.score.max >= metadata$cluster_threshold, ]
+
+# saveRDS(so, file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "annotate_seurat_objet_before_filtering.rds")))
+
+# so_clean <- subset(so, cells = metadata$cell_id)
+
+
+# pdf(file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_annotation_after_filtering_UMAP.pdf")), width = 8, height = 8)
+# plot <- DimPlot(so_clean, group.by = "celltype_label", label.size = 6) + theme(legend.position = "bottom", legend.text = element_text(size = 4))
+# print(plot)
+
+# # UMAP plot per label
+# labels <- unique(so_clean$celltype_label)
+# for (label in labels) {
+#   cells_to_highlight <- rownames(so_clean@meta.data[so_clean@meta.data$celltype_label == label, ])
+#   plots <- DimPlot(so_clean, group.by = "celltype_label", cells.highlight = cells_to_highlight) +
+#            ggtitle(label) +
+#            theme(legend.position = "bottom", legend.text = element_text(size = 4))
+#   print(plots)
+# }
+# dev.off()
+
+# saveRDS(so_clean, file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "annotate_seurat_objet_after_filtering.rds")))
+
+#========================================================================
+# Filtering bad predicted cells : Remi's
+#========================================================================
+
+# 1. Get all the prediction score column names, excluding "prediction.score.max"
+prediction_columns <- grep("^prediction\\.score\\.(?!max$)", colnames(so@meta.data), value = TRUE, perl = TRUE)
+
+# 2. Create a new column "filter_celltype_label" to store the filtered labels
+so@meta.data$filter_celltype_label <- "Nothing"  # Initialize with NA
+
+# 3. Loop through each row and perform the filtering based on the criteria
+for (i in 1:nrow(so@meta.data)) {
+  # Extract the prediction scores for the current cell as a numeric vector
+  scores <- as.numeric(so@meta.data[i, prediction_columns])
+
+  # Sort the scores in descending order and extract the top two
+  sorted_scores <- sort(scores, decreasing = TRUE)
+  best_score <- sorted_scores[1]
+  second_best_score <- sorted_scores[2]
+
+  # Get the labels corresponding to the top two scores
+  best_label <- prediction_columns[which.max(scores)]  # Find the label for the best score
+  second_best_label <- prediction_columns[which(scores == second_best_score)[1]]  # Find the label for the second-best score
+
+  # 4. Check if the difference between the best and second-best score is greater than 20%
+  if ((best_score - second_best_score) > 0.20) {
+    # Keep the label corresponding to the best score (remove "prediction.score." prefix)
+    so@meta.data$filter_celltype_label[i] <- gsub("prediction\\.score\\.", "", best_label)
+  } else {
+    # Otherwise, set the label as NA
+    so@meta.data$filter_celltype_label[i] <- "Nothing"
+  }
+}
+
+saveRDS(so, file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "annotate_seurat_objet_before_filtering.rds")))
+
+so_clean <- subset(so, subset = filter_celltype_label != "Nothing")
+
+pdf(file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_annotation_after_filtering_UMAP.pdf")), width = 8, height = 8)
+plot <- DimPlot(so_clean, group.by = "celltype_label", label.size = 6) + theme(legend.position = "bottom", legend.text = element_text(size = 4))
+print(plot)
+
+# UMAP plot per label
+labels <- unique(so_clean$celltype_label)
+for (label in labels) {
+  cells_to_highlight <- rownames(so_clean@meta.data[so_clean@meta.data$celltype_label == label, ])
+  plots <- DimPlot(so_clean, group.by = "celltype_label", cells.highlight = cells_to_highlight) +
+           ggtitle(label) +
+           theme(legend.position = "bottom", legend.text = element_text(size = 4))
+  print(plots)
+}
+dev.off()
+
+saveRDS(so_clean, file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "annotate_seurat_objet_after_filtering.rds")))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # #========================================================================
 # # Create functions
 # #========================================================================
 
-# # For findTransfertAnchors function
-# calculate_k_score <- function(num_cells, proportion = 0.1, min_value = 1) {
-#   k_score <- max(min_value, floor(num_cells * proportion))
-#   return(k_score)
+# # Function for performing label transfer with optional per-class processing
+# perform_label_transfer <- function(so, ref, actual_class = "actual_class", target_label = "target_label", skip_loop = FALSE, output_dir = "default/path", pdf_file = "label_transfer_plot.pdf") {
+  
+#   # Initialize or clear the target_label column
+#   so[[target_label]] <- NA
+  
+#   class_labels <- as.character(so[[actual_class]][, actual_class])
+
+#   # Ensure the output directory exists
+#   if (!dir.exists(output_dir)) {
+#     dir.create(output_dir, recursive = TRUE)
+#   }
+
+#   # Create the full path for the PDF file
+#   pdf_file <- file.path(output_dir, pdf_file)
+
+#   if (!is.null(pdf_file)) {
+#     pdf(pdf_file, width = 8, height = 6)  # Open PDF if specified
+#   }
+
+#   if (!skip_loop) {
+#     unique_classes <- unique(class_labels)
+
+#     for (class in unique_classes) {
+#       print(class)
+
+#       # Set idents
+#       Idents(so) <- actual_class
+#       Idents(ref) <- actual_class
+
+#       # Subset per class
+#       subset_querry_data <- subset(so, idents = class)
+#       subset_ref_data <- subset(ref, idents = class)
+
+#       # Keep the same genes
+#       all_genes <- intersect(rownames(subset_ref_data), rownames(subset_querry_data))
+
+#       # Directly assign actual_class to target_label
+#       so[[target_label]][so[[actual_class]] == class] <- class
+
+#       # Find anchors and Transfer Data with error handling
+#       tryCatch({
+#         anchors <- FindTransferAnchors(reference = subset_ref_data, query = subset_querry_data, dims = 1:30, normalization.method = "SCT", features = all_genes)
+#         prediction <- TransferData(anchorset = anchors, refdata = as.vector(subset_ref_data[[target_label]]))
+
+#         # Append target_label to each prediction column name
+#         colnames(prediction) <- paste0(colnames(prediction), ".", target_label)
+#         subset_querry_data <- AddMetaData(subset_querry_data, metadata = prediction)
+#         new_metadata <- subset_querry_data@meta.data[, grepl(paste0(".", target_label), colnames(subset_querry_data@meta.data))]
+#         so@meta.data[rownames(new_metadata), colnames(new_metadata)] <- new_metadata
+
+#         # Assign the predicted labels
+#         so[[target_label]] <- subset_querry_data[[paste0("predicted.id.", target_label)]]
+
+#       }, error = function(e) {
+#         warning(paste("Error for class:", class, "- Keeping actual_class in target_label"))
+#       })
+#     }
+#   } else {
+#     # Skip looping, transfer all cells at once
+#     all_genes <- intersect(rownames(ref), rownames(so))
+
+#     # Perform label transfer without looping
+#     anchors <- FindTransferAnchors(reference = ref, query = so, dims = 1:30, normalization.method = "SCT", features = all_genes)
+#     prediction <- TransferData(anchorset = anchors, refdata = as.vector(ref[[target_label]]))
+
+#     # Append target_label to the prediction columns
+#     colnames(prediction) <- paste0(colnames(prediction), ".", target_label)
+
+#     # Add prediction metadata to the Seurat object
+#     so <- AddMetaData(so, metadata = prediction)
+
+#     # Assign the predicted labels
+#     so[[target_label]] <- so[[paste0("predicted.id.", target_label)]]
+#   }
+
+#   # UMAP plot
+#   plot <- DimPlot(so, group.by = target_label, label.size = 6) + 
+#           theme(legend.position = "bottom", legend.text = element_text(size = 4))
+
+#   print(plot)  # Print the main plot
+
+#   # UMAP plot per label
+#   labels <- unique(so@meta.data[[target_label]])
+#   for (label in labels) {
+#     cells_to_highlight <- rownames(so@meta.data[so@meta.data[[target_label]] == label, ])
+#     plots <- DimPlot(so, group.by = target_label, cells.highlight = cells_to_highlight) +
+#              ggtitle(label) +
+#              theme(legend.position = "bottom", legend.text = element_text(size = 4))
+#     print(plots)
+#   }
+
+#   if (!is.null(pdf_file)) {
+#     dev.off()  # Close the PDF device
+#   }
+
+#   return(so)
 # }
 
-# # For transferData function
-# calculate_k_weight <- function(sample_size, proportion = 0.2, min_value = 1) {
-#   k_weight <- round(sample_size * proportion)
-#   return(max(min_value, k_weight))
+# # Function to calculate thresholds based on prediction scores using k-means clustering
+# # Function to calculate thresholds based on prediction scores using k-means clustering
+# calculate_thresholds <- function(metadata, celltype_label, prediction_column) {
+#   unique_labels <- unique(metadata[[celltype_label]])
+#   thresholds <- data.frame(celltype_label = unique_labels, cluster_threshold = NA, stringsAsFactors = FALSE)
+
+#   for (label in unique_labels) {
+#     subset_data <- metadata[metadata[[celltype_label]] == label & !is.na(metadata[[prediction_column]]), ]
+
+#     # Try-catch block to handle cases with insufficient data or k-means failures
+#     tryCatch({
+#       if (nrow(subset_data) > 1) {
+#         # Perform k-means clustering with 2 centers
+#         kmeans_result <- kmeans(subset_data[[prediction_column]], centers = 2)
+#         cluster_centers <- kmeans_result$centers
+#         high_confidence_cluster <- which.max(cluster_centers)
+
+#         # Calculate the cluster threshold
+#         cluster_threshold <- min(subset_data[[prediction_column]][kmeans_result$cluster == high_confidence_cluster], na.rm = TRUE)
+#         thresholds[thresholds$celltype_label == label, "cluster_threshold"] <- cluster_threshold
+#       } else {
+#         # If there are not enough rows to cluster
+#         stop("Not enough data for k-means clustering")
+#       }
+#     }, error = function(e) {
+#       # Handle error: retain original label (no filtering)
+#       message(paste("Error for label:", label, "-", e$message, "- Retaining original cells (no filtering)."))
+#       thresholds[thresholds$celltype_label == label, "cluster_threshold"] <- -Inf  # No filtering for this label
+#     })
+#   }
+
+#   return(thresholds)
+# }
+
+# # Function to filter cells by threshold
+# filter_cells_by_threshold <- function(metadata, prediction_column, thresholds, celltype_label) {
+#   # Merge thresholds back to metadata
+#   metadata <- merge(metadata, thresholds, by = celltype_label, by.y = "celltype_label", all.x = TRUE)
+
+#   # Check if the merge was successful
+#   if (nrow(metadata) == 0) {
+#     stop("Merging thresholds into metadata resulted in zero rows. Check column names and values.")
+#   }
+
+#   # Filter cells based on prediction scores and thresholds
+#   filtered_metadata <- metadata[
+#     is.na(metadata[[prediction_column]]) |
+#     (metadata[[prediction_column]] >= metadata$cluster_threshold),
+#   ]
+
+#   return(filtered_metadata)
+# }
+
+# # Function to create UMAP plots, save them as a PDF, and return filtered results
+# create_filtered_umap <- function(so, celltype_label, output_dir = "default/path", file_name = "default_plot.pdf") {
+#   set.seed(42)  # For reproducibility
+
+#   # Ensure the output directory exists
+#   if (!dir.exists(output_dir)) {
+#     dir.create(output_dir, recursive = TRUE)
+#   }
+
+#   # Get metadata and create cell ID column
+#   metadata <- so@meta.data
+#   metadata$cell_id <- rownames(metadata)
+
+#   # Dynamically construct the column name for prediction scores
+#   prediction_column <- paste0("prediction.score.max.", celltype_label)
+
+#   # Calculate thresholds
+#   thresholds <- calculate_thresholds(metadata, celltype_label, prediction_column)
+#   print(thresholds)  # Log the computed thresholds
+#   write.csv(thresholds, file = file.path(output_dir, paste0(celltype_label, "_threshold.csv")), row.names = FALSE)
+
+#   # Filter cells based on thresholds
+#   filtered_metadata <- filter_cells_by_threshold(metadata, prediction_column, thresholds, celltype_label)
+
+#   # Subset the original Seurat object using the filtered metadata
+#   so <- subset(so, cells = filtered_metadata$cell_id)
+
+#   # Create a full path for the PDF file
+#   pdf_file <- file.path(output_dir, file_name)
+
+#   # Call the plotting function with the filtered Seurat object and cell type label
+#   plot_umap(so, celltype_label, pdf_file)  # Save the plots directly to the specified PDF
+
+#   # Return the updated Seurat object and thresholds used
+#   return(list(filtered_object = so, thresholds = thresholds))
+# }
+
+# # Function to plot UMAP with optional PDF saving
+# plot_umap <- function(so, celltype_label, pdf_file = NULL) {
+#   if (!is.null(pdf_file)) {
+#     pdf(pdf_file, width = 8, height = 6)  # Open a PDF device if specified
+#   }
+
+#   # Main UMAP plot
+#   plot <- DimPlot(so, group.by = celltype_label, label.size = 6) +
+#           theme(legend.position = "bottom", legend.text = element_text(size = 4))
+  
+#   print(plot)  # Print the main plot
+  
+#   # Generate individual UMAP plots for each label
+#   labels <- unique(so@meta.data[[celltype_label]])
+#   for (label in labels) {
+#     cells_to_highlight <- rownames(so@meta.data[so@meta.data[[celltype_label]] == label, ])
+#     plots <- DimPlot(so, group.by = celltype_label, cells.highlight = cells_to_highlight) +
+#              ggtitle(label) +
+#              theme(legend.position = "bottom", legend.text = element_text(size = 4))
+
+#     print(plots)  # Print each individual plot
+#   }
+  
+#   if (!is.null(pdf_file)) {
+#     dev.off()  # Close the PDF device if it was opened
+#   }
 # }
 
 # #========================================================================
-# # Step 1 : annotate broad class 
+# # Load the data an the reference
 # #========================================================================
 
-# # Create a new column in metadata
-# querry_data$class_label <- NA
+# ## Our data
+# so <- readRDS(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "_filtered_seurat_object.rds")))
 
-# K_SCORE <- 30 # Seurat option
+# ## The reference
+# ref <- readRDS(file = file.path(REF, "/modify_arlotta_seurat_object.rds"))
 
-# if(ncol(querry_data) < K_SCORE){
+# # Keep only some cells in the reference
+# pattern <- "P4"
+# metadata <- ref@meta.data
+# filtered_metadata <- metadata[grepl(pattern, metadata$biosample_id), ]
+# cells_to_keep <- rownames(filtered_metadata)
+# ref <- subset(ref, cells = cells_to_keep)
+# ref <- PercentageFeatureSet(ref, pattern = "^mt-", col.name = "percent.mt")
+# ref <- SCTransform(ref, vars.to.regress = "percent.mt", verbose = FALSE)
 
-#   # Calculate a new k_score
-#   k_score_reference <- calculate_k_score(num_cells = ncol(remi_nn))
-#   k_score_query <- calculate_k_score(num_cells = ncol(querry_data))
-#   k_score <- min(k_score_reference, k_score_query)
+# #========================================================================
+# # Doublet Finder
+# #========================================================================
 
-#   anchors <- FindTransferAnchors(reference = remi_nn,
-#                                query = querry_data,
-#                                k.score = k_score,
-#                                normalization.method = "SCT",
-#                                features = all_genes)
-# } else{
-#   anchors <- FindTransferAnchors(reference = remi_nn,
-#                                query = querry_data,
-#                                normalization.method = "SCT",
-#                                features = all_genes)
-# }
+# pct <- so[["pca"]]@stdev / sum(so[["pca"]]@stdev) * 100
+# cumu <- cumsum(pct)
+# co1 <- which(cumu > 90 & pct < 5)[1]
+# co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), decreasing = T)[1] + 1
+# pcs <- min(co1, co2)
 
-# # Number of anchors
-# num_anchors <- nrow(anchors@anchors)
+# sweep.res <- paramSweep(so, PCs = 1:pcs, sct = TRUE)
+# sweep.stats <- summarizeSweep(sweep.res, GT = FALSE)
+# # bcmvn <- find.pK(sweep.stats)
+# homotypic.prop <- modelHomotypic(so$seurat_clusters)
+# nExp_poi <- round(0.075 * ncol(so))
+# nExp_poi.adj <- round(nExp_poi * (1 - homotypic.prop))
+# so <- doubletFinder(so, PCs = 1:pcs, pN = 0.25, pK = 0.09, nExp = nExp_poi.adj, reuse.pANN = FALSE, sct = TRUE)
 
-# if(ncol(querry_data) < num_anchors){
+# metadata_columns <- colnames(so@meta.data)
+# pattern <- "DF.classifications_0.25_0.09_\\d+"  # Adjust the regex as needed
+# matched_column <- metadata_columns[grepl(pattern, metadata_columns)]
+# num_doublets <- sub("DF\\.classifications_0\\.25_0\\.09_(\\d+)", "\\1", matched_column)
+# print(num_doublets)
+# full_column_name <- paste0("DF.classifications_0.25_0.09_", num_doublets)
+# cells_to_keep <- rownames(so@meta.data[so@meta.data[[full_column_name]] == "Singlet", ])
+# so <- subset(so, cells = cells_to_keep)
 
-#   # Calculate the k weight
-#   k_weight <- calculate_k_weight(sample_size = num_anchors)
-
-#   # Prediction with transfertData
-#   prediction <- TransferData(anchorset = anchors,
-#                            refdata = remi_nn$class_label,
-#                            k.weight = k_weight
-#                            )
-# } else{
-#   prediction <- TransferData(anchorset = anchors,
-#                            refdata = remi_nn$class_label)
-# }
-
-# querry_data <- AddMetaData(querry_data, metadata = prediction)
-# querry_data$class_label[Cells(querry_data)] <- querry_data$predicted.id
-
-# # Plot UMAP
-# DimPlot(querry_data, group.by = "class_label", label.size = 6) + theme(legend.position = "bottom",legend.text=element_text(size=4))
-
-# # Plot UMAP per labels
-# labels <- unique(querry_data@meta.data$`class_label`)
-
-# for (label in labels) {
-#   plot <- DimPlot(querry_data, group.by = "class_label", cells.highlight = WhichCells(querry_data, expression = class_label == label)) + ggtitle(label)
-#   print(plot)
-# }
-
-# ### UMAP plot with the prediction
-# FeaturePlot(querry_data, features = "prediction.score.max", reduction = "umap")
-
-
-# #=============================================
-# # Apply a threshold
-# #=============================================
-
-# ### Remove cells that are not in the rest of the studies
-# querry_data <- subset(querry_data, subset = class_label != "Non-Neuronal")
-# querry_data <- subset(querry_data, subset = class_label != "Immature/Migrating")
-# querry_data <- subset(querry_data, subset = class_label != "Undetermined")
-# querry_data <- subset(querry_data, subset = class_label != "CR")
-
-# DimPlot(querry_data, group.by = "class_label")
-
-# ggplot(querry_data@meta.data, aes(x = prediction.score.max)) + 
-#   geom_histogram(binwidth = 0.05) + 
-#   theme_minimal() + 
-#   xlab("Prediction Score Max") + 
-#   ylab("Frequency") + 
-#   ggtitle("Distribution of Prediction Scores (Broad Class)")
-
-# # Calculate mean and standard deviation
-# mean_score <- mean(querry_data@meta.data$prediction.score.max)
-# print(mean_score)
-
-# sd_score <- sd(querry_data@meta.data$prediction.score.max)
-# print(sd_score)
-
-# # Define threshold
-# threshold <- mean_score - sd_score
-# print(threshold)
-
-# # Filter cells
-# querry_data <- subset(querry_data, subset = prediction.score.max >= threshold)
-# gc()
-
-# DimPlot(querry_data, group.by = "class_label", label.size = 6) + theme(legend.position = "bottom",legend.text=element_text(size=4))
-
-# labels <- unique(querry_data@meta.data$`class_label`)
-
-# for (label in labels) {
-#   plot <- DimPlot(querry_data, group.by = "class_label", cells.highlight = WhichCells(querry_data, expression = class_label == label)) + ggtitle(label)
-#   print(plot)
-# }
+# #========================================================================
+# # Step 1 : annotate with broad class
+# #========================================================================
+# so <- perform_label_transfer(so, ref, actual_class = "class_label", target_label = "class_label", skip_loop = TRUE, output_dir = file.path(OUTPUTDIR, STEP2, SAMPLE_ID), pdf_file = "class_lablel_before_filtering.pdf")
+# filtered_results <- create_filtered_umap(so, celltype_label = "class_label", output_dir = file.path(OUTPUTDIR, STEP2, SAMPLE_ID), file_name = "class_lablel_after_filtering.pdf")
 
 # #========================================================================
 # # Step 2 : annotate with subclass
 # #========================================================================
+# so <- perform_label_transfer(so, ref, actual_class = "class_label", target_label = "subclass_label", skip_loop = FALSE, output_dir = file.path(OUTPUTDIR, STEP2, SAMPLE_ID), pdf_file = "subclass_label_before_filtering.pdf")
+# filtered_results <- create_filtered_umap(so, celltype_label = "subclass_label", output_dir = file.path(OUTPUTDIR, STEP2, SAMPLE_ID), file_name = "subclass_label_after_filtering.pdf")
 
-# ref_data <- readRDS(file = file.path(OUTPUTDIR, STEP_REMI, "P30_WT_remi.rds"))
-# premier_modele <- ref_data@assays[["SCT"]]@SCTModel.list[[1]]
-# ref_data@assays[["SCT"]]@SCTModel.list <- list(premier_modele)
+# #========================================================================
+# # Step 3 : annotate with celltype
+# #========================================================================
+# so <- perform_label_transfer(so, ref, actual_class = "subclass_label", target_label = "celltype_label", skip_loop = FALSE, output_dir = file.path(OUTPUTDIR, STEP2, SAMPLE_ID), pdf_file = "celltype_label_before_filtering.pdf")
+# filtered_results <- create_filtered_umap(so, celltype_label = "celltype_label", output_dir = file.path(OUTPUTDIR, STEP2, SAMPLE_ID), file_name = "celltype_label_after_filtering.pdf")
 
-# ### Set the default assay to SCT for booth seurat object
-# DefaultAssay(ref_data) <- "SCT"
-# DefaultAssay(querry_data) <- "SCT"
-
-# querry_data$supertype_label <- NA
-
-# for (class in unique(querry_data$class_label)) {
-#   print("The supertype class :")
-#   print(class)
-  
-#   # Set idents
-#   Idents(querry_data) <- "class_label"
-#   Idents(ref_data) <- "class_label"
-  
-#   # Per class
-#   subset_querry_data <- subset(querry_data, idents = class)
-#   subset_ref_data <- subset(ref_data, idents = class)
-  
-#   # Check subset sizes
-#   print(paste("Number of cells in query subset:", ncol(subset_querry_data)))
-#   print(paste("Number of cells in reference subset:", ncol(subset_ref_data)))
-
-#   # Keep the same genes
-#   ref_genes <- as.data.frame(rownames(subset_ref_data))
-#   querry_genes <- as.data.frame(rownames(subset_querry_data))
-#   all_genes <- intersect(ref_genes$`rownames(subset_ref_data)`, querry_genes$`rownames(subset_querry_data)`)
-  
-#   if(ncol(subset_querry_data) < K_SCORE){
-
-#   # Calculate a new k_score
-#   k_score_reference <- calculate_k_score(num_cells = ncol(subset_ref_data))
-#   k_score_query <- calculate_k_score(num_cells = ncol(subset_querry_data))
-#   k_score <- min(k_score_reference, k_score_query)
-
-#   anchors <- FindTransferAnchors(reference = subset_ref_data,
-#                                query = subset_querry_data,
-#                                k.score = k_score,
-#                                normalization.method = "SCT",
-#                                features = all_genes)
-# } else{
-#   anchors <- FindTransferAnchors(reference = subset_ref_data,
-#                                query = subset_querry_data,
-#                                normalization.method = "SCT",
-#                                features = all_genes)
-# }
-
-# # Number of anchors
-# num_anchors <- nrow(anchors@anchors)
-
-# if(ncol(subset_querry_data) < num_anchors){
-
-#   # Calculate the k weight
-#   k_weight <- calculate_k_weight(sample_size = num_anchors)
-
-#   # Prediction with transfertData
-#   prediction <- TransferData(anchorset = anchors,
-#                            refdata = subset_ref_data$supertype_label,
-#                            k.weight = k_weight
-#                            )
-# } else{
-#   prediction <- TransferData(anchorset = anchors,
-#                            refdata = subset_ref_data$supertype_label)
-# }
-  
-#   # Add to the metadata
-#   subset_querry_data <- AddMetaData(subset_querry_data, metadata = prediction)
-#   querry_data$supertype_label[Cells(subset_querry_data)] <- subset_querry_data$predicted.id
-# }
-
-# ### Plot UMAP
-# Idents(querry_data) <- querry_data$supertype_label
-# DimPlot(querry_data, group.by = "supertype_label", label.size = 6) + theme(legend.position = "bottom",legend.text=element_text(size=4))
-
-# ### Plot UMAP per labels
-# labels <- unique(querry_data@meta.data$`supertype_label`)
-
-# for (label in labels) {
-#   plot <- DimPlot(querry_data, group.by = "supertype_label", cells.highlight = WhichCells(querry_data, expression = supertype_label == label)) + ggtitle(label)
-#   print(plot)
-# }
-
-# ### UMAP plot with the prediction
-# FeaturePlot(querry_data, features = "prediction.score.max", reduction = "umap")
-
-# saveRDS(querry_data, file = "Rplots.rds")
-
-################################################################################################ CREATE THE ARLOTTA REFERENCE SEURAT OBJECT (USED IN PREVIOUS STEPS)
-
-# # Read the gene expression matrix (genes as columns, cells as rows)
-# expression_matrix <- read.csv("/scratch/lchabot/inmed_deChevigny_scrnaseq/scRNAseq_analysis_workflow/01_Reference/reference_matrix.csv", row.names = 1)
-
-# expression_matrix <- t(expression_matrix)
-
-# # Read the metadata (cells as rows)
-# metadata <- read.csv("/scratch/lchabot/inmed_deChevigny_scrnaseq/scRNAseq_analysis_workflow/01_Reference/metadata.csv", row.names = 1)
-
-# cell_id_column <- "NEW_NAME"
-# rownames(metadata) <- metadata[[cell_id_column]]
-# metadata <- metadata[, !names(metadata) %in% cell_id_column]
-# metadata <- metadata[rownames(metadata) %in% colnames(expression_matrix), ]
-# expression_matrix <- expression_matrix[, colnames(expression_matrix) %in% rownames(metadata)]
-
-# # Create the Seurat object
-# seurat_object <- CreateSeuratObject(counts = expression_matrix)
-
-# # Add metadata to the Seurat object
-# seurat_object <- AddMetaData(seurat_object, metadata = metadata)
-
-# # Check the Seurat object
-# print("Metadata in Seurat object:")
-# print(head(seurat_object@meta.data))
-
-# saveRDS(seurat_object, "/scratch/lchabot/inmed_deChevigny_scrnaseq/scRNAseq_analysis_workflow/01_Reference/modify_arlotta_seurat_object.rds")
+# saveRDS(so, file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID, "annotate_seurat_objet.rds")))

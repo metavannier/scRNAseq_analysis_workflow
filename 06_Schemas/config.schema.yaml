@@ -4,173 +4,173 @@ description: snakemake configuration file
 
 type: object
 
-properties:
-  rules:
-    type: object
-    properties:
-      reference_enhancer_rule:
-        type: string
-      ref_cellranger_rule:
-        type: string
-      multi_rule:
-        type: string
-    required:
-      - reference_enhancer_rule
-      - ref_cellranger_rule
+# properties:
+#   rules:
+#     type: object
+#     properties:
+#       reference_enhancer_rule:
+#         type: string
+#       ref_cellranger_rule:
+#         type: string
+#       multi_rule:
+#         type: string
+#     required:
+#       - reference_enhancer_rule
+#       - ref_cellranger_rule
       
-  fastq:
-    type: object
-    properties:
-      sname:
-        type: string
-      biop:
-        type: string
-      sra:
-        type: string
-    required:
-      - sname
-      - biop
+#   fastq:
+#     type: object
+#     properties:
+#       sname:
+#         type: string
+#       biop:
+#         type: string
+#       sra:
+#         type: string
+#     required:
+#       - sname
+#       - biop
   
-  reference:
-    type: object
-    properties:
-      link_ref_fasta:
-        type: string
-      ref_gtf:
-        type: string
-      link_ref_gtf:
-        type: string
-      ref_cellranger:
-        type: string
-      ref_version:
-        type: string
-    required:
-      - link_ref_fasta
-      - link_ref_gtf
-      - ref_cellranger
-      - ref_version
+#   reference:
+#     type: object
+#     properties:
+#       link_ref_fasta:
+#         type: string
+#       ref_gtf:
+#         type: string
+#       link_ref_gtf:
+#         type: string
+#       ref_cellranger:
+#         type: string
+#       ref_version:
+#         type: string
+#     required:
+#       - link_ref_fasta
+#       - link_ref_gtf
+#       - ref_cellranger
+#       - ref_version
   
-  cellranger:
-    type: object
-    properties:
-      fastqs:
-        type: string
-      cells:
-        type: integer
-      localcores:
-        type: integer
-      localmem:
-        type: integer
-    required:
-      - fastqs
-      - expect_cells
-      - localcores
-      - localmem
+#   cellranger:
+#     type: object
+#     properties:
+#       fastqs:
+#         type: string
+#       cells:
+#         type: integer
+#       localcores:
+#         type: integer
+#       localmem:
+#         type: integer
+#     required:
+#       - fastqs
+#       - expect_cells
+#       - localcores
+#       - localmem
 
-  demuxlet:
-    type: object
-    properties:
-      spooled:
-        type: string
-    required:
-      - spooled
+#   demuxlet:
+#     type: object
+#     properties:
+#       spooled:
+#         type: string
+#     required:
+#       - spooled
 
-  seurat:
-    type: object
-    properties:
-      plot_raster_nbcells_threshold:
-        type: integer
-      qc_exploration_mode:
-        type: string
-      min_cells:
-        type: integer
-      min_features:
-        type: integer
-      filter_umi_min:
-        type: string
-      filter_umi_max:
-        type: string
-      filter_feature_min:
-        type: string
-      filter_feature_max:
-        type: string
-      filter_percent_mt:
-        type: string
-      filter_percent_mt_min:
-        type: string
-      filter_percent_rb:
-        type: string
-      pattern_mt:
-        type: string
-      pattern_rb:
-        type: string
-      norm_method:
-        type: string
-      norm_scale_factor:
-        type: integer
-      feature_select_method:
-        type: string
-      variable_features:
-        type: integer
-      variable_features_showtop:
-        type: integer
-      pca_npc:
-        type: integer
-      pca_plots_nbdims:
-        type: integer
-      pca_plot_nbfeatures:
-        type: integer
-      dimreduc_use_pca_nbdims:
-        type: integer
-      findclusters_use_pca_nbdims:
-        type: integer
-      findneighbors_k:
-        type: integer
-      findclusters_resolution:
-        type: integer
-      findclusters_algorithm:
-        type: integer
-    required:
-      - plot_raster_nbcells_threshold
-      - qc_exploration_mode
-      - min_cells
-      - min_features
-      - filter_umi_min
-      - filter_umi_max
-      - filter_feature_min
-      - filter_feature_max
-      - filter_percent_mt
-      - filter_percent_mt_min
-      - filter_percent_rb
-      - pattern_mt
-      - pattern_rb
-      - norm_method
-      - norm_scale_factor
-      - feature_select_method
-      - variable_features
-      - variable_features_showtop
-      - pca_npc
-      - pca_plots_nbdims
-      - pca_plot_nbfeatures
-      - dimreduc_use_pca_nbdims
-      - findclusters_use_pca_nbdims
-      - findneighbors_k
-      - findclusters_resolution
-      - findclusters_algorithm
+#   seurat:
+#     type: object
+#     properties:
+#       plot_raster_nbcells_threshold:
+#         type: integer
+#       qc_exploration_mode:
+#         type: string
+#       min_cells:
+#         type: integer
+#       min_features:
+#         type: integer
+#       filter_umi_min:
+#         type: string
+#       filter_umi_max:
+#         type: string
+#       filter_feature_min:
+#         type: string
+#       filter_feature_max:
+#         type: string
+#       filter_percent_mt:
+#         type: string
+#       filter_percent_mt_min:
+#         type: string
+#       filter_percent_rb:
+#         type: string
+#       pattern_mt:
+#         type: string
+#       pattern_rb:
+#         type: string
+#       norm_method:
+#         type: string
+#       norm_scale_factor:
+#         type: integer
+#       feature_select_method:
+#         type: string
+#       variable_features:
+#         type: integer
+#       variable_features_showtop:
+#         type: integer
+#       pca_npc:
+#         type: integer
+#       pca_plots_nbdims:
+#         type: integer
+#       pca_plot_nbfeatures:
+#         type: integer
+#       dimreduc_use_pca_nbdims:
+#         type: integer
+#       findclusters_use_pca_nbdims:
+#         type: integer
+#       findneighbors_k:
+#         type: integer
+#       findclusters_resolution:
+#         type: integer
+#       findclusters_algorithm:
+#         type: integer
+#     required:
+#       - plot_raster_nbcells_threshold
+#       - qc_exploration_mode
+#       - min_cells
+#       - min_features
+#       - filter_umi_min
+#       - filter_umi_max
+#       - filter_feature_min
+#       - filter_feature_max
+#       - filter_percent_mt
+#       - filter_percent_mt_min
+#       - filter_percent_rb
+#       - pattern_mt
+#       - pattern_rb
+#       - norm_method
+#       - norm_scale_factor
+#       - feature_select_method
+#       - variable_features
+#       - variable_features_showtop
+#       - pca_npc
+#       - pca_plots_nbdims
+#       - pca_plot_nbfeatures
+#       - dimreduc_use_pca_nbdims
+#       - findclusters_use_pca_nbdims
+#       - findneighbors_k
+#       - findclusters_resolution
+#       - findclusters_algorithm
 
-  diffexp:
-    type: object
-    properties:
-      features:
-        type: string
-      cell_marker:
-        type: string
-      test:
-        type: string
-      threshold:
-        type: integer
-    required:
-      - features
-      - cell_marker
-      - test
-      - threshold
+#   diffexp:
+#     type: object
+#     properties:
+#       features:
+#         type: string
+#       cell_marker:
+#         type: string
+#       test:
+#         type: string
+#       threshold:
+#         type: integer
+#     required:
+#       - features
+#       - cell_marker
+#       - test
+#       - threshold

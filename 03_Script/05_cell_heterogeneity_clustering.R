@@ -12,19 +12,11 @@ source(file.path(dirname(DIRECTORY), "03_Script/00_general_deps.R"))
 #........................................
 # Identify clusters
 #........................................
-# Identify clusters of cells by graph approach
-nbPC_findclusters = FINDCLUSTERS_USE_PCA_NBDIMS
-if(FINDCLUSTERS_USE_PCA_NBDIMS > nbPC)
-{
-  warning( paste0( "Number of computed PCs  (", nbPC, ") smaller than requested PCs for 'findclusters' (", FINDCLUSTERS_USE_PCA_NBDIMS,"), setting lower PC number (", nbPC, ")..." ))
-  nbPC_findclusters = nbPC
-}
 
 # Computes the k.param nearest neighbors for a given dataset
 seurat_obj <- FindNeighbors(object    = seurat_obj,
-                            k.param   = FINDNEIGHBORS_K, 
                             reduction = "pca",
-                            dims      = 1:nbPC_findclusters,
+                            dims      = 1:pcs,
                             verbose   = .VERBOSE);
 
 # Identify clusters of cells by a shared nearest neighbor (SNN) modularity optimization based clustering algorithm
@@ -294,26 +286,26 @@ if( exists( "CLUSTER_GROUP_LIST")){
 # Save each seurat object
 saveRDS(seurat_obj, file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID,"_filtered_seurat_object.rds")))
 
-# save a tsv file for each sample
-write.table( seurat_obj[[]], 
-             file= file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_filtered_seurat_object.tsv")), 
-             quote = FALSE, 
-             row.names = TRUE, 
-             col.names = NA, # Add a blank column name for row names (CSV convention)
-             sep="\t");
+# # save a tsv file for each sample
+# write.table( seurat_obj[[]], 
+#              file= file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_filtered_seurat_object.tsv")), 
+#              quote = FALSE, 
+#              row.names = TRUE, 
+#              col.names = NA, # Add a blank column name for row names (CSV convention)
+#              sep="\t");
 
-# Save the count matrix as csv file 
-count_matrix <- GetAssayData(object = seurat_obj[["RNA"]], slot = "counts")
-count_matrix <- as.matrix(count_matrix)
-count_matrix <- t(count_matrix)
-count_matrix <- as.data.frame(count_matrix)
+# # Save the count matrix as csv file 
+# count_matrix <- GetAssayData(object = seurat_obj[["RNA"]], slot = "counts")
+# count_matrix <- as.matrix(count_matrix)
+# count_matrix <- t(count_matrix)
+# count_matrix <- as.data.frame(count_matrix)
 
-fwrite(x = count_matrix, file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_count_matrix.csv")), row.names = TRUE)
+# fwrite(x = count_matrix, file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_count_matrix.csv")), row.names = TRUE)
 
-# Save the normalize matrix as csv file
-normalized_matrix <- GetAssayData(object = seurat_obj[["RNA"]], slot = "data")
-normalized_matrix <- as.matrix(normalized_matrix)
-normalized_matrix <- t(normalized_matrix)
-normalized_matrix <- as.data.frame(normalized_matrix)
+# # Save the normalize matrix as csv file
+# normalized_matrix <- GetAssayData(object = seurat_obj[["RNA"]], slot = "data")
+# normalized_matrix <- as.matrix(normalized_matrix)
+# normalized_matrix <- t(normalized_matrix)
+# normalized_matrix <- as.data.frame(normalized_matrix)
 
-fwrite(x = normalized_matrix , file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv")), row.names = TRUE)
+# fwrite(x = normalized_matrix , file = file.path( OUTPUTDIR, STEP2, SAMPLE_ID, paste0( SAMPLE_ID, "_normalized_matrix.csv")), row.names = TRUE)

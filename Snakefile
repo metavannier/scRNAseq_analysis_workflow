@@ -78,13 +78,13 @@ rule all:
 		# demuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.best",
 		# tabdemuxlet = OUTPUTDIR + "01_cellranger/Mix_MM_lines/outs/demuxlet_Mix_MM_lines.tsv",
 		### Seurat
-		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
+		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
 		### Remi data
 		# remi_output = expand(OUTPUTDIR + "remi_output.txt"),
 		### Label Transfert with seurat
-		# seurat_labelTransfert_output = expand(OUTPUTDIR + "02_seurat/seurat_labelTransfert_output.txt"),
+		seurat_labelTransfert_output = expand(OUTPUTDIR + "02_seurat/seurat_labelTransfert_output.txt"),
 		### DEG analysis with seurat
-		seurat_DEG_output = expand(OUTPUTDIR + "04_diffexp/seurat_DEG_output.txt"),
+		# seurat_DEG_output = expand(OUTPUTDIR + "04_diffexp/seurat_DEG_output.txt"),
 		### Prepare data for SIMS
 		# data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
 		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),

@@ -45,7 +45,6 @@ library( htmltools)
 [//]: # "Load the various chunks in the various files"
 ```{r readChunks, echo=FALSE, warning=FALSE, message=FALSE}
 read_chunk( path=file.path( SCRIPTDIR, "01_prepare_data.R"));
-read_chunk( path=file.path( SCRIPTDIR, "02_variables_genes.R"));
 read_chunk( path=file.path( SCRIPTDIR, "03_cell_heterogeneity_PCA.R"));
 read_chunk( path=file.path( SCRIPTDIR, "04_cell_heterogeneity_tSNE_UMAP.R"));
 read_chunk( path=file.path( SCRIPTDIR, "05_cell_heterogeneity_clustering.R"));
@@ -83,64 +82,17 @@ We visualize QC metrics, and use these to filter cells.
 ```{r filterData_filterObject, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
 <<filterData_filterObject>>
 ```
-
 ## Normalizing the data
 
-After removing unwanted cells from the dataset we normalize the feature expression measurements for each cell (and correct the batch effect using the Seurat integration procedure if necessary) with `r snakemake@params[["norm_method"]]`
-We apply a linear transformation (‘scaling’) that is a standard pre-processing step prior to dimensional reduction techniques like PCA. If SCTransform is performed, it's not necessary to scale the data after it.
+After removing unwanted cells from the dataset we use the SCTransform function in Seurat that performs normalization and variance stabilization of molecular count data from scRNA-seq experiments.
 
-```{r normalizeData, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<normalizeData>>
+```{r SCTransform, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
+<<SCTransform>>
 ```
 
 <br /><br />
 
-## Identification of highly variable genes
-
-Subset of features that exhibit high cell-to-cell variation in the dataset
-
-```{r findVariableGenes_seuratMethod, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
-<<findVariableGenes_seuratMethod>>
-```
-
-Number of variable genes found: `r variablesGenesStats`
-
-```{r findVariableGenes_summaryPlot, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
-<<findVariableGenes_summaryPlot>>
-```
-
-<br />
-
-Top `r VARIABLE_FEATURES_SHOWTOP` most variable annotations:
-
-```{r findVariableGenes_summaryTable, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE, warning = FALSE}
-<<findVariableGenes_summaryTable>>
-```
-
-```{r scaleData, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<scaleData>>
-```
-
-<br /><br />
-
-```{r, echo = FALSE}
-if (as.logical(MULTIPLEX) == TRUE) {
-  include_chunk <- TRUE
-  include_title <- TRUE
-} else {
-  include_chunk <- FALSE
-  include_title <- FALSE
-}
-```
-
-`r if(include_title) "## Demultiplexing"`
-```{r HTODemux, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-if (include_chunk) {<<HTODemux>>}
-```
-
-<br /><br />
-
-## PCA results
+# PCA results
 
 Visualizing both cells and features that define the PCA
 
@@ -160,40 +112,12 @@ A ranking of principle components based on the percentage of variance explained 
 <<elbowplot>>
 ```
 
-Number of dimensions to use for PCA : `r snakemake@params[["pca_npc"]]``
-
-PCA projections for dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")` (colored by batch)  
+Number of dimensions to use for PCA : `r pcs`
 
 ```{r heterogeneity_pca, echo = FALSE, out.width='33%', results = "asis", message = FALSE, warning = FALSE}
 <<heterogeneity_pca>>
 ```
 
-<br />
-
-UMIs counts on PCA dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")`  
-```{r heterogeneity_pca_umisCounts, echo = FALSE, out.width='33%', results = "asis", message = FALSE, warning = FALSE}
-<<heterogeneity_pca_umisCounts>>
-```
-
-<br />
-
-Genes counts on PCA dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")`     
-```{r heterogeneity_pca_genesCounts, echo = FALSE, out.width='33%', results = "asis", message = FALSE, warning = FALSE}
-<<heterogeneity_pca_genesCounts>>
-```
-
-<br />
-
-Correlation (Spearman) of PCA dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")` with UMIs and genes counts  
-```{r heterogeneity_pca_correlations, echo = FALSE, fig.dim = c(9,6), results = "asis", message = FALSE, warning = FALSE}
-<<heterogeneity_pca_correlations>>
-```
-<br />
-
-PCA loadings of top `r PCA_PLOTS_NBFEATURES` features for dimensions `r paste( 1:PCA_PLOTS_NBDIMS, collapse="/")`  
-```{r heterogeneity_pca_loadings, echo = FALSE, fig.dim = c(4, 4), out.width='33%', results = "asis", message = FALSE, warning = FALSE}
-<<heterogeneity_pca_loadings>>
-```
 <br /><br />
 
 ## Dimensionality reduction
@@ -219,7 +143,6 @@ rm("useReduction");
 ```
 
 <br /><br />
-
 
 ## Clusters identification
 
@@ -261,162 +184,3 @@ rm("useReduction");
 ```
 
 
-##  GABAergic markers {.tabset .tabset-fade}
-Here you can vizualize GABAergic markers expression.
-
-### GABAN
-```{r GABAN, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<GABAN>>
-```
-
-### Meis2
-```{r Meis2, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Meis2>>
-```
-
-### Lamp A7C|CNC
-```{r Lamp5_A7C_CNC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Lamp5_A7C_CNC>>
-```
-
-### Lamp A7C|NGC
-```{r Lamp5_A7C_NGC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Lamp5_A7C_NGC>>
-```
-
-### Sngc CCK|BC
-```{r Sncg_CCK_BC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Sncg_CCK_BC>>
-```
-
-### Vip BP|BTC
-```{r Vip_BP_BTC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Vip_BP_BTC>>
-```
-
-### Sst T-MC
-```{r Sst_T_MC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Sst_T_MC>>
-```
-
-### Sst fan-MC
-```{r Sst_fan_MC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Sst_fan_MC>>
-```
-
-### Sst NMC
-```{r Sst_NMC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Sst_NMC>>
-```
-
-### Sst IVC
-```{r Sst_IVC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Sst_IVC>>
-```
-
-### Sst FS-like
-```{r Sst_FS_like, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Sst_FS_like>>
-```
-
-### Sst Chold|LPC
-```{r Sst_Chold_LPC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Sst_Chold_LPC>>
-```
-
-### Pvalb CHC
-```{r Pvalb_CHC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Pvalb_CHC>>
-```
-
-### Pvalb FS|BC
-```{r Pvalb_FS_BC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Pvalb_FS_BC>>
-```
-
-## {-}
-
-##  Glutamatergic markers {.tabset .tabset-fade}
-Here you can vizualize Glutamatergic markers expression.
-
-### Cajal retzius cells
-```{r Cajal_Retzius_cells_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Cajal_Retzius_cells_markers>>
-```
-
-### L2/3 IT
-```{r L2_3_IT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<L2_3_IT>>
-```
-
-### L4 IT SSC
-```{r L4_IT_SSC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<L4_IT_SSC>>
-```
-
-### L4 IT PC
-```{r L4_IT_PC, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<L4_IT_PC>>
-```
-
-### L5 IT
-```{r L5_IT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<L5_IT>>
-```
-
-### L5 PT
-```{r L5_PT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<L5_PT>>
-```
-
-### L5/6 NP
-```{r L5_6_NP, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<L5_6_NP>>
-```
-
-### L6 IT
-```{r L6_IT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<L6_IT>>
-```
-
-### L6 CT
-```{r L6_CT, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<L6_CT>>
-```
-
-### L6b
-```{r L6b, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<L6b>>
-```
-
-## {-}
-
-##  Non-Neuronal markers {.tabset .tabset-fade}
-Here you can vizualize GABAergic markers expression.
-
-### Astrocytes
-```{r astro_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<astro_markers>>
-```
-
-### Oligodendrocytes
-```{r oligo_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<oligo_markers>>
-```
-
-### Microglia
-```{r microglia_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<microglia_markers>>
-```
-
-### Endothelial
-```{r Endothelial_cells_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Endothelial_cells_markers>>
-```
-
-### Pericyte
-```{r Pericyte_markers, echo = FALSE, fig.height = 10, fig.width = 10, out.height = 600, out.width = 600, results = "asis", message = FALSE}
-<<Pericyte_markers>>
-```
-
-## {-}

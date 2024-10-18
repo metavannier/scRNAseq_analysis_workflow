@@ -7,21 +7,14 @@
 ## @knitr heterogeneity_dimReduc
 # ..........................................................................................................
 
-nbPC_dimreduc = DIMREDUC_USE_PCA_NBDIMS
-if(DIMREDUC_USE_PCA_NBDIMS > nbPC)
-{
-  warning( paste0( "Number of computed PCs  (", nbPC, ") smaller than requested PCs for 'dimreduc' (", DIMREDUC_USE_PCA_NBDIMS,"), setting lower PC number (", nbPC, ")..." ))
-  nbPC_dimreduc = nbPC
-}
-
 #........................................
 # Dimensional reduction (tSNE / UMAP)
 #........................................
 # Runs the Uniform Manifold Approximation and Projection (UMAP) dimensional reduction technique
-seurat_obj = RunUMAP( seurat_obj, dims = 1:nbPC_dimreduc);
+seurat_obj = RunUMAP( seurat_obj, dims = 1:pcs);
 
 # Run t-SNE dimensionality reduction on selected features
-seurat_obj = RunTSNE( seurat_obj, dims = 1:nbPC_dimreduc);
+seurat_obj = RunTSNE( seurat_obj, dims = 1:pcs);
 
 # Save resulting coordinates for all cells as 'tsv' files
 # write.table( Embeddings(seurat_obj, reduction = "umap"), 
@@ -41,23 +34,6 @@ seurat_obj = RunTSNE( seurat_obj, dims = 1:nbPC_dimreduc);
 # ..........................................................................................................
 ## @knitr dimreduc_ggplot_covariables
 # ..........................................................................................................
-
-#........................................
-# UMAP
-#........................................
-# # Plot the cells sample of origin in UMAP
-# DimPlot( seurat_obj, reduction = ifelse(exists("useReduction"), useReduction, "umap"),
-#          group.by = "orig.ident") + 
-#   ggtitle( "Map of cells by sample of origin")
-
-
-# # if QC EXPLORATION MODE is active, plot if the cells are outliers or not
-# if( QC_EXPLORATION_MODE == TRUE){
-#   print( DimPlot( seurat_obj, reduction = ifelse(exists("useReduction"), useReduction, "umap"),
-#                   group.by = "outlier") + 
-#                   ggtitle( "Map of cells by \nQC filtering status")
-#   )
-# }
 
 # Plot the cells percentage of ribosomal genes in UMAP
 FeaturePlot( seurat_obj, reduction = ifelse(exists("useReduction"), useReduction, "umap"), 
@@ -118,23 +94,6 @@ if( QC_EXPLORATION_MODE == TRUE){
 # ..........................................................................................................
 ## @knitr dimreduc_ggplot_covariables_tSNE
 # ..........................................................................................................
-
-#........................................
-# TSNE
-#........................................
-# # Plot the cells sample of origin in tSNE
-# DimPlot( seurat_obj, reduction = ifelse(exists("useReduction"), useReduction, "tsne"),
-#          group.by = "orig.ident") + 
-#   ggtitle( "Map of cells by sample of origin")
-
-
-# # if QC EXPLORATION MODE is active, plot if the cells are outliers or not
-# if( QC_EXPLORATION_MODE == TRUE){
-#   print( DimPlot( seurat_obj, reduction = ifelse(exists("useReduction"), useReduction, "tsne"),
-#                   group.by = "outlier") + 
-#                   ggtitle( "Map of cells by \nQC filtering status")
-#   )
-# }
 
 # Plot the cells percentage of ribosomal genes in tSNE
 FeaturePlot( seurat_obj, reduction = ifelse(exists("useReduction"), useReduction, "tsne"), 

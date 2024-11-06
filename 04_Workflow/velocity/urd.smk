@@ -23,6 +23,10 @@ rule urd:
 
     output:
         urd_output = expand(OUTPUTDIR + "04_velocity/urd_output.txt"),
+    
+    params:
+        urd_object = expand(OUTPUTDIR + "04_velocity/merged_urd_object.rds"),
+        seed = config["urd"]["seed"],
 
     conda:
         CONTAINER + "urd.yaml"
@@ -31,4 +35,4 @@ rule urd:
         "Run URD package to analyse the data set"
 
     script:
-        SCRIPTDIR + "velocity/urd.R"
+        SCRIPTDIR + "velocity/urd_reports_compilation.R"

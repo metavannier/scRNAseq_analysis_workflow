@@ -187,7 +187,7 @@ reference_sims:
 
     ##### Our Matrix to annotate #####
     # The name of the folder of the sample you want to annotate (Folder in the Seurat folder)
-    sample_id: "mousegastrulation"
+    sample_id: "96h"
 
     ##### Paola Arlotta #####
     # Path for the arlotta metadata
@@ -249,7 +249,7 @@ sims:
 
     ##### Cells annotation
     # Threshold of the difference between the first and second score of the prediction to say if a cell is unknown or not
-    threshold: 0.9
+    threshold: 0.425231
     # Seurat object with sims cell_assignation
     rds_assignation: filtered_assigned_seurat_object.rds
     # Matrix with cell predtion after filtration with the threshold
@@ -280,3 +280,7 @@ diffexpsubset:
     genetoremove: ""
     # Cluster on the seurat object (choose cluster with high number of the marker gene of interest)
     cluster: "Normal_Melanocytes,M15,M27,A375,MM057,MM087,MM001,MM074"
+
+urd:
+    # Calculate PCA and consider those PCs that with standard deviation 'seed'x expected by noise as significant
+    seed: 2

@@ -1,0 +1,183 @@
+---
+title: "Single-cell RNAseq analysis of gastruloids"
+subtitle: "urd | velocity"
+author:
+- Thomas Vannier
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+    html_document:
+        theme:
+            bootswatch: yeti
+        toc: yes
+        toc_float:
+          collapsed: false
+          smooth_scroll: true
+        number_sections: yes
+        df_print: kable
+        code_folding: hide
+---
+
+<!-- Javascript for zooming on figures (adapted from: https://stackoverflow.com/questions/40401680) -->
+
+<!-- Jquery import conflicts with DT::datatable so needs to be commented here -->
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> -->
+
+<style>
+.zoomDiv {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 50;
+  transform: translate(-50%, -50%);
+  background-color: #FFFFFF;
+  box-shadow: 0px 0px 50px #888888;
+  width: fit-content;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+}
+
+.zoomImg {
+  width: 150%;
+}
+</style>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('body').prepend("<div class=\"zoomDiv\"><img src=\"\" class=\"zoomImg\"></div>");
+    // onClick for all img except the zoomed one and link ones (filter)
+    // use 'img.zoom' and out.extra='class=\"zoom\"' in chunk to specify manually which chunk images can be zoomed
+    $('img:not(.zoomImg)').filter(':not(a *)').click(function() {
+      $('.zoomImg').attr('src', $(this).attr('src'));
+      $('.zoomDiv').show();
+    })
+    // onClick function for hiding div
+    $('img.zoomImg').click(function() {
+      $('.zoomDiv').hide();
+    })
+  })
+</script>
+
+# This report present the velocity analysis with the urd tools.
+
+URD : URD is an R package for reconstructing transcriptional trajectories underlying 
+specification or differentiation processes in the form of a branching tree,
+using single cell RNA-sequencing data. URD uses a diffusion map projection
+of the data and works by simulating biased random walks through that projection. 
+
+I follow the quick start guide from URD github page :
+(https://github.com/farrellja/URD/blob/master/Analyses/QuickStart/URD-QuickStart-AxialMesoderm.md)
+and the workflow of Céline Chevalier :
+https://github.com/BAUDOTlab/gastruloid_timeserie_scRNA-seq
+
+```{r setup, warnings=F}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+```
+
+```{r loadLibraries, echo=FALSE, warning=FALSE, message=FALSE}
+# Installing packages when not possible with conda env
+
+options(repos = c(CRAN = "https://cloud.r-project.org/"))
+install.packages("BiocManager")
+BiocManager::install("GenomeInfoDbData")
+devtools::install_github("farrellja/URD")
+
+# Loading library
+
+suppressPackageStartupMessages(library(rgl))
+suppressPackageStartupMessages(library(URD))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(kableExtra))
+library(rmarkdown)
+library(tidyverse)
+library(stringr)
+library(tinytex)
+library(knitr)
+```
+
+# Load the data
+
+For this analysis, I use the merged data of the 4 times (ie. merged_urd_object.rds). I get an urd-object by running merge_rds.R.
+```{r loadData}
+# Load the 4 times merged dataset
+TEXT_OUTPUT = snakemake@output[["urd_output"]]
+URD_OBJECT = snakemake@params[["urd_object"]]
+object <- readRDS(URD_OBJECT)
+# str(object)
+counts_matrix <- object@count.data
+counts_matrix[1, 1:5] # For raw counts
+logupx_matrix <- object@logupx.data
+logupx_matrix[1, 1:5]
+```
+
+# Calculate variable features
+
+CV: coefficient of variation
+
+```{r CalcVariableFeatures}
+stages <- sort(unique(object@group.ids$SampleID))
+
+cells.each.stage <- lapply(stages,
+                           function(stage){
+                               rownames(object@group.ids)[which(object@group.ids$SampleID == stage)]
+                           }
+)
+
+var.genes.by.stage <- lapply(1:length(stages),
+                             function(n){
+                                 findVariableGenes(object,
+                                                   cells.fit = cells.each.stage[[n]],
+                                                   set.object.var.genes = F,
+                                                   diffCV.cutoff = 0.1,
+                                                   mean.min = 0.005,
+                                                   mean.max = 100,
+                                                   main.use = stages[[n]],
+                                                   do.plot = T
+                                 )
+                             }
+)
+
+# combine variable features
+names(var.genes.by.stage) <- stages
+var.genes <- sort(unique(unlist(var.genes.by.stage)))
+object@var.genes <- var.genes
+```
+
+```{r CalcPCA}
+seed <- snakemake@params[["seed"]]
+set.seed(seed)
+# Calculate PCA and consider those PCs that with standard deviation 'seed'x expected by noise as significant
+object <- calcPCA(object, mp.factor = seed)
+pcSDPlot(object)
+```
+
+```{r CalcTsne}
+# Remove cells with duplicates PCA coordinates
+cellsToRemove <- rownames(object@pca.scores[duplicated(object@pca.scores),])
+print(cellsToRemove)
+object <- urdSubset(object,
+                    cells.keep = setdiff(colnames(object@logupx.data), cellsToRemove)
+)
+
+# Perform Tsne projection
+set.seed(seed)
+object <- calcTsne(object,
+                   perplexity = 30,
+                   theta=0.5
+)
+
+plotDim(object, "SampleID", plot.title = "tSNE: Time")
+```
+
+# Remove outliers
+
+```{r Output}
+# Create the output file for the snakemake rule
+
+TEXT_OUTPUT <- snakemake@output[["urd_output"]]
+
+output_file<-file(TEXT_OUTPUT)
+writeLines(c("Rules URD finished"), output_file)
+close(output_file)
+```

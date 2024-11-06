@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import os
+# srcdir = os.curdir 
 from snakemake.utils import validate, min_version
 
 ##### set minimum snakemake version #####

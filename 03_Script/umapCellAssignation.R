@@ -20,6 +20,7 @@ DIRECTORY = getwd()
 TEXT_OUTPUT = snakemake@output[["data_for_sims_output"]]
 OUTPUTDIR = file.path((DIRECTORY), "05_Output")
 RDS_ASSIGNATION = snakemake@params[["rds_assignation"]]
+# Assignation table from sims and after the unknown prediction using t-test
 PRED_FILTERED = snakemake@params[["pred_filtered"]]
 
 SAMPLE_ID = snakemake@params[["sample_id"]]
@@ -30,8 +31,8 @@ STEP2 = "02_seurat/"
 STEP3 = "03_sims/"
 
 # Load data
-data <- readRDS(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID,"_filtered_seurat_object.rds")))
-pred <- fread(file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_", MATRIX,"_prediction.csv")))
+data <- readRDS(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID,"_filteredscran_seurat_object.rds")))
+pred <- fread(file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, MATRIX,"_prediction.csv")))
 
 # Assigning predictions and probabilities to data
 data$labels <- pred$first_pred
@@ -42,6 +43,7 @@ data$diff_prob <- diff_prob
 # Threshold to say if a cell is unknown or not
 threshold <- snakemake@params[["threshold"]]
 cells_threshold <- colnames(data)[data$diff_prob < threshold]
+
 
 Idents(object = data, cells = cells_threshold) <- "unknown"
 
@@ -102,12 +104,11 @@ data$labels <- Idents(data)
 saveRDS(data, file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, RDS_ASSIGNATION))
 
 #-------------------------------------
-# create the predicted matrix with the
-# output file for the snakemake rule
+# create the predicted matrix
 #-------------------------------------
 
-tab_pred_filtered <- paste(Cells(cells_threshold),cells_threshold$labels,cells_threshold$diff_prob)
-write.table(file=file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_",PRED_FILTERED)), tab_pred_filtered ,sep=",", quote=F, row.names=F, col.names=F)
+# tab_pred_filtered <- paste(Cells(cells_threshold),cells_threshold$labels,cells_threshold$diff_prob)
+# write.table(file=file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_",PRED_FILTERED)), tab_pred_filtered ,sep=",", quote=F, row.names=F, col.names=F)
 
 #-------------------------------------
 # create the output file for the snakemake rule

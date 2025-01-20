@@ -80,12 +80,12 @@ rule all:
 		### Seurat ###
 		# seurat_report = expand(OUTPUTDIR + "02_seurat/{sample_id}/{sample_id}_seurat_report.html", sample_id = SAMPLE_ID),
 		### Normalisation with other method than Seurat ###
-        # normalisation_output = expand(OUTPUTDIR + "02_seurat/normalisation_output.txt"),
+		# normalisation_output = expand(OUTPUTDIR + "02_seurat/normalisation_output.txt"),
 		# NE MARCHE PAS : Doublet detection
 		# doublets_output = expand(OUTPUTDIR + "rm_doublet/doublets_output.txt"),
 		### Prepare data for SIMS
 		# data_for_sims_output = expand(OUTPUTDIR + "03_sims/data_for_sims_output.txt"),
-		# anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
+		anndata_for_sims_output = expand(OUTPUTDIR + "03_sims/anndata_for_sims_output.txt"),
 		### KNNOR
 		# knnor_output = expand(OUTPUTDIR +"03_sims/knnor_output.txt"),
 		### SIMS
@@ -102,7 +102,9 @@ rule all:
 		# umap_per_labels_report = expand(OUTPUTDIR + "03_sims/{sample_id}/{sample_id}_umap_per_labels.pdf", sample_id = SAMPLE_ID),
 		### Velocity analyses
 		# merge_rds_output = expand(OUTPUTDIR + "04_velocity/merge_rds_output.txt"),
-		urd_output = expand(OUTPUTDIR + "04_velocity/urd_output.txt"),
+		# urd_output = expand(OUTPUTDIR + "04_velocity/urd_output.txt"),
+		## Correlation plot
+		# merge_rds_output = expand(OUTPUTDIR + "05_correlation/dotplot_output.txt"),
 		## Differential expression analyses
 		# violinplot = expand(OUTPUTDIR + "03_diffexp/violin_plot/{features}_violin_plot.pdf", features=FEATURES),
 		# umapfeature = expand(OUTPUTDIR + "03_diffexp/umap_plot/{features}_umapfeature_plot.pdf", features=FEATURES),
@@ -135,7 +137,7 @@ rule all:
 		# defile_tar = OUTPUTDIR + "03_diffexp/differencial_expression_tests.tar.gz",
 		# volcano_tar = OUTPUTDIR + "03_diffexp/volcano_plot.tar.gz",
 		# sign_up_down_tar = OUTPUTDIR + "03_diffexp/up_down_regulated_genes_list.tar.gz",
-		# defile_subset_tar = OUTPUTDIR + "04_diffexp_sub		
+		# defile_subset_tar = OUTPUTDIR + "04_diffexp_sub
 
 # ----------------------------------------------
 # setup report
@@ -169,6 +171,7 @@ if run_multiplex:
 	# include: ENVDIR + "SIMS.smk"
 	# include: ENVDIR + "umapCellAssignation.smk"
 	include: ENVDIR + "velocity/urd.smk"
+	# include: ENVDIR + "correlation/correlation.smk"
 
 # include: ENVDIR + "demuxlet.smk"
 # include: ENVDIR + "diffexp.smk"

@@ -50,6 +50,7 @@ while(i <= len)
 
     sce_dataset <- logNormCounts(sce_dataset, size.factors = sizeFactors(sce_dataset))
 
+    # Add these normalized counts to the Seurat object
     so[["RNA"]] <- SetAssayData(so[["RNA"]],
                                   slot = "data", 
                                   new.data = logcounts(sce_dataset))

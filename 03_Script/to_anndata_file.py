@@ -39,6 +39,7 @@ reference_matrix = an.read_csv(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, OUTPUT_
 reference_matrix.write_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, OUTPUT_NAME_REF_MATRIX + ".h5ad"))
 
 anndata_ref_matrix = an.read_h5ad(os.path.join(OUTPUTDIR, STEP3, SAMPLE_ID, OUTPUT_NAME_REF_MATRIX + ".h5ad"))
+
 print("REFERENCE MATRIX")
 print("-------------------------------------------------------------------")
 print(anndata_ref_matrix)

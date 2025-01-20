@@ -1,0 +1,9 @@
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9  # Replace with your preferred Python version
+  - numpy
+  - pandas
+  - matplotlib
+  - scikit-image

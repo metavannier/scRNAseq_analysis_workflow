@@ -46,8 +46,8 @@ seuratToURD <- function(seurat.object) {
         
         # Copy over data
         ds@logupx.data <- as(as.matrix(seurat.object@assays$RNA@data), "dgCMatrix")
-        if(!any(dim(seurat.object@assays$RNA@data) == 0)) ds@count.data <- as(as.matrix(seurat.object@assays$RNA@data[rownames(seurat.object@assays$RNA@data), colnames(seurat.object@assays$RNA@data)]), "dgCMatrix")
-        
+        # if(!any(dim(seurat.object@assays$RNA@data) == 0)) ds@count.data <- as(as.matrix(seurat.object@assays$RNA@data[rownames(seurat.object@assays$RNA@data), colnames(seurat.object@assays$RNA@data)]), "dgCMatrix")
+        if(!any(dim(seurat.object@assays$RNA@counts) == 0)) ds@count.data <- as(as.matrix(seurat.object@assays$RNA@counts[rownames(seurat.object@assays$RNA@data), colnames(seurat.object@assays$RNA@data)]), "dgCMatrix")
         # Copy over metadata
         ## TO DO - grab kmeans clustering info
         get.data <- NULL

@@ -284,3 +284,36 @@ diffexpsubset:
 urd:
     # Calculate PCA and consider those PCs that with standard deviation 'seed'x expected by noise as significant
     seed: 2
+    # Number of nearest neighbors for the diffusion map
+    knn: 100
+    # Width of the Gaussian used to transform cell-cell distances into transition probabilities
+    sigma: 20
+    # Number of simulations to perform and average during calculation pseudotime by flooding
+    floodNsim: 50
+    # (Numeric) The number of cells in the direction specified by pseudotime.direction at which the logistic should reach 1-asymptote.
+    cellsForward: 20
+    # (Numeric) The number of cells in the direction opposite from that specified by pseudotime.direction at which the logistic should reach asymptote.
+    cellsBack: 40
+    # Max steps for simulateRandomWalksFromTips fonction (default ncol(object@logupx.data))
+    RWmaxSteps: 5000
+    # (Character: "ks" or "preference") Test to use to determine whether visitation has diverged for each pseudotime window.
+    treeMeth: "preference"
+    # (Numeric) Approximate number of cells to assign to each pseudotime bin for branchpoint finding.
+    cellsPerPTbin: 25
+    # (Numeric) Width of moving window in pseudotime used for branchpoint finding, in terms of bins.
+    binsPerPTwindow: 8
+    # (Numeric) p-value threshold to use in determining whether visitation is significantly different from pairs of tips.
+    treePtreshold: 0.001
+
+correlation:
+    # File with the count to take for the correlation between genes
+    # input_count_matrices: "05_Output/02_seurat/72h/72h_scran_normalized_matrix.csv"
+    # input_count_matrices: "05_Output/02_seurat/80h/80h_scran_normalized_matrix.csv"
+    # input_count_matrices: "05_Output/02_seurat/86h/86h_scran_normalized_matrix.csv"
+    input_count_matrices: "05_Output/02_seurat/96h/96h_scran_normalized_matrix.csv"
+    # Time to analyse
+    time: "96h"
+    # Gene X
+    gene_X: "Cdh2"
+    # Gene Y
+    gene_Y: "Cdh11"

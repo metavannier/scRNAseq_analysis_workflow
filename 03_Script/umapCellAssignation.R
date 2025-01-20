@@ -34,6 +34,56 @@ STEP3 = "03_sims/"
 data <- readRDS(file = file.path(OUTPUTDIR, STEP2, SAMPLE_ID, paste0(SAMPLE_ID,"_filteredscran_seurat_object.rds")))
 pred <- fread(file = file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, MATRIX,"_prediction.csv")))
 
+# Generate UMAP plots for the specified features
+features <- c("T", "Cdh1", "Cdh11", "Cdh2", "Foxa2", "Pou5f1")
+
+# Open a PDF device to save the plots
+# Define the file path
+output_pdf <- file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_umap_markergenes.pdf"))
+
+# Open the PDF device
+pdf(output_pdf, width = 10, height = 8)
+
+# Create and print the FeaturePlot for each feature
+for (feature in features) {
+  plot <- FeaturePlot(data, features = feature) + ggtitle(feature)
+  print(plot)
+}
+
+# Close the PDF device
+dev.off()
+
+# Visualize co-expression of two features simultaneously
+output_pdf <- file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_umap_coexpression_T-Foxa2.pdf"))
+pdf(output_pdf, width = 10, height = 8)
+TFoxa2 <- FeaturePlot(data, features = c("T", "Foxa2"), blend = TRUE)
+print(TFoxa2)
+dev.off()
+
+output_pdf <- file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_umap_coexpression_Pou5f1-Foxa2.pdf"))
+pdf(output_pdf, width = 10, height = 8)
+Pou5f1Foxa2 <- FeaturePlot(data, features = c("Pou5f1", "Foxa2"), blend = TRUE)
+print(Pou5f1Foxa2)
+dev.off()
+
+output_pdf <- file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_umap_coexpression_Cdh1-Cdh2.pdf"))
+pdf(output_pdf, width = 10, height = 8)
+Cdh1Cdh2 <- FeaturePlot(data, features = c("Cdh1", "Cdh2"), blend = TRUE)
+print(Cdh1Cdh2)
+dev.off()
+
+output_pdf <- file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_umap_coexpression_Cdh1-Cdh11.pdf"))
+pdf(output_pdf, width = 10, height = 8)
+Cdh1Cdh11 <- FeaturePlot(data, features = c("Cdh1", "Cdh11"), blend = TRUE)
+print(Cdh1Cdh11)
+dev.off()
+
+output_pdf <- file.path(OUTPUTDIR, STEP3, SAMPLE_ID, paste0(SAMPLE_ID, "_umap_coexpression_Cdh2-Cdh11.pdf"))
+pdf(output_pdf, width = 10, height = 8)
+Cdh2Cdh11 <- FeaturePlot(data, features = c("Cdh2", "Cdh11"), blend = TRUE)
+print(Cdh2Cdh11)
+dev.off()
+
 # Assigning predictions and probabilities to data
 data$labels <- pred$first_pred
 Idents(data) <- data$labels
@@ -42,10 +92,9 @@ data$diff_prob <- diff_prob
 
 # Threshold to say if a cell is unknown or not
 threshold <- snakemake@params[["threshold"]]
-cells_threshold <- colnames(data)[data$diff_prob < threshold]
-
-
-Idents(object = data, cells = cells_threshold) <- "unknown"
+## TO UNCOMMENT IF NEED TO DO THE THESHOLD
+# cells_threshold <- colnames(data)[data$diff_prob < threshold]
+# Idents(object = data, cells = cells_threshold) <- "unknown"
 
 # List of unique identifiers
 list <- unique(Idents(data))

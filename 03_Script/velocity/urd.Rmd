@@ -1,6 +1,6 @@
 ---
 title: "Single-cell RNAseq analysis of gastruloids"
-subtitle: "urd | velocity"
+subtitle: "urd | Velocity analysis with cells with ambiguous annotation"
 author:
 - Thomas Vannier
 date: "`r format(Sys.time(), '%d %B %Y')`"
@@ -98,24 +98,39 @@ library(knitr)
 
 # Load the data
 
-For this analysis, I use the merged data of the 4 times (ie. merged_urd_object.rds). I get an urd-object by running merge_rds.R.
-```{r loadData}
+For this analysis, I use the merged data of the 4 times (ie. merged_urd_object.rds). 
+I get an urd-object by running merge_rds.R.
+```{r loadData, echo=FALSE, warning=FALSE, message=FALSE}
 # Load the 4 times merged dataset
 TEXT_OUTPUT = snakemake@output[["urd_output"]]
 URD_OBJECT = snakemake@params[["urd_object"]]
+URD_OBJECT_VELOCITY = snakemake@params[["urd_object_velocity"]]
 object <- readRDS(URD_OBJECT)
-# str(object)
 counts_matrix <- object@count.data
-counts_matrix[1, 1:5] # For raw counts
 logupx_matrix <- object@logupx.data
-logupx_matrix[1, 1:5]
+## Remove unknown cells
+# Get cells to keep (exclude "unknown")
+# cells.keep <- rownames(object@meta[object@meta$labels != "unknown", ])
+# # Subset the URD object
+# object <- urdSubset(object, cells.keep = cells.keep)
 ```
 
 # Calculate variable features
 
-CV: coefficient of variation
+A null mathematical model is built to model the relationship between average
+UMI counts and coefficient of variation (CV) across all genes, based on a 
+negative binomial distribution that incorporates sampling noise and relative
+library size. Those genes that have a CV greater than the null model 
+(threshold determined by diffCV.cutoff) are chosen as variable. 
 
-```{r CalcVariableFeatures}
+Three plots: the first shows the relative library sizes and the gamma
+distribution fit to them. The second shows a histogram of each gene's
+CV ratio to the null for its mean expression level and the diffCV.cutoff 
+threshold chosen. The third shows each gene's mean expression and CV, the 
+determined null model (in pink), and whether the gene was selected as 
+variable (green genes were variable).
+
+```{r CalcVariableFeatures, echo=FALSE, warning=FALSE, message=FALSE, eval=TRUE}
 stages <- sort(unique(object@group.ids$SampleID))
 
 cells.each.stage <- lapply(stages,
@@ -129,7 +144,7 @@ var.genes.by.stage <- lapply(1:length(stages),
                                  findVariableGenes(object,
                                                    cells.fit = cells.each.stage[[n]],
                                                    set.object.var.genes = F,
-                                                   diffCV.cutoff = 0.1,
+                                                   diffCV.cutoff = 0.4,
                                                    mean.min = 0.005,
                                                    mean.max = 100,
                                                    main.use = stages[[n]],
@@ -144,7 +159,7 @@ var.genes <- sort(unique(unlist(var.genes.by.stage)))
 object@var.genes <- var.genes
 ```
 
-```{r CalcPCA}
+```{r CalcPCA, eval=TRUE, warning=FALSE, message=FALSE, message=FALSE}
 seed <- snakemake@params[["seed"]]
 set.seed(seed)
 # Calculate PCA and consider those PCs that with standard deviation 'seed'x expected by noise as significant
@@ -152,10 +167,9 @@ object <- calcPCA(object, mp.factor = seed)
 pcSDPlot(object)
 ```
 
-```{r CalcTsne}
+```{r CalcTsne, eval=TRUE, warning=FALSE, message=FALSE, message=FALSE}
 # Remove cells with duplicates PCA coordinates
 cellsToRemove <- rownames(object@pca.scores[duplicated(object@pca.scores),])
-print(cellsToRemove)
 object <- urdSubset(object,
                     cells.keep = setdiff(colnames(object@logupx.data), cellsToRemove)
 )
@@ -171,6 +185,335 @@ plotDim(object, "SampleID", plot.title = "tSNE: Time")
 ```
 
 # Remove outliers
+
+```{r rmOutliers, eval=TRUE}
+
+knn <- snakemake@params[["knn"]]
+sigma <- snakemake@params[["sigma"]]
+
+# Remove outliers
+# Calculate a k-nearest neighbor graph
+
+num_cells <- ncol(object@count.data) 
+print(paste("Le nombre total de cellules est :", num_cells))
+sqrt_cells <- sqrt(num_cells)
+print(paste("La racine carré du nombre total de cellules est :", sqrt_cells))
+
+
+object <- calcKNN(object, nn=knn)
+outliers <- knnOutliers(object,
+                        nn.1=1,
+                        nn.2=knn,
+                        x.max=35,
+                        slope.r=1.2,
+                        int.r=5.0,
+                        slope.b=1.0,
+                        int.b=6.0,
+                        title = paste0("Identifying Outliers by k-NN Distance")
+)
+
+# Subset object to eliminate outliers
+print(paste0("Number of removed outliers: ", length(outliers)))
+cells.keep <- setdiff(colnames(object@logupx.data), outliers)
+print(paste0("Number of keep cells: ", length(cells.keep)))
+object <- urdSubset(object, cells.keep=cells.keep)
+```
+
+# Calculate diffusion map (DM)
+
+In order to find trajectories through the data, we calculate transition probabilities between cells in the data. 
+This is part of the construction of a diffusion map, and the diffusion map is a handy way to visualize whether good transition probabilities have been calculated. 
+Thus, we use the destiny package to calculate a diffusion map.
+
+```{r CalcDM, eval=TRUE}
+
+knn <- snakemake@params[["knn"]]
+sigma <- snakemake@params[["sigma"]]
+
+root.cells <- rownames(object@meta)[object@meta$SampleID=="72h"]
+if (sigma == "NULL"){
+    set.seed(seed)
+    object <- calcDM(object,
+                     knn=knn,
+                    #  dcs.store = 50
+    )
+} else {
+    set.seed(seed)
+    object <- calcDM(object,
+                     knn=knn,
+                    #  dcs.store = 50,
+                     sigma.use=sigma
+    )
+}
+
+plotDimArray(object = object,
+             reduction.use = "dm",
+             dims.to.plot = 1:8,
+             label="SampleID",
+             plot.title="",
+             outer.title=paste0("SampleID - Diffusion Map Sigma ", sigma, "\n"),
+             legend=F,
+            #  alpha=0.3,
+)
+
+plotDim(object, "SampleID", transitions.plot = 10000, plot.title="Developmental stage (with transitions)")
+```
+
+# Calculate pseudotime (PT)
+
+We calculate pseudotime by starting with a group of root cells, and then performing a probabilistic breadth-first graph search using the transition probabilities.
+This moves step-wise outward from the root cells, until the entire graph has been visited.
+Several simulations are run, and then pseudotime is calculated as the average iteration that visited each cell.
+
+We can make sure that enough simulations have been performed by looking at the change in cell pseudotime as more simulations are added.
+Here, we can see that an asymptote was reached around 23 simulations, so 50 was enough.
+
+```{r CalcPT, eval=TRUE}
+floodNsim <- snakemake@params[["floodNsim"]]
+root.cells <- cellsInCluster(object, "SampleID", "72h")
+flood.result <- floodPseudotime(object,
+                                root.cells=root.cells,
+                                n=floodNsim,
+                                minimum.cells.flooded=2,
+                                verbose=F
+)
+
+object <- floodPseudotimeProcess(object,
+                                 flood.result,
+                                 floods.name="pseudotime",
+                                #  max.frac.NA=0.4,
+                                #  pseudotime.fun=mean,
+                                #  stability.div=20
+)
+
+pseudotimePlotStabilityOverall(object)
+plotDim(object, "pseudotime", plot.title = "Pseudotime")
+```
+
+More helpful is to investigate the distribution of pseudotime for each developmental stage.
+In this case it looks pretty good. The stages are in the correct order, and there is overlap between neighboring stages (as expected), 
+but they do not completely collapse on top of each other (which often indicates that sigma is too large in the diffusion map). 
+(Note: the curve for 72h looks weird because these cells were used as the root, which means they all have pseudotime 0, which disrupts the density plot kernel.)
+```{r plotDists, eval=TRUE}
+plotDists(object, "pseudotime", "SampleID")
+```
+
+# Define tips
+
+URD requires that the terminal cell populations are defined. In our case, we used clusters from the 96h as the terminal cell populations.
+Here we make a sub-setted URD object that just contains those cells from the last stage, and then perform PCA, tSNE, and cluster those cells.
+
+Furthermore, for the next steps we’ll filter for labels with at least 20 cells in any SampleID.
+
+```{r tipsSubset, eval=TRUE}
+
+## We’ll filter for labels with at least 15 cells in any SampleID.
+# Create a contingency table of labels and SampleIDs
+label_counts <- table(object@meta$labels, object@meta$SampleID)
+# Convert the table into a data frame for easier filtering
+label_counts_df <- as.data.frame(as.table(label_counts))
+colnames(label_counts_df) <- c("Label", "SampleID", "Count")
+# print(label_counts_df)
+
+# Filter labels with at least 15 cells in any SampleID
+labels_to_keep <- label_counts_df %>%
+  dplyr::filter(Count >= 20) %>%
+  dplyr::pull(Label) %>%
+  unique()
+
+# print(labels_to_keep)
+
+# Get the names of cells to keep
+cells_to_keep <- rownames(object@meta[object@meta$labels %in% labels_to_keep, ])
+
+
+# Subset the URD object
+object <- urdSubset(object, cells.keep = cells_to_keep)
+
+# Check the remaining labels and their counts
+table(object@meta$labels)
+
+
+# Create a subsetted object of just those cells from the final stage
+object.96 <- urdSubset(object, cells.keep=cellsInCluster(object, "SampleID", "96h"))
+# Use the variable genes that were calculated only on the final group of stages (which
+# contain the last stage).
+object.96@var.genes <- var.genes.by.stage[[4]]
+
+# Calculate PCA and tSNE
+object.96 <- calcPCA(object.96, mp.factor = 1.5)
+pcSDPlot(object.96)
+
+set.seed(20)
+object.96 <- calcTsne(object.96)
+
+# Calculate graph clustering of these cells
+object.96 <- graphClustering(object.96, num.nn = 50, do.jaccard=T, method="Louvain")
+
+plotDim(object.96, "Louvain-50", plot.title = "Louvain (50 NN) graph clustering 96h", point.size=3)
+```
+
+# Biased random walks
+
+In order to find the developmental trajectories in the data, we then perform biased random walks that start from each tip.
+Each walk starts from a random cell in a given tip, and then hops between cells based on the transition probabilities;
+however, the transition probabilities are first biased so that transitions are only permitted to cells with younger or similar pseudotimes,
+ensuring that the trajectory between the root and the cell type is found (and that walks do not turn down branches toward other tips).
+
+```{r performPTlogistic, eval=TRUE}
+cellsForward <- snakemake@params[["cellsForward"]]
+cellsBack <- snakemake@params[["cellsBack"]]
+RWmaxSteps <- snakemake@params[["RWmaxSteps"]]
+
+tips_cells <- cellsInCluster(object, "SampleID", "96h")
+
+# Copy cluster identities from axial.6somite object to a new clustering ("tip.clusters") in the full axial object.
+object@group.ids[rownames(object.96@group.ids), "tip.clusters"] <- object.96@group.ids$`Louvain-50`
+
+# Determine the parameters of the logistic used to bias the transition probabilities. The procedure
+# is relatively robust to this parameter, but the cell numbers may need to be modified for larger
+# or smaller data sets.
+object.ptlogistic <- pseudotimeDetermineLogistic(object,
+                                                 "pseudotime",
+                                                 optimal.cells.forward=cellsForward,
+                                                 max.cells.back=cellsBack,
+                                                 do.plot = T
+)
+
+# Bias the transition matrix according to pseudotime
+object.biased.tm <- as.matrix(pseudotimeWeightTransitionMatrix(object,
+                                                               "pseudotime",
+                                                               logistic.params=object.ptlogistic
+))
+
+# Simulate the biased random walks from each tip
+object.walks <- simulateRandomWalksFromTips(object,
+                                            tip.group.id="tip.clusters",
+                                            root.cells=root.cells,
+                                            transition.matrix = object.biased.tm,
+                                            max.steps = RWmaxSteps,
+                                            # n.per.tip = 2 * length(tips_cells),
+                                            verbose = F
+)
+
+# Process the biased random walks into visitation frequencies
+object <- processRandomWalksFromTips(object, object.walks, verbose = F)
+```
+
+We can then visualize the tips and the visitation of cells from each tip on the dataset.
+```{r tipvisualization, eval=TRUE}
+plotDim(object, "tip.clusters", plot.title="Cells in each tip")
+
+# Check the structure of the metadata
+# str(object)
+
+# Determine the number of tips (replace 'num_tips' with actual calculation if needed)
+num_tips <- max(object@group.ids$tip.clusters, na.rm = TRUE)
+
+# Loop to generate and display each plot
+for (i in 1:num_tips) {
+  p <- plotDim(
+    object,
+    paste0("visitfreq.log.", i),  # Dynamic metadata column for tip visitation
+    plot.title = paste("Visitation frequency from tip", i, "(log10)"),
+    transitions.plot = 10000
+  )
+  
+  # Print each plot to ensure it is rendered
+  print(p)
+}
+```
+
+```{r save1, eval=FALSE, warning=FALSE, message=FALSE}
+saveRDS(object, file = URD_OBJECT_VELOCITY) 
+```
+
+# Build tree
+
+We can then build the URD tree structure. This starts from each tip and agglomeratively joins trajectories when they visit the same cells 
+(which indicates an earlier cell type that potentially gives rise to both downstream cell populations). 
+There are several parameters that can be modified in the tree, including the method of determining whether 
+groups of cells are different (divergence.method), the p-value threshold used (p.thresh), and the number of cells in each window 
+(cells.per.pseudotime.bin and bins.per.pseudotime.window). In general, adjusting the p-value threshold will make all branchpoints 
+slightly earlier or later. Adjusting the number of cells in each window may be important to make sure that the procedure is buffered from noise 
+(too small windows can cause bizarre fusion results), but if it is too large, cell populations that split near the end of your timecourse may immediately fuse.
+
+```{r buildTree, echo=FALSE, warning=FALSE, message=FALSE}
+object <- readRDS(URD_OBJECT_VELOCITY)
+
+treeMeth <- snakemake@params[["treeMeth"]]
+cellsPerPTbin <- snakemake@params[["cellsPerPTbin"]]
+binsPerPTwindow <- snakemake@params[["binsPerPTwindow"]]
+treePtreshold <- snakemake@params[["treePtreshold"]]
+
+# Load the cells used for each tip into the URD object
+object.tree <- loadTipCells(object, "tip.clusters")
+
+# Build the tree
+# set.seed(seed)
+object.tree <- buildTree(object.tree,
+                         tips.use = levels(as.factor(object.tree@group.ids$tip.clusters)),
+                         pseudotime = "pseudotime",
+                         divergence.method = treeMeth,
+                         cells.per.pseudotime.bin = cellsPerPTbin,
+                         bins.per.pseudotime.window = binsPerPTwindow,
+                         save.all.breakpoint.info = T,
+                         p.thresh = treePtreshold,
+                         min.cells.per.segment = 0
+)
+
+plotTree(object.tree, "SampleID", title="Developmental Stage", tree.size = 0.3, cell.alpha = 1)
+
+plotTree(object.tree, "T", title="T-Bra", cell.alpha = 1)
+plotTree(object.tree, "Pou5f1", title="Oct4", cell.alpha = 1)
+plotTree(object.tree, "Foxa2", title="FoxA2", cell.alpha = 1)
+plotTree(object.tree, "Cdh1", title="Cdh1", cell.alpha = 1)
+plotTree(object.tree, "Cdh2", title="Cdh2", cell.alpha = 1)
+plotTree(object.tree, "Cdh11", title="Cdh11", cell.alpha = 1)
+
+
+plotTree(
+  object.tree,
+  "labels", # Provide the labels for each cell
+  cell.alpha = 1,  # Fully opaque cell colors
+  title = "Tree with Cell Labels"
+)
+```
+
+```{r plot-trees-by-label,, echo=FALSE, warning=FALSE, message=FALSE}
+# Get unique labels
+unique_labels <- unique(object.tree@meta$labels)
+
+# Loop through each label and plot the tree
+for (label in unique_labels) {
+  # Skip NA labels if present
+  if (is.na(label)) next
+  
+  # Subset the object for the current label
+  cells_for_label <- rownames(object.tree@meta[object.tree@meta$labels == label, ])
+  object_subset <- urdSubset(object.tree, cells.keep = cells_for_label)
+
+  p <- plotTreeHighlight(
+    object_subset,
+    label = "labels",  # Specify that we're using the "labels" column for labeling
+    label.value = label,  # Highlight only cells with this specific label
+    tree.alpha = 1,
+    tree.size = 1,  # Line thickness of the tree
+    plot.cells = TRUE,
+    cell.alpha = 0.8,  # Make the cells slightly transparent
+    cell.size = 1,  # Set the size of the cells
+    discrete.ignore.na = TRUE,
+    title = paste("Tree for Label:", label)
+  )
+
+  # Print the plot to ensure it is rendered
+  print(p)
+}
+```
+
+```{r sessioninfo}
+sessionInfo()
+```
 
 ```{r Output}
 # Create the output file for the snakemake rule
